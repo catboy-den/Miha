@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using SlimMessageBus;
 
-namespace MidnightHaven.Chan.Consumers.GuildEvents;
+namespace MidnightHaven.Chan.Consumers.GuildEvent;
 
 public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
 {

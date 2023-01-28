@@ -1,4 +1,4 @@
-﻿namespace MidnightHaven.Chan;
+﻿namespace MidnightHaven.Chan.Consumers;
 
 public static class Topics
 {
