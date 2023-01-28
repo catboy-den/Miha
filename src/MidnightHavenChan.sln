@@ -1,8 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Chan", "MidnightHaven.Chan\MidnightHaven.Chan.csproj", "{F8759017-D9F1-4CFA-8337-78342B234D8E}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MidnightHaven.Chan", "MidnightHaven.Chan\MidnightHaven.Chan.csproj", "{F8759017-D9F1-4CFA-8337-78342B234D8E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Shared", "MidnightHaven.Shared\MidnightHaven.Shared.csproj", "{90F73FFF-9E3B-4F11-9371-7BBAB6F24D5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MidnightHaven.Shared", "MidnightHaven.Shared\MidnightHaven.Shared.csproj", "{90F73FFF-9E3B-4F11-9371-7BBAB6F24D5F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{19490ECD-AC03-43C1-A86E-67A9278FD7F9}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		appsettings.json = appsettings.json
+		Dockerfile = Dockerfile
+		..\docker-compose.dev.yml = ..\docker-compose.dev.yml
+		..\docker-compose.yml = ..\docker-compose.yml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Redis", "MidnightHaven.Redis\MidnightHaven.Redis.csproj", "{51E2A7AC-9B3D-4453-89E7-EF81DAE37E41}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +32,15 @@ Global
 		{90F73FFF-9E3B-4F11-9371-7BBAB6F24D5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90F73FFF-9E3B-4F11-9371-7BBAB6F24D5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90F73FFF-9E3B-4F11-9371-7BBAB6F24D5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51E2A7AC-9B3D-4453-89E7-EF81DAE37E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51E2A7AC-9B3D-4453-89E7-EF81DAE37E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51E2A7AC-9B3D-4453-89E7-EF81DAE37E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51E2A7AC-9B3D-4453-89E7-EF81DAE37E41}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {55BF070D-BF4E-4923-B353-11042143FA04}
 	EndGlobalSection
 EndGlobal
