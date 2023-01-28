@@ -28,6 +28,11 @@ public partial class BotService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        if (string.IsNullOrEmpty(_discordOptions.Token))
+        {
+            throw new ArgumentNullException(nameof(_discordOptions.Token), "Discord token cannot be empty or null");
+        }
+
         _client.Log += LogAsync;
 
         await _client.LoginAsync(TokenType.Bot, _discordOptions.Token);
