@@ -37,14 +37,14 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddRedisRepositories(this IServiceCollection services)
+    private static IServiceCollection AddRedisRepositories(this IServiceCollection services)
     {
         services.AddSingleton<IGuildOptionsRepository, GuildOptionsRepository>();
 
         return services;
     }
 
-    public static IServiceCollection AddRedisServices(this IServiceCollection services)
+    private static IServiceCollection AddRedisServices(this IServiceCollection services)
     {
         services.AddSingleton<IGuildOptionsService, GuildOptionsService>();
 
