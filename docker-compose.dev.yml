@@ -1,8 +1,28 @@
-version: '3.8'
+version: '3.9'
 services:
+
+  redis:
+    image: redislabs/redismod
+    container_name: redis
+    restart: always
+    ports:
+      - "6379"
+
   mhchan:
     container_name: mhchan
     build:
       context: ./src
       dockerfile: Dockerfile
-    env_file: .env.dev
+    environment:
+      DOTNET_REDIS__HOST: redis
+      DOTNET_REDIS__PORT: 6379
+      DOTNET_DISCORD__TOKEN:
+      DOTNET_DISCORD__DEVELOPMENT_GUILD:
+    depends_on:
+      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 20s
+        max_attempts: 2
+        window: 120s

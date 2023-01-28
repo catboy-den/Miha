@@ -29,4 +29,8 @@
       <PackageReference Include="SlimMessageBus.Host.MsDependencyInjection" Version="1.7.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\MidnightHaven.Redis\MidnightHaven.Redis.csproj" />
+    </ItemGroup>
+
 </Project>

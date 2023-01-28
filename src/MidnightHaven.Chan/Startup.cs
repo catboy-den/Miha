@@ -1,9 +1,12 @@
 ﻿using System.Reflection;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using MidnightHaven.Chan.Consumers.GuildEvents;
 using MidnightHaven.Chan.Services;
+using MidnightHaven.Redis;
 using SlimMessageBus.Host.Memory;
 using SlimMessageBus.Host.MsDependencyInjection;
 
@@ -11,10 +14,10 @@ namespace MidnightHaven.Chan;
 
 public static class Startup
 {
-    public static void ConfigureServices(IServiceCollection services)
+    public static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
         services.AddBackgroundServices();
-        services.AddDiscordDotNet();
+        services.AddDiscordDotNet(context.Configuration);
 
         services.AddSlimMessageBus(mb =>
         {
@@ -29,10 +32,13 @@ public static class Startup
 
                 .WithProviderMemory();
         }, addConsumersFromAssembly: new[] { Assembly.GetExecutingAssembly() }); // Auto discover consumers and register inside DI container);
+
+        services.AddRedis(context.Configuration);
     }
 
-    private static IServiceCollection AddDiscordDotNet(this IServiceCollection services)
+    private static IServiceCollection AddDiscordDotNet(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddOptions<DiscordOptions>().Bind(configuration.GetSection(DiscordOptions.Section));
         services.AddSingleton(new DiscordSocketClient());
         services.AddSingleton<DiscordSocketClient>();
 

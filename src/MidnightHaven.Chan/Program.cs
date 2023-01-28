@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
 
 namespace MidnightHaven.Chan;
@@ -12,6 +13,7 @@ public static class Program
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
+        .ConfigureAppConfiguration(builder => builder.AddEnvironmentVariables())
         .ConfigureServices(Startup.ConfigureServices)
         .UseSerilog((_, config) =>
         {

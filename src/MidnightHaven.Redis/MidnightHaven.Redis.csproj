@@ -7,8 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="NReJSON" Version="4.0.0" />
-      <PackageReference Include="StackExchange.Redis" Version="2.6.90" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
+      <PackageReference Include="Redis.OM" Version="0.4.1" />
     </ItemGroup>
 
 </Project>

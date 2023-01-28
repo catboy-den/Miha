@@ -2,6 +2,7 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using SlimMessageBus;
 
 namespace MidnightHaven.Chan.Services;
@@ -10,15 +11,18 @@ public partial class BotService : BackgroundService
 {
     private readonly DiscordSocketClient _client;
     private readonly IMessageBus _bus;
+    private readonly DiscordOptions _discordOptions;
     private readonly ILogger<BotService> _logger;
 
     public BotService(
         DiscordSocketClient client,
         IMessageBus bus,
+        IOptions<DiscordOptions> discordOptions,
         ILogger<BotService> logger)
     {
         _client = client;
         _bus = bus;
+        _discordOptions = discordOptions.Value;
         _logger = logger;
     }
 
@@ -26,9 +30,7 @@ public partial class BotService : BackgroundService
     {
         _client.Log += LogAsync;
 
-        var token = "";
-
-        await _client.LoginAsync(TokenType.Bot, token);
+        await _client.LoginAsync(TokenType.Bot, _discordOptions.Token);
         await _client.StartAsync();
 
         _client.GuildScheduledEventCreated += @event => _bus.Publish(@event, Topics.GuildEvent.Created, cancellationToken: stoppingToken);
