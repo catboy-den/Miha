@@ -8,6 +8,17 @@ services:
     ports:
       - "6379"
 
+  redis-ui:
+    container_name: redis-ui
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    ports:
+      - "8091:8091"
+
   mhchan:
     container_name: mhchan
     build:
@@ -20,6 +31,7 @@ services:
       DOTNET_DISCORD__DEVELOPMENT_GUILD:
     depends_on:
       - redis
+      - redis-ui
     deploy:
       restart_policy:
         condition: on-failure

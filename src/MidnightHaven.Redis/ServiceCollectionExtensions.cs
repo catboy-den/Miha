@@ -1,6 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using MidnightHaven.Redis.Repositories;
+using MidnightHaven.Redis.Repositories.Interfaces;
+using MidnightHaven.Redis.Services;
+using MidnightHaven.Redis.Services.Interfaces;
 using Redis.OM;
 using Redis.OM.Contracts;
 
@@ -24,6 +28,26 @@ public static class ServiceCollectionExtensions
                 Password = null
             });
         });
+
+        services.AddHostedService<IndexCreationService>();
+
+        services.AddRedisRepositories();
+        services.AddRedisServices();
+
+        return services;
+    }
+
+    public static IServiceCollection AddRedisRepositories(this IServiceCollection services)
+    {
+        services.AddSingleton<IGuildOptionsRepository, GuildOptionsRepository>();
+
+        return services;
+    }
+
+    public static IServiceCollection AddRedisServices(this IServiceCollection services)
+    {
+        services.AddSingleton<IGuildOptionsService, GuildOptionsService>();
+
         return services;
     }
 }

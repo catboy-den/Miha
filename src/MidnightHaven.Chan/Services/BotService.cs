@@ -52,7 +52,7 @@ public partial class BotService : BackgroundService
         await _client.LoginAsync(TokenType.Bot, _discordOptions.Token);
         await _client.StartAsync();
 
-        // Publish events to our Slim Message Bus'
+        // Publish events to our Slim Message Bus consumers
         _client.GuildScheduledEventCreated += @event => _bus.Publish(@event, Topics.GuildEvent.Created, cancellationToken: stoppingToken);
         _client.GuildScheduledEventStarted += @event => _bus.Publish(@event, Topics.GuildEvent.Started, cancellationToken: stoppingToken);
         _client.GuildScheduledEventCancelled += @event => _bus.Publish(@event, Topics.GuildEvent.Cancelled, cancellationToken: stoppingToken);
@@ -64,10 +64,11 @@ public partial class BotService : BackgroundService
 
     private async Task ReadyAsync()
     {
-        // Register commands directly to a guild or globally, assuming we have a target guild
+        // Register commands directly to a guild or globally
         // If we have a target guild, this will register our commands immediately, instead of a ~15 minute delay
         if (_discordOptions.Guild is not null)
         {
+            await _interactionService.RegisterCommandsGloballyAsync(); // sync up commands anyway
             await _interactionService.RegisterCommandsToGuildAsync(_discordOptions.Guild.Value);
         }
         else

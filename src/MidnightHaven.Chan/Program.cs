@@ -15,9 +15,7 @@ public static class Program
     private static IHostBuilder CreateHostBuilder(string[] args) => Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration(builder => builder.AddEnvironmentVariables())
         .ConfigureServices(Startup.ConfigureServices)
-        .UseSerilog((_, config) =>
-        {
-            config.Enrich.FromLogContext();
-            config.WriteTo.Console();
-        });
+        .UseSerilog((_, config) => config
+            .Enrich.FromLogContext()
+            .WriteTo.Console());
 }
