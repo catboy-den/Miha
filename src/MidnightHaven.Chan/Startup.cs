@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,6 +21,7 @@ public static class Startup
         services.AddBackgroundServices();
         services.AddDiscordDotNet(context.Configuration);
 
+        // Configure our slim message bus'
         services.AddSlimMessageBus(mb =>
         {
             mb
@@ -39,15 +41,20 @@ public static class Startup
 
     private static IServiceCollection AddDiscordDotNet(this IServiceCollection services, IConfiguration configuration)
     {
+        // Configure our IOptions for discord-related settings
         services.AddOptions<DiscordOptions>().Bind(configuration.GetSection(DiscordOptions.Section));
-        services.AddSingleton(new DiscordSocketClient());
+
         services.AddSingleton<DiscordSocketClient>();
+        services.AddSingleton<InteractionService>(x => new InteractionService(
+            x.GetRequiredService<DiscordSocketClient>(),
+            new InteractionServiceConfig { UseCompiledLambda = true }));
 
         return services;
     }
 
     private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
     {
+        // Register our long-running services
         services.AddHostedService<BotService>();
 
         return services;

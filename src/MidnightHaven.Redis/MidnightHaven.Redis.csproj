@@ -13,4 +13,9 @@
       <PackageReference Include="Redis.OM" Version="0.4.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Repositories" />
+      <Folder Include="Services" />
+    </ItemGroup>
+
 </Project>
