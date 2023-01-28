@@ -15,7 +15,7 @@ public class ConfigureModule : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("configure", "Configure various bot settings and options")]
     public async Task ConfigureAsync(
         [Summary("loggingChannel", "The channel the bot will log to when an event is Created, Cancelled, or Modified")] IChannel? logChannel = null,
-        [Summary("announcementChannel", "The channel the bot will post event Start and Soon-To-Start Announcements to")] IChannel? announcementChannel = null)
+        [Summary("announcementChannel", "The channel the bot will post event Start and Soon-To-Start announcements to")] IChannel? announcementChannel = null)
     {
 
     }
