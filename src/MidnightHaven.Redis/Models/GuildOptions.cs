@@ -13,5 +13,8 @@ public class GuildOptions
     public ulong? AnnouncementChannel { get; set; }
 
     [Indexed]
+    public ulong? AnnouncementRoleId { get; set; }
+
+    [Indexed]
     public ulong? LogChannel { get; set; }
 }

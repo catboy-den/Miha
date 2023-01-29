@@ -17,7 +17,7 @@ services:
     depends_on:
       - redis
     ports:
-      - "8091:8091"
+      - "8081:8081"
 
   mhchan:
     container_name: mhchan

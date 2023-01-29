@@ -25,12 +25,25 @@ public class GuildOptionsRepository : IGuildOptionsRepository
         return await collection.FindByIdAsync(id);
     }
 
-    public async Task<GuildOptions?> UpsertAsync(GuildOptions options)
+    public Task<GuildOptions?> UpsertAsync(GuildOptions options)
     {
-        options.Should().NotBeNull();
+        return UpsertAsync(options.GuildId, guildOptions => guildOptions = options);
+    }
+
+    public async Task<GuildOptions?> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc)
+    {
+        var id = guildId.ToString() ?? string.Empty;
+
+        id.Should().NotBeNullOrEmpty();
 
         var collection = _provider.RedisCollection<GuildOptions>();
-        var exists = await collection.FindByIdAsync(options.GuildId.ToString()) is not null;
+
+        var options = await collection.FindByIdAsync(id);
+        var exists = options != null;
+
+        options ??= new GuildOptions { GuildId = guildId!.Value };
+
+        optionsFunc(options);
 
         if (exists)
         {

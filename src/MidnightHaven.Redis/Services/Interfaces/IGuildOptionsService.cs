@@ -7,5 +7,6 @@ public interface IGuildOptionsService
 {
     Task<Result<GuildOptions?>> GetAsync(ulong? guildId);
     Task<Result<GuildOptions?>> UpsertAsync(GuildOptions options);
+    Task<Result<GuildOptions?>> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc);
     Task<Result> DeleteAsync(ulong? guildId);
 }

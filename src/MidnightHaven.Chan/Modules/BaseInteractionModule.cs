@@ -1,9 +1,10 @@
 ﻿using Discord.Interactions;
 using FluentResults;
+using MidnightHaven.Chan.Helpers;
 
-namespace MidnightHaven.Chan.Helpers;
+namespace MidnightHaven.Chan.Modules;
 
-public class HavenModule : InteractionModuleBase<SocketInteractionContext>
+public class BaseInteractionModule : InteractionModuleBase<SocketInteractionContext>
 {
     protected virtual async Task RespondFailureAsync(IEnumerable<IError>? errors = null)
     {

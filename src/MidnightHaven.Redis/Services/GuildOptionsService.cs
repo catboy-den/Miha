@@ -45,6 +45,19 @@ public partial class GuildOptionsService : IGuildOptionsService
         }
     }
 
+    public async Task<Result<GuildOptions?>> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc)
+    {
+        try
+        {
+            return Result.Ok(await _repository.UpsertAsync(guildId, optionsFunc));
+        }
+        catch (Exception e)
+        {
+            LogErrorException(e);
+            return Result.Fail(e.Message);
+        }
+    }
+
     public async Task<Result> DeleteAsync(ulong? guildId)
     {
         try

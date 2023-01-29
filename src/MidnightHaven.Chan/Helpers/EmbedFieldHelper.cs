@@ -10,4 +10,11 @@ public static class EmbedFieldHelper
             .WithName(fieldName)
             .WithValue(channelName != null ? "`#" + channelName + "`" : "`null`");
     }
+
+    public static EmbedFieldBuilder Role(string fieldName, string? roleName)
+    {
+        return new EmbedFieldBuilder()
+            .WithName(fieldName)
+            .WithValue(roleName != null ? "@" + roleName : "null");
+    }
 }
