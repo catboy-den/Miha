@@ -115,8 +115,9 @@ public partial class BotService : BackgroundService
         await _client.StopAsync();
     }
 
+    // Birthday system
+    // Fact of the day system
     // Announce when events are about to start - maybe loop through every 5 minutes? would be an easy low-maintenance background service, could use the user timezone thing
-    // Subscribe to events, the bot will DM new events, have the option to only show by day or type of event, like hosted in either Discord or VRChat
 
     private async Task LogAsync(LogMessage message)
     {

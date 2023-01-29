@@ -10,7 +10,8 @@ namespace MidnightHaven.Chan.Modules;
 /// <summary>
 /// Command module for configuring a guilds <see cref="GuildOptions"/>
 /// </summary>
-public class ConfigureModule : InteractionModuleBase<SocketInteractionContext>
+[Group("configure", "Set or update various bot settings and options")]
+public class ConfigureModule : HavenModule
 {
     private readonly DiscordSocketClient _client;
     private readonly IGuildOptionsService _guildOptionsService;
@@ -23,54 +24,64 @@ public class ConfigureModule : InteractionModuleBase<SocketInteractionContext>
         _guildOptionsService = guildOptionsService;
     }
 
-    [EnabledInDm(true)]
-    [DefaultMemberPermissions(GuildPermission.ManageChannels)]
-    [SlashCommand("configure", "Configure various bot settings and options")]
-    public async Task ConfigureAsync(
-        [Summary("eventLoggingChannel", "The channel event Creation, Changes, or Cancellations will be logged to")] ITextChannel? logChannel = null,
-        [Summary("eventAnnouncementChannel", "The channel event start and soon-to-start Announcements will be posted to")] ITextChannel? announcementChannel = null)
+    [SlashCommand("logging", "Sets or updates the event logging channel")]
+    public async Task LoggingAsync(
+        [Summary(description: "The channel any newly Created, Modified, or Cancelled events will be posted")] ITextChannel channel,
+        [Summary(description: "Setting this to true will disable event logging, even if you set a channel")] bool disable = false)
     {
-        var options = new GuildOptions
+        var optionsResult = await _guildOptionsService.GetAsync(channel.GuildId);
+        if (optionsResult.IsFailed)
         {
-            GuildId = Context.Guild.Id,
-            AnnouncementChannel = announcementChannel?.Id,
-            LogChannel = logChannel?.Id
-        };
-
-        var result = await _guildOptionsService.UpsertAsync(options);
-
-        if (result.IsSuccess)
-        {
-            var fields = new List<EmbedFieldBuilder>
-            {
-                EmbedFieldHelper.TextChannel("Announcement channel",
-                        result.Value?.AnnouncementChannel != null ? (await _client.GetChannelAsync(result.Value.AnnouncementChannel.Value)).Name : null)
-                    .WithIsInline(true),
-
-                EmbedFieldHelper.TextChannel("Event logging channel",
-                        result.Value?.LogChannel != null ? (await _client.GetChannelAsync(result.Value.LogChannel.Value)).Name : null)
-                    .WithIsInline(true)
-            };
-
-            var embed = EmbedHelper.Success(
-                    description: "Updated Guild Options",
-                    authorName: Context.User.Username,
-                    authorIcon: Context.User.GetAvatarUrl())
-                .WithFields(fields)
-                .Build();
-
-            await RespondAsync(embed: embed, ephemeral: true);
+            await RespondFailureAsync(optionsResult.Errors);
+            return;
         }
-        else
-        {
-            var embed = EmbedHelper.Failure(
-                    description: "Updating Guild Options",
-                    authorName: Context.User.Username,
-                    authorIcon: Context.User.GetAvatarUrl(),
-                    errors: result.Errors)
-                .Build();
 
-            await RespondAsync(embed: embed, ephemeral: true);
+        var options = optionsResult.Value ?? new GuildOptions { GuildId = channel.GuildId };
+        options.LogChannel = disable ? null : channel.Id;
+
+        var upsertResult = await _guildOptionsService.UpsertAsync(options);
+        if (upsertResult.IsFailed)
+        {
+            await RespondFailureAsync(upsertResult.Errors);
+            return;
+        }
+
+        await RespondAsync(embed: EmbedHelper.Success(
+                description: "Updated Guild Options",
+                authorName: Context.User.Username,
+                authorIcon: Context.User.GetAvatarUrl())
+            .WithFields(EmbedFieldHelper.TextChannel("Event logging channel", disable ? null : channel.Name))
+            .Build(), ephemeral: true);
+    }
+
+    [Group("announcements", "Set or update announcement settings and options")]
+    public class AnnouncementModule : InteractionModuleBase<SocketInteractionContext>
+    {
+        private readonly DiscordSocketClient _client;
+        private readonly IGuildOptionsService _guildOptionsService;
+
+        public AnnouncementModule(
+            DiscordSocketClient client,
+            IGuildOptionsService guildOptionsService)
+        {
+            _client = client;
+            _guildOptionsService = guildOptionsService;
+        }
+
+        [SlashCommand("channel", "Sets or updates the channel where event announcements will be posted")]
+        public async Task ChannelAsync(
+            [Summary(description: "The channel where announcements will be posted")] ITextChannel channel,
+            [Summary(description: "Setting this to true will disable announcements, even if you set a channel")] bool disable = false)
+        {
+            await RespondAsync(channel.Name);
+        }
+
+        [SlashCommand("role", "Sets or updates the role that will be pinged when a event has started")]
+        public async Task NotifyRoleAsync(
+            [Summary(description: "The role that will be pinged when an event is announced as starting")] IRole notifyRole,
+            [Summary(description: "Setting this to true will disable role-pings, even if you set a role")] bool disable = false)
+        {
+            await RespondAsync(notifyRole.Name);
         }
     }
 }
