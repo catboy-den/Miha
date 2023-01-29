@@ -42,6 +42,11 @@ public partial class BotService : BackgroundService
             throw new ArgumentNullException(nameof(_discordOptions.Token), "Discord token cannot be empty or null");
         }
 
+        if (_discordOptions.Guild is null)
+        {
+            throw new ArgumentNullException(nameof(_discordOptions.Guild), "We need a target guild id, we don't quite support multi-guilds yet");
+        }
+
         _client.Log += LogAsync;
         _client.Ready += ReadyAsync;
         _interactionService.Log += LogAsync;
@@ -64,17 +69,7 @@ public partial class BotService : BackgroundService
 
     private async Task ReadyAsync()
     {
-        // Register commands directly to a guild or globally
-        // If we have a target guild, this will register our commands immediately, instead of a ~15 minute delay
-        if (_discordOptions.Guild is not null)
-        {
-            await _interactionService.RegisterCommandsGloballyAsync(); // sync up commands anyway
-            await _interactionService.RegisterCommandsToGuildAsync(_discordOptions.Guild.Value);
-        }
-        else
-        {
-            await _interactionService.RegisterCommandsGloballyAsync();
-        }
+        await _interactionService.RegisterCommandsToGuildAsync(_discordOptions.Guild!.Value);
     }
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
