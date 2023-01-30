@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using MidnightHaven.Redis.Repositories;
 using MidnightHaven.Redis.Repositories.Interfaces;
 using MidnightHaven.Redis.Services;
-using MidnightHaven.Redis.Services.Interfaces;
 using Redis.OM;
 using Redis.OM.Contracts;
 
@@ -32,7 +31,6 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<IndexCreationService>();
 
         services.AddRedisRepositories();
-        services.AddRedisServices();
 
         return services;
     }
@@ -40,13 +38,6 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddRedisRepositories(this IServiceCollection services)
     {
         services.AddSingleton<IGuildOptionsRepository, GuildOptionsRepository>();
-
-        return services;
-    }
-
-    private static IServiceCollection AddRedisServices(this IServiceCollection services)
-    {
-        services.AddSingleton<IGuildOptionsService, GuildOptionsService>();
 
         return services;
     }

@@ -1,22 +1,61 @@
 ﻿using Discord;
-using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
+using MidnightHaven.Chan.Services.Interfaces;
 using SlimMessageBus;
 
 namespace MidnightHaven.Chan.Consumers.GuildEvent;
 
 public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
 {
-    private readonly DiscordSocketClient _client;
+    private readonly IGuildOptionsService _guildOptionsService;
+    private readonly ILogger<GuildEventCancelledConsumer> _logger;
 
-    public GuildEventCancelledConsumer(DiscordSocketClient client)
+    public GuildEventCancelledConsumer(
+        IGuildOptionsService guildOptionsService,
+        ILogger<GuildEventCancelledConsumer> logger)
     {
-        _client = client;
+        _guildOptionsService = guildOptionsService;
+        _logger = logger;
     }
 
-    public async Task OnHandle(IGuildScheduledEvent message)
+    public async Task OnHandle(IGuildScheduledEvent guildEvent)
     {
-        var channel = await _client.GetChannelAsync(1068697078152314913);
+        var loggingChannel = await _guildOptionsService.GetLoggingChannel(guildEvent.Guild.Id);
+        if (loggingChannel.IsFailed)
+        {
+            _logger.LogInformation("Failed getting logging channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+            return;
+        }
 
-        await (channel as IMessageChannel)!.SendMessageAsync(message.Name + " cancelled");
+        // Sometimes the creator can be null in the event, this will go grab the event AGAIN
+        if (guildEvent.Creator is null)
+        {
+            guildEvent = await guildEvent.Guild.GetEventAsync(guildEvent.Id);
+            if (guildEvent.Creator is null)
+            {
+                _logger.LogError("Guild scheduled event is null {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                return;
+            }
+        }
+
+        var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
+        var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
+        var location = guildEvent.Location ?? "Unknown";
+
+        if (location is "Unknown" && guildEvent.ChannelId.HasValue)
+        {
+            location = "Discord";
+        }
+
+        var embed = new EmbedBuilder()
+            .WithAuthor(guildEvent.Creator?.Username + " - Event cancelled", creatorAvatarUrl)
+            .WithThumbnailUrl(creatorAvatarUrl)
+            .WithTitle(location + " - " + guildEvent.Name)
+            .WithDescription(description)
+            .WithColor(Color.Red)
+            .WithFooter("v1.06")
+            .WithCurrentTimestamp();
+
+        await loggingChannel.Value.SendMessageAsync(embed: embed.Build());
     }
 }

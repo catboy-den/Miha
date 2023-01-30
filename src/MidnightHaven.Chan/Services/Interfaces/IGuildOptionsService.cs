@@ -1,7 +1,8 @@
-﻿using FluentResults;
+﻿using Discord;
+using FluentResults;
 using MidnightHaven.Redis.Models;
 
-namespace MidnightHaven.Redis.Services.Interfaces;
+namespace MidnightHaven.Chan.Services.Interfaces;
 
 public interface IGuildOptionsService
 {
@@ -9,4 +10,8 @@ public interface IGuildOptionsService
     Task<Result<GuildOptions?>> UpsertAsync(GuildOptions options);
     Task<Result<GuildOptions?>> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc);
     Task<Result> DeleteAsync(ulong? guildId);
+
+    Task<Result<ITextChannel>> GetLoggingChannel(ulong? guildId);
+    Task<Result<ITextChannel>> GetAnnouncementChannel(ulong? guildId);
+    Task<Result<IRole>> GetAnnouncementRole(ulong? guildId);
 }

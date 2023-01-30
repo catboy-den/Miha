@@ -1,8 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
 using MidnightHaven.Chan.Helpers;
+using MidnightHaven.Chan.Services.Interfaces;
 using MidnightHaven.Redis.Models;
-using MidnightHaven.Redis.Services.Interfaces;
 
 namespace MidnightHaven.Chan.Modules;
 
