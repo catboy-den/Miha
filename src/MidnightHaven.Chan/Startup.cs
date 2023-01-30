@@ -48,6 +48,7 @@ public static class Startup
 
         services.AddSingleton<DiscordSocketConfig>(new DiscordSocketConfig
         {
+            AlwaysDownloadUsers = true,
             GatewayIntents = GatewayIntents.GuildScheduledEvents
                              | GatewayIntents.DirectMessageTyping
                              | GatewayIntents.DirectMessageReactions
@@ -56,6 +57,8 @@ public static class Startup
                              | GatewayIntents.GuildMessageReactions
                              | GatewayIntents.GuildMessages
                              | GatewayIntents.GuildVoiceStates
+                             | GatewayIntents.Guilds
+                             | GatewayIntents.GuildMembers
         });
         services.AddSingleton<DiscordSocketClient>();
         services.AddSingleton<InteractionService>(x => new InteractionService(

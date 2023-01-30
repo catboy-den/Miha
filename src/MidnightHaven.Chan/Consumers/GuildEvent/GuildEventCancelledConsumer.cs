@@ -27,17 +27,6 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
             return;
         }
 
-        // Sometimes the creator can be null in the event, this will go grab the event AGAIN
-        if (guildEvent.Creator is null)
-        {
-            guildEvent = await guildEvent.Guild.GetEventAsync(guildEvent.Id);
-            if (guildEvent.Creator is null)
-            {
-                _logger.LogError("Guild scheduled event is null {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
-                return;
-            }
-        }
-
         var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
         var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
         var location = guildEvent.Location ?? "Unknown";

@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Interfaces;
@@ -28,17 +29,6 @@ public class GuildEventCreatedConsumer : IConsumer<IGuildScheduledEvent>
             return;
         }
 
-        // Sometimes the creator can be null in the event, this will go grab the event AGAIN
-        if (guildEvent.Creator is null)
-        {
-            guildEvent = await guildEvent.Guild.GetEventAsync(guildEvent.Id);
-            if (guildEvent.Creator is null)
-            {
-                _logger.LogError("Guild scheduled event is null {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
-                return;
-            }
-        }
-
         var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
         var coverImageUrl = guildEvent.CoverImageId != null ? guildEvent.GetCoverImageUrl().Replace($"/{guildEvent.Guild.Id}", "") : null;
         var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
@@ -47,8 +37,7 @@ public class GuildEventCreatedConsumer : IConsumer<IGuildScheduledEvent>
 
         if (location is "Unknown" && guildEvent.ChannelId.HasValue)
         {
-            var channel = await guildEvent.Guild.GetVoiceChannelAsync(guildEvent.ChannelId.Value);
-            voiceChannel = channel?.Name;
+            voiceChannel = (guildEvent as SocketGuildEvent)?.Channel.Name;
             location = "Discord";
         }
 
