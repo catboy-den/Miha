@@ -36,6 +36,8 @@ public static class Startup
                     .Topic(Topics.GuildEvent.Created).WithConsumer<GuildEventCreatedConsumer>())
                 .Consume<IGuildScheduledEvent>(x => x
                     .Topic(Topics.GuildEvent.Started).WithConsumer<GuildEventStartedConsumer>())
+                .Consume<IGuildScheduledEvent>(x => x
+                    .Topic(Topics.GuildEvent.Updated).WithConsumer<GuildEventUpdatedConsumer>())
 
                 .WithProviderMemory();
         }, addConsumersFromAssembly: new[] { Assembly.GetExecutingAssembly() }); // Auto discover consumers and register inside DI container);
