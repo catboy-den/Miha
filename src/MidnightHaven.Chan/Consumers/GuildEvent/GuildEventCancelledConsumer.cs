@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using MidnightHaven.Chan.Extensions;
+using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Interfaces;
 using SlimMessageBus;
 
@@ -40,23 +40,14 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
             location = "Discord";
         }
 
-        var embed = new EmbedBuilder()
-            .WithTitle(location + " - " + guildEvent.Name)
-            .WithDescription(description)
-            .WithColor(Color.Red)
-            .WithVersionFooter()
-            .WithCurrentTimestamp();
-
-        if (guildEvent.Creator is null)
-        {
-            var botAvatarUrl = _client.CurrentUser.GetAvatarUrl();
-            embed.WithAuthor("Event cancelled", botAvatarUrl);
-        }
-        else
-        {
-            var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
-            embed.WithAuthor(guildEvent.Creator?.Username + " - Event cancelled", creatorAvatarUrl).WithThumbnailUrl(creatorAvatarUrl);
-        }
+        var embed = EmbedHelper.ScheduledEvent(
+            eventVerb: "Event cancelled",
+            eventName: guildEvent.Name,
+            eventLocation: location,
+            eventDescription: description,
+            embedColor: Color.Red,
+            authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
+            authorUsername: guildEvent.Creator?.Username);
 
         await loggingChannel.Value.SendMessageAsync(embed: embed.Build());
     }

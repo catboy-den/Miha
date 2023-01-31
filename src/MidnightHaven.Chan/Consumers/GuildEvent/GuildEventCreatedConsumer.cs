@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Interfaces;
 using SlimMessageBus;
@@ -72,29 +71,16 @@ public class GuildEventCreatedConsumer : IConsumer<IGuildScheduledEvent>
                 .WithIsInline(false));
         }
 
-        var embed = new EmbedBuilder()
-            .WithTitle(location + " - " + guildEvent.Name)
-            .WithDescription(description)
-            .WithColor(Color.Purple)
-            .WithFields(fields)
-            .WithVersionFooter()
-            .WithCurrentTimestamp();
-
-        if (guildEvent.Creator is null)
-        {
-            var botAvatarUrl = _client.CurrentUser.GetAvatarUrl();
-            embed.WithAuthor("Event created", botAvatarUrl);
-        }
-        else
-        {
-            var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
-            embed.WithAuthor(guildEvent.Creator?.Username + " - Event created", creatorAvatarUrl).WithThumbnailUrl(creatorAvatarUrl);
-        }
-
-        if (coverImageUrl is not null)
-        {
-            embed.WithImageUrl(coverImageUrl);
-        }
+        var embed = EmbedHelper.ScheduledEvent(
+            eventVerb: "Event created",
+            eventName: guildEvent.Name,
+            eventLocation: location,
+            eventDescription: description,
+            eventImageUrl: coverImageUrl,
+            embedColor: Color.Purple,
+            authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
+            authorUsername: guildEvent.Creator?.Username,
+            fields: fields);
 
         await loggingChannel.Value.SendMessageAsync(embed: embed.Build());
     }
