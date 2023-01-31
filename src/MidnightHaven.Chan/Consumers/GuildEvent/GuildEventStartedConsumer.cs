@@ -70,12 +70,12 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
         }
 
         var embed = EmbedHelper.ScheduledEvent(
-            eventVerb: "Event created",
+            eventVerb: "Event starting!",
             eventName: guildEvent.Name,
             eventLocation: location,
             eventDescription: description,
             eventImageUrl: coverImageUrl,
-            embedColor: Color.Purple,
+            embedColor: Color.Green,
             authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
             authorUsername: guildEvent.Creator?.Username,
             fields: fields);
