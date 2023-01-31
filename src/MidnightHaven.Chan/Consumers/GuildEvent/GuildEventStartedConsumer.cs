@@ -25,17 +25,12 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
 
     public async Task OnHandle(IGuildScheduledEvent guildEvent)
     {
+        var announcementRole = await _guildOptionsService.GetAnnouncementRoleAsync(guildEvent.Guild.Id);
         var announcementChannel = await _guildOptionsService.GetAnnouncementChannelAsync(guildEvent.Guild.Id);
         if (announcementChannel.IsFailed)
         {
             _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
             return;
-        }
-
-        var announcementRole = await _guildOptionsService.GetAnnouncementRoleAsync(guildEvent.Guild.Id);
-        if (announcementRole.IsFailed)
-        {
-            _logger.LogWarning("Failed getting announcement role for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
         }
 
         var coverImageUrl = guildEvent.CoverImageId != null ? guildEvent.GetCoverImageUrl().Replace($"/{guildEvent.Guild.Id}", "") : null;
@@ -80,9 +75,7 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
             authorUsername: guildEvent.Creator?.Username,
             fields: fields);
 
-        await announcementChannel.Value.SendMessageAsync(embed: embed.Build());
-
-        if (announcementRole.Value is not null && announcementRole.Value.IsMentionable)
+        if (announcementRole.Value is not null)
         {
             await announcementChannel.Value.SendMessageAsync(announcementRole.Value.Mention, embed: embed.Build());
         }
