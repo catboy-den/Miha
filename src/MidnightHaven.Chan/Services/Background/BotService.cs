@@ -20,7 +20,6 @@ public partial class BotService : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private readonly DiscordOptions _discordOptions;
     private readonly ILogger<BotService> _logger;
-    private readonly bool _clientReady1;
 
     public BotService(
         DiscordSocketClient client,
