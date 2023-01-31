@@ -61,7 +61,7 @@ public partial class BotService : BackgroundService
         _client.GuildScheduledEventCreated += @event => _bus.Publish(@event, Topics.GuildEvent.Created, cancellationToken: stoppingToken);
         _client.GuildScheduledEventStarted += @event => _bus.Publish(@event, Topics.GuildEvent.Started, cancellationToken: stoppingToken);
         _client.GuildScheduledEventCancelled += @event => _bus.Publish(@event, Topics.GuildEvent.Cancelled, cancellationToken: stoppingToken);
-        //_client.GuildScheduledEventUpdated += @event => _bus.Publish(@event, Topics.GuildEvent.Updated, cancellationToken: stoppingToken);
+        _client.GuildScheduledEventUpdated += (_, @event) => _bus.Publish(@event, Topics.GuildEvent.Updated, cancellationToken: stoppingToken);
 
         _client.InteractionCreated += HandleInteractionAsync;
 
