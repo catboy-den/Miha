@@ -1,5 +1,6 @@
 ﻿using Discord;
 using FluentResults;
+using MidnightHaven.Chan.Extensions;
 
 namespace MidnightHaven.Chan.Helpers;
 
@@ -17,7 +18,7 @@ public static class EmbedHelper
             .WithTitle(title)
             .WithDescription("`" + description + "`")
             .WithColor(Color.Green)
-            .WithFooter("v1.06")
+            .WithVersionFooter()
             .WithCurrentTimestamp();
     }
 
@@ -44,7 +45,7 @@ public static class EmbedHelper
             .WithDescription("`" + description + "`")
             .WithColor(Color.Red)
             .WithFields(fields)
-            .WithFooter("v1.06")
+            .WithVersionFooter()
             .WithCurrentTimestamp();
     }
 

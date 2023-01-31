@@ -7,6 +7,6 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
 {
     public async Task OnHandle(IGuildScheduledEvent message)
     {
-        throw new NotImplementedException();
+
     }
 }

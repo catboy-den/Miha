@@ -1,5 +1,7 @@
 ﻿using Discord;
+using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
+using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Services.Interfaces;
 using SlimMessageBus;
 
@@ -7,13 +9,16 @@ namespace MidnightHaven.Chan.Consumers.GuildEvent;
 
 public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
 {
+    private readonly DiscordSocketClient _client;
     private readonly IGuildOptionsService _guildOptionsService;
     private readonly ILogger<GuildEventCancelledConsumer> _logger;
 
     public GuildEventCancelledConsumer(
+        DiscordSocketClient client,
         IGuildOptionsService guildOptionsService,
         ILogger<GuildEventCancelledConsumer> logger)
     {
+        _client = client;
         _guildOptionsService = guildOptionsService;
         _logger = logger;
     }
@@ -27,7 +32,6 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
             return;
         }
 
-        var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
         var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
         var location = guildEvent.Location ?? "Unknown";
 
@@ -37,13 +41,24 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
         }
 
         var embed = new EmbedBuilder()
-            .WithAuthor(guildEvent.Creator?.Username + " - Event cancelled", creatorAvatarUrl)
-            .WithThumbnailUrl(creatorAvatarUrl)
             .WithTitle(location + " - " + guildEvent.Name)
             .WithDescription(description)
             .WithColor(Color.Red)
-            .WithFooter("v1.06")
+            .WithVersionFooter()
             .WithCurrentTimestamp();
+
+        if (guildEvent.Creator is not null)
+        {
+            var botAvatarUrl = _client.CurrentUser.GetAvatarUrl();
+            embed.WithAuthor("Event created", botAvatarUrl);
+        }
+        else
+        {
+            var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
+            embed
+                .WithAuthor(guildEvent.Creator?.Username + " - Event created", creatorAvatarUrl)
+                .WithThumbnailUrl(creatorAvatarUrl);
+        }
 
         await loggingChannel.Value.SendMessageAsync(embed: embed.Build());
     }
