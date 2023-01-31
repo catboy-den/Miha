@@ -8,16 +8,19 @@ using Microsoft.Extensions.Options;
 using MidnightHaven.Chan.Consumers;
 using SlimMessageBus;
 
-namespace MidnightHaven.Chan.Services;
+namespace MidnightHaven.Chan.Services.Background;
 
 public partial class BotService : BackgroundService
 {
+    private bool _clientReady = false;
+
     private readonly DiscordSocketClient _client;
     private readonly InteractionService _interactionService;
     private readonly IMessageBus _bus;
     private readonly IServiceProvider _serviceProvider;
     private readonly DiscordOptions _discordOptions;
     private readonly ILogger<BotService> _logger;
+    private readonly bool _clientReady1;
 
     public BotService(
         DiscordSocketClient client,
@@ -70,7 +73,15 @@ public partial class BotService : BackgroundService
 
     private async Task ReadyAsync()
     {
+        _clientReady = true;
         await _interactionService.RegisterCommandsToGuildAsync(_discordOptions.Guild!.Value);
+    }
+
+    public bool IsClientReady() => _clientReady;
+
+    public override async Task StopAsync(CancellationToken cancellationToken)
+    {
+        await _client.StopAsync();
     }
 
     private async Task HandleInteractionAsync(SocketInteraction interaction)
@@ -106,14 +117,8 @@ public partial class BotService : BackgroundService
         }
     }
 
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        await _client.StopAsync();
-    }
-
     // Birthday system
     // Fact of the day system
-    // Announce when events are about to start - maybe loop through every 5 minutes? would be an easy low-maintenance background service, could use the user timezone thing
 
     private async Task LogAsync(LogMessage message)
     {

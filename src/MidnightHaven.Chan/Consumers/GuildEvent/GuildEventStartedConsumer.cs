@@ -75,13 +75,6 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
             authorUsername: guildEvent.Creator?.Username,
             fields: fields);
 
-        if (announcementRole.Value is not null)
-        {
-            await announcementChannel.Value.SendMessageAsync(announcementRole.Value.Mention, embed: embed.Build());
-        }
-        else
-        {
-            await announcementChannel.Value.SendMessageAsync(embed: embed.Build());
-        }
+        await announcementChannel.Value.SendMessageAsync(announcementRole.Value?.Mention, embed: embed.Build());
     }
 }

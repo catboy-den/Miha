@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using MidnightHaven.Chan.Consumers;
 using MidnightHaven.Chan.Consumers.GuildEvent;
 using MidnightHaven.Chan.Services;
+using MidnightHaven.Chan.Services.Background;
 using MidnightHaven.Chan.Services.Interfaces;
 using MidnightHaven.Redis;
 using SlimMessageBus.Host.Memory;
@@ -73,6 +74,7 @@ public static class Startup
     {
         // Register our long-running services
         services.AddHostedService<BotService>();
+        services.AddHostedService<GuildEventStartingSoonService>();
 
         return services;
     }
