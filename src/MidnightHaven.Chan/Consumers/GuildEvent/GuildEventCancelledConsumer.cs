@@ -47,17 +47,15 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
             .WithVersionFooter()
             .WithCurrentTimestamp();
 
-        if (guildEvent.Creator is not null)
+        if (guildEvent.Creator is null)
         {
             var botAvatarUrl = _client.CurrentUser.GetAvatarUrl();
-            embed.WithAuthor("Event created", botAvatarUrl);
+            embed.WithAuthor("Event cancelled", botAvatarUrl);
         }
         else
         {
             var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
-            embed
-                .WithAuthor(guildEvent.Creator?.Username + " - Event created", creatorAvatarUrl)
-                .WithThumbnailUrl(creatorAvatarUrl);
+            embed.WithAuthor(guildEvent.Creator?.Username + " - Event cancelled", creatorAvatarUrl).WithThumbnailUrl(creatorAvatarUrl);
         }
 
         await loggingChannel.Value.SendMessageAsync(embed: embed.Build());

@@ -33,7 +33,6 @@ public class GuildEventCreatedConsumer : IConsumer<IGuildScheduledEvent>
             return;
         }
 
-        var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
         var coverImageUrl = guildEvent.CoverImageId != null ? guildEvent.GetCoverImageUrl().Replace($"/{guildEvent.Guild.Id}", "") : null;
         var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
         var location = guildEvent.Location ?? "Unknown";
@@ -81,16 +80,15 @@ public class GuildEventCreatedConsumer : IConsumer<IGuildScheduledEvent>
             .WithVersionFooter()
             .WithCurrentTimestamp();
 
-        if (guildEvent.Creator is not null)
+        if (guildEvent.Creator is null)
         {
             var botAvatarUrl = _client.CurrentUser.GetAvatarUrl();
             embed.WithAuthor("Event created", botAvatarUrl);
         }
         else
         {
-            embed
-                .WithAuthor(guildEvent.Creator?.Username + " - Event created", creatorAvatarUrl)
-                .WithThumbnailUrl(creatorAvatarUrl);
+            var creatorAvatarUrl = guildEvent.Creator?.GetAvatarUrl();
+            embed.WithAuthor(guildEvent.Creator?.Username + " - Event created", creatorAvatarUrl).WithThumbnailUrl(creatorAvatarUrl);
         }
 
         if (coverImageUrl is not null)
