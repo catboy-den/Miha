@@ -1,4 +1,4 @@
-﻿namespace MidnightHaven.Chan;
+﻿namespace MidnightHaven.Chan.Models.Options;
 
 public class DiscordOptions
 {
