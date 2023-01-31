@@ -60,7 +60,7 @@ public static class Startup
     {
         services.AddHostedService<InteractionHandler>();
 
-        services.AddHostedService<GuildEventStartingSoonService>();
+        services.AddHostedService<GuildEventMonitorService>();
         services.AddHostedService<SlimMessageBusService>();
 
         return services;

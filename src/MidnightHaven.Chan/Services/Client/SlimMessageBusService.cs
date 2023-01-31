@@ -22,14 +22,13 @@ public class SlimMessageBusService : DiscordClientService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Client.WaitForReadyAsync(stoppingToken);
-
         // Publish events to our Slim Message Bus consumers
         Client.GuildScheduledEventCreated += @event => _bus.Publish(@event, Topics.GuildEvent.Created, cancellationToken: stoppingToken);
         Client.GuildScheduledEventStarted += @event => _bus.Publish(@event, Topics.GuildEvent.Started, cancellationToken: stoppingToken);
         Client.GuildScheduledEventCancelled += @event => _bus.Publish(@event, Topics.GuildEvent.Cancelled, cancellationToken: stoppingToken);
         Client.GuildScheduledEventUpdated += (_, @event) => _bus.Publish(@event, Topics.GuildEvent.Updated, cancellationToken: stoppingToken);
 
-        await Client.SetActivityAsync(new Game("Set my status!"));
+        await Client.WaitForReadyAsync(stoppingToken);
+        await Client.SetActivityAsync(new Game("on v"+ ThisAssembly.AssemblyInformationalVersion));
     }
 }
