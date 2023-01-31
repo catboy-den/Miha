@@ -72,12 +72,12 @@ public class GuildEventUpdatedConsumer : IConsumer<IGuildScheduledEvent>
         }
 
         var embed = EmbedHelper.ScheduledEvent(
-            eventVerb: "Event cancelled",
+            eventVerb: "Event updated",
             eventName: guildEvent.Name,
             eventLocation: location,
             eventDescription: description,
             eventImageUrl: coverImageUrl,
-            embedColor: Color.Red,
+            embedColor: Color.LightOrange,
             authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
             authorUsername: guildEvent.Creator?.Username,
             fields: fields);
