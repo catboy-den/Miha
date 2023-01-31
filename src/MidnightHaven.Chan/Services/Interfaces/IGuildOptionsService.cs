@@ -11,7 +11,7 @@ public interface IGuildOptionsService
     Task<Result<GuildOptions?>> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc);
     Task<Result> DeleteAsync(ulong? guildId);
 
-    Task<Result<ITextChannel>> GetLoggingChannel(ulong? guildId);
-    Task<Result<ITextChannel>> GetAnnouncementChannel(ulong? guildId);
-    Task<Result<IRole>> GetAnnouncementRole(ulong? guildId);
+    Task<Result<ITextChannel>> GetLoggingChannelAsync(ulong? guildId);
+    Task<Result<ITextChannel>> GetAnnouncementChannelAsync(ulong? guildId);
+    Task<Result<IRole>> GetAnnouncementRoleAsync(ulong? guildId);
 }

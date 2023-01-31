@@ -92,7 +92,7 @@ public partial class GuildOptionsService : IGuildOptionsService
         }
     }
 
-    public async Task<Result<ITextChannel>> GetLoggingChannel(ulong? guildId)
+    public async Task<Result<ITextChannel>> GetLoggingChannelAsync(ulong? guildId)
     {
         try
         {
@@ -130,7 +130,7 @@ public partial class GuildOptionsService : IGuildOptionsService
         }
     }
 
-    public async Task<Result<ITextChannel>> GetAnnouncementChannel(ulong? guildId)
+    public async Task<Result<ITextChannel>> GetAnnouncementChannelAsync(ulong? guildId)
     {
         try
         {
@@ -168,7 +168,7 @@ public partial class GuildOptionsService : IGuildOptionsService
         }
     }
 
-    public async Task<Result<IRole>> GetAnnouncementRole(ulong? guildId)
+    public async Task<Result<IRole>> GetAnnouncementRoleAsync(ulong? guildId)
     {
         try
         {
