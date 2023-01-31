@@ -2,7 +2,7 @@
 using FluentResults;
 using MidnightHaven.Redis.Models;
 
-namespace MidnightHaven.Chan.Services.Interfaces;
+namespace MidnightHaven.Chan.Services.Logic.Interfaces;
 
 public interface IGuildOptionsService
 {

@@ -1,15 +1,14 @@
 ﻿using System.Reflection;
 using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MidnightHaven.Chan.Consumers;
 using MidnightHaven.Chan.Consumers.GuildEvent;
-using MidnightHaven.Chan.Services;
-using MidnightHaven.Chan.Services.Background;
-using MidnightHaven.Chan.Services.Interfaces;
+using MidnightHaven.Chan.Services.Client;
+using MidnightHaven.Chan.Services.Handlers;
+using MidnightHaven.Chan.Services.Logic;
+using MidnightHaven.Chan.Services.Logic.Interfaces;
 using MidnightHaven.Redis;
 using SlimMessageBus.Host.Memory;
 using SlimMessageBus.Host.MsDependencyInjection;
@@ -20,13 +19,17 @@ public static class Startup
 {
     public static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
+        services.AddOptions(context.Configuration);
         services.AddRedis(context.Configuration);
 
-        services.AddBackgroundServices();
-        services.AddDiscordDotNet(context.Configuration);
         services.AddLogicServices();
+        services.AddSlimMessageBus();
 
-        // Configure our slim message bus'
+        services.AddDiscordClientServices();
+    }
+
+    private static IServiceCollection AddSlimMessageBus(this IServiceCollection services)
+    {
         services.AddSlimMessageBus(mb =>
         {
             mb
@@ -42,39 +45,22 @@ public static class Startup
 
                 .WithProviderMemory();
         }, addConsumersFromAssembly: new[] { Assembly.GetExecutingAssembly() }); // Auto discover consumers and register inside DI container);
+        return services;
     }
 
-    private static IServiceCollection AddDiscordDotNet(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddOptions(this IServiceCollection services, IConfiguration configuration)
     {
-        // Configure our IOptions for discord-related settings
         services.AddOptions<DiscordOptions>().Bind(configuration.GetSection(DiscordOptions.Section));
-
-        services.AddSingleton<DiscordSocketConfig>(new DiscordSocketConfig
-        {
-            AlwaysDownloadUsers = true,
-            GatewayIntents = GatewayIntents.GuildScheduledEvents
-                             | GatewayIntents.DirectMessageTyping
-                             | GatewayIntents.DirectMessageReactions
-                             | GatewayIntents.DirectMessages
-                             | GatewayIntents.GuildMessageTyping
-                             | GatewayIntents.GuildMessageReactions
-                             | GatewayIntents.GuildMessages
-                             | GatewayIntents.GuildVoiceStates
-                             | GatewayIntents.Guilds
-                             | GatewayIntents.GuildMembers
-        });
-        services.AddSingleton<DiscordSocketClient>();
-        services.AddSingleton<InteractionService>(x => new InteractionService(
-            x.GetRequiredService<DiscordSocketClient>(), new InteractionServiceConfig()));
 
         return services;
     }
 
-    private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+    private static IServiceCollection AddDiscordClientServices(this IServiceCollection services)
     {
-        // Register our long-running services
-        services.AddHostedService<BotService>();
+        services.AddHostedService<InteractionHandler>();
+
         services.AddHostedService<GuildEventStartingSoonService>();
+        services.AddHostedService<SlimMessageBusService>();
 
         return services;
     }

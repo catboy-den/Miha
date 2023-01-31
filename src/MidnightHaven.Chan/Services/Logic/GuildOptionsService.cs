@@ -2,11 +2,11 @@
 using Discord.WebSocket;
 using FluentResults;
 using Microsoft.Extensions.Logging;
-using MidnightHaven.Chan.Services.Interfaces;
+using MidnightHaven.Chan.Services.Logic.Interfaces;
 using MidnightHaven.Redis.Models;
 using MidnightHaven.Redis.Repositories.Interfaces;
 
-namespace MidnightHaven.Chan.Services;
+namespace MidnightHaven.Chan.Services.Logic;
 
 public partial class GuildOptionsService : IGuildOptionsService
 {

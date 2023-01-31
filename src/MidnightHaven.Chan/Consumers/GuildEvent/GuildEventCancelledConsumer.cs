@@ -2,7 +2,7 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Helpers;
-using MidnightHaven.Chan.Services.Interfaces;
+using MidnightHaven.Chan.Services.Logic.Interfaces;
 using SlimMessageBus;
 
 namespace MidnightHaven.Chan.Consumers.GuildEvent;
