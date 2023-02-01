@@ -75,6 +75,7 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
             authorUsername: guildEvent.Creator?.Username,
             fields: fields);
 
-        await announcementChannel.Value.SendMessageAsync(announcementRole.Value?.Mention, embed: embed.Build());
+        var mention = announcementRole.Value.Name == "deleted-role" ? announcementRole.Value?.Mention : null;
+        await announcementChannel.Value.SendMessageAsync(mention + " is mentionable: " + announcementRole.Value?.IsMentionable, embed: embed.Build());
     }
 }
