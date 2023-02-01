@@ -8,16 +8,16 @@ using MidnightHaven.Redis.Repositories.Interfaces;
 
 namespace MidnightHaven.Chan.Services.Logic;
 
-public partial class GuildOptionsService : IGuildOptionsService
+public partial class GuildSettingsService : IGuildSettingsService
 {
     private readonly DiscordSocketClient _client;
     private readonly IGuildOptionsRepository _repository;
-    private readonly ILogger<GuildOptionsService> _logger;
+    private readonly ILogger<GuildSettingsService> _logger;
 
-    public GuildOptionsService(
+    public GuildSettingsService(
         DiscordSocketClient client,
         IGuildOptionsRepository repository,
-        ILogger<GuildOptionsService> logger)
+        ILogger<GuildSettingsService> logger)
     {
         _client = client;
         _repository = repository;
@@ -206,6 +206,6 @@ public partial class GuildOptionsService : IGuildOptionsService
         }
     }
 
-    [LoggerMessage(EventId = 0, Level = LogLevel.Error, Message = "Exception occurred in GuildOptionsService")]
+    [LoggerMessage(EventId = 0, Level = LogLevel.Error, Message = "Exception occurred in GuildSettingsService")]
     public partial void LogErrorException(Exception ex);
 }

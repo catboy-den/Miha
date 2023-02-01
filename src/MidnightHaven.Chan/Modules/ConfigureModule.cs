@@ -12,11 +12,11 @@ namespace MidnightHaven.Chan.Modules;
 [Group("configure", "Set or update various bot settings and options")]
 public class ConfigureModule : BaseInteractionModule
 {
-    private readonly IGuildOptionsService _guildOptionsService;
+    private readonly IGuildSettingsService _guildSettingsService;
 
-    public ConfigureModule(IGuildOptionsService guildOptionsService)
+    public ConfigureModule(IGuildSettingsService guildSettingsService)
     {
-        _guildOptionsService = guildOptionsService;
+        _guildSettingsService = guildSettingsService;
     }
 
     [SlashCommand("logging", "Sets or updates the event logging channel")]
@@ -24,7 +24,7 @@ public class ConfigureModule : BaseInteractionModule
         [Summary(description: "The channel any newly Created, Modified, or Cancelled events will be posted")] ITextChannel channel,
         [Summary(description: "Setting this to true will disable event logging, even if you set a channel")] bool disable = false)
     {
-        var result = await _guildOptionsService.UpsertAsync(channel.GuildId, options => options.LogChannel = disable ? null : channel.Id);
+        var result = await _guildSettingsService.UpsertAsync(channel.GuildId, options => options.LogChannel = disable ? null : channel.Id);
 
         if (result.IsFailed)
         {
@@ -43,11 +43,11 @@ public class ConfigureModule : BaseInteractionModule
     [Group("announcements", "Set or update announcement settings and options")]
     public class AnnouncementModule : BaseInteractionModule
     {
-        private readonly IGuildOptionsService _guildOptionsService;
+        private readonly IGuildSettingsService _guildSettingsService;
 
-        public AnnouncementModule(IGuildOptionsService guildOptionsService)
+        public AnnouncementModule(IGuildSettingsService guildSettingsService)
         {
-            _guildOptionsService = guildOptionsService;
+            _guildSettingsService = guildSettingsService;
         }
 
         [SlashCommand("channel", "Sets or updates the channel where event announcements will be posted")]
@@ -55,7 +55,7 @@ public class ConfigureModule : BaseInteractionModule
             [Summary(description: "The channel where announcements will be posted")] ITextChannel channel,
             [Summary(description: "Setting this to true will disable announcements, even if you set a channel")] bool disable = false)
         {
-            var result = await _guildOptionsService.UpsertAsync(channel.GuildId, options => options.AnnouncementChannel = disable ? null : channel.Id);
+            var result = await _guildSettingsService.UpsertAsync(channel.GuildId, options => options.AnnouncementChannel = disable ? null : channel.Id);
 
             if (result.IsFailed)
             {
@@ -76,7 +76,7 @@ public class ConfigureModule : BaseInteractionModule
             [Summary(description: "The role that will be pinged when an event is announced as starting")] IRole notifyRole,
             [Summary(description: "Setting this to true will disable role-pings, even if you set a role")] bool disable = false)
         {
-            var result = await _guildOptionsService.UpsertAsync(notifyRole.Guild.Id, options => options.AnnouncementRoleId = disable ? null : notifyRole.Id);
+            var result = await _guildSettingsService.UpsertAsync(notifyRole.Guild.Id, options => options.AnnouncementRoleId = disable ? null : notifyRole.Id);
 
             if (result.IsFailed)
             {

@@ -10,22 +10,22 @@ namespace MidnightHaven.Chan.Consumers.GuildEvent;
 public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
 {
     private readonly DiscordSocketClient _client;
-    private readonly IGuildOptionsService _guildOptionsService;
+    private readonly IGuildSettingsService _guildSettingsService;
     private readonly ILogger<GuildEventCancelledConsumer> _logger;
 
     public GuildEventCancelledConsumer(
         DiscordSocketClient client,
-        IGuildOptionsService guildOptionsService,
+        IGuildSettingsService guildSettingsService,
         ILogger<GuildEventCancelledConsumer> logger)
     {
         _client = client;
-        _guildOptionsService = guildOptionsService;
+        _guildSettingsService = guildSettingsService;
         _logger = logger;
     }
 
     public async Task OnHandle(IGuildScheduledEvent guildEvent)
     {
-        var loggingChannel = await _guildOptionsService.GetLoggingChannelAsync(guildEvent.Guild.Id);
+        var loggingChannel = await _guildSettingsService.GetLoggingChannelAsync(guildEvent.Guild.Id);
         if (loggingChannel.IsFailed)
         {
             _logger.LogInformation("Failed getting logging channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);

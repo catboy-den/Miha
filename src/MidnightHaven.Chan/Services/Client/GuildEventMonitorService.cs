@@ -15,7 +15,7 @@ namespace MidnightHaven.Chan.Services.Client;
 public partial class GuildEventMonitorService : DiscordClientService
 {
     private readonly DiscordOptions _discordOptions;
-    private readonly IGuildOptionsService _guildOptionsService;
+    private readonly IGuildSettingsService _guildSettingsService;
     private readonly ILogger<GuildEventMonitorService> _logger;
 
     private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 ? * * *"; // https://crontab.cronhub.io/
@@ -26,12 +26,12 @@ public partial class GuildEventMonitorService : DiscordClientService
 
     public GuildEventMonitorService(
         DiscordSocketClient client,
-        IGuildOptionsService guildOptionsService,
+        IGuildSettingsService guildSettingsService,
         IOptions<DiscordOptions> discordOptions,
         ILogger<GuildEventMonitorService> logger) : base(client, logger)
     {
         _discordOptions = discordOptions.Value;
-        _guildOptionsService = guildOptionsService;
+        _guildSettingsService = guildSettingsService;
         _logger = logger;
 
         _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 32 });
@@ -94,7 +94,7 @@ public partial class GuildEventMonitorService : DiscordClientService
                     continue;
                 }
 
-                var announcementChannel = await _guildOptionsService.GetAnnouncementChannelAsync(guild.Id);
+                var announcementChannel = await _guildSettingsService.GetAnnouncementChannelAsync(guild.Id);
                 if (announcementChannel.IsFailed)
                 {
                     _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);

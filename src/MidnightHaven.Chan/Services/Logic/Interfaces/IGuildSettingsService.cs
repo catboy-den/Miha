@@ -4,7 +4,7 @@ using MidnightHaven.Redis.Models;
 
 namespace MidnightHaven.Chan.Services.Logic.Interfaces;
 
-public interface IGuildOptionsService
+public interface IGuildSettingsService
 {
     Task<Result<GuildSettings?>> GetAsync(ulong? guildId);
     Task<Result<GuildSettings?>> UpsertAsync(GuildSettings settings);
