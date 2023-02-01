@@ -24,7 +24,7 @@ public partial class GuildOptionsService : IGuildOptionsService
         _logger = logger;
     }
 
-    public async Task<Result<GuildOptions?>> GetAsync(ulong? guildId)
+    public async Task<Result<GuildSettings?>> GetAsync(ulong? guildId)
     {
         try
         {
@@ -42,11 +42,11 @@ public partial class GuildOptionsService : IGuildOptionsService
         }
     }
 
-    public async Task<Result<GuildOptions?>> UpsertAsync(GuildOptions options)
+    public async Task<Result<GuildSettings?>> UpsertAsync(GuildSettings settings)
     {
         try
         {
-            return Result.Ok(await _repository.UpsertAsync(options));
+            return Result.Ok(await _repository.UpsertAsync(settings));
         }
         catch (Exception e)
         {
@@ -55,7 +55,7 @@ public partial class GuildOptionsService : IGuildOptionsService
         }
     }
 
-    public async Task<Result<GuildOptions?>> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc)
+    public async Task<Result<GuildSettings?>> UpsertAsync(ulong? guildId, Action<GuildSettings> optionsFunc)
     {
         try
         {
@@ -104,7 +104,7 @@ public partial class GuildOptionsService : IGuildOptionsService
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogWarning("Guild doesn't have any options when trying to get logging channel {GuildId}", guildId);
+                _logger.LogWarning("Guild doesn't have any settings when trying to get logging channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
@@ -142,7 +142,7 @@ public partial class GuildOptionsService : IGuildOptionsService
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogInformation("Guild doesn't have any options when trying to get announcement channel {GuildId}", guildId);
+                _logger.LogInformation("Guild doesn't have any settings when trying to get announcement channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
@@ -180,7 +180,7 @@ public partial class GuildOptionsService : IGuildOptionsService
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogInformation("Guild doesn't have any options when trying to get announcement role {GuildId}", guildId);
+                _logger.LogInformation("Guild doesn't have any settings when trying to get announcement role {GuildId}", guildId);
                 return optionsResult.ToResult<IRole>();
             }
 

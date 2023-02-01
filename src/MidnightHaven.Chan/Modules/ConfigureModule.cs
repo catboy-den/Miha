@@ -7,7 +7,7 @@ using MidnightHaven.Redis.Models;
 namespace MidnightHaven.Chan.Modules;
 
 /// <summary>
-/// Command module for configuring a guilds <see cref="GuildOptions"/>
+/// Command module for configuring a guilds <see cref="GuildSettings"/>
 /// </summary>
 [Group("configure", "Set or update various bot settings and options")]
 public class ConfigureModule : BaseInteractionModule

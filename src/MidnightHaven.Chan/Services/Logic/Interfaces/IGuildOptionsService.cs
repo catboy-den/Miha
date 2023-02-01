@@ -6,9 +6,9 @@ namespace MidnightHaven.Chan.Services.Logic.Interfaces;
 
 public interface IGuildOptionsService
 {
-    Task<Result<GuildOptions?>> GetAsync(ulong? guildId);
-    Task<Result<GuildOptions?>> UpsertAsync(GuildOptions options);
-    Task<Result<GuildOptions?>> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc);
+    Task<Result<GuildSettings?>> GetAsync(ulong? guildId);
+    Task<Result<GuildSettings?>> UpsertAsync(GuildSettings settings);
+    Task<Result<GuildSettings?>> UpsertAsync(ulong? guildId, Action<GuildSettings> optionsFunc);
     Task<Result> DeleteAsync(ulong? guildId);
 
     Task<Result<ITextChannel>> GetLoggingChannelAsync(ulong? guildId);

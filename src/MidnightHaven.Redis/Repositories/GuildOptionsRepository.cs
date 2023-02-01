@@ -14,34 +14,34 @@ public class GuildOptionsRepository : IGuildOptionsRepository
         _provider = provider;
     }
 
-    public async Task<GuildOptions?> GetAsync(ulong? guildId)
+    public async Task<GuildSettings?> GetAsync(ulong? guildId)
     {
         var id = guildId.ToString() ?? string.Empty;
 
         id.Should().NotBeNullOrEmpty();
 
-        var collection = _provider.RedisCollection<GuildOptions>();
+        var collection = _provider.RedisCollection<GuildSettings>();
 
         return await collection.FindByIdAsync(id);
     }
 
-    public Task<GuildOptions?> UpsertAsync(GuildOptions options)
+    public Task<GuildSettings?> UpsertAsync(GuildSettings settings)
     {
-        return UpsertAsync(options.GuildId, guildOptions => guildOptions = options);
+        return UpsertAsync(settings.GuildId, guildOptions => guildOptions = settings);
     }
 
-    public async Task<GuildOptions?> UpsertAsync(ulong? guildId, Action<GuildOptions> optionsFunc)
+    public async Task<GuildSettings?> UpsertAsync(ulong? guildId, Action<GuildSettings> optionsFunc)
     {
         var id = guildId.ToString() ?? string.Empty;
 
         id.Should().NotBeNullOrEmpty();
 
-        var collection = _provider.RedisCollection<GuildOptions>();
+        var collection = _provider.RedisCollection<GuildSettings>();
 
         var options = await collection.FindByIdAsync(id);
         var exists = options != null;
 
-        options ??= new GuildOptions { GuildId = guildId!.Value };
+        options ??= new GuildSettings { GuildId = guildId!.Value };
 
         optionsFunc(options);
 
@@ -61,7 +61,7 @@ public class GuildOptionsRepository : IGuildOptionsRepository
     {
         guildId.Should().NotBeNull();
 
-        var collection = _provider.RedisCollection<GuildOptions>();
+        var collection = _provider.RedisCollection<GuildSettings>();
         var options = await collection.FindByIdAsync(guildId.ToString()!);
 
         options.Should().NotBeNull();
