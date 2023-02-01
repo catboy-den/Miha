@@ -76,6 +76,7 @@ public static class EmbedHelper
     /// <param name="embedColor">The color of the embed</param>
     /// <param name="authorAvatarUrl">The image or avatar url to place in the author field</param>
     /// <param name="authorUsername">Optional, the username of the event creator</param>
+    /// <param name="eventImageUrl">Optional image url</param>
     /// <param name="fields">Optional, any fields to add to the embed</param>
     /// <returns></returns>
     public static EmbedBuilder ScheduledEvent(

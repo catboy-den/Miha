@@ -49,7 +49,7 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
         if (guildEvent.EndTime is not null)
         {
             fields.Add(new EmbedFieldBuilder()
-                .WithName("End time")
+                .WithName("Ends")
                 .WithValue(
                     guildEvent.EndTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.LongDateTime) + " - " +
                     guildEvent.EndTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.RelativeTime))
