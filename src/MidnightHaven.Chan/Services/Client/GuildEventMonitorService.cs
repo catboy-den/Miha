@@ -49,17 +49,18 @@ public partial class GuildEventMonitorService : DiscordClientService
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            await CheckScheduledEventsAsync();
+
             var utcNow = DateTime.UtcNow;
             var nextUtc = _cron.GetNextOccurrence(utcNow);
 
             if (nextUtc is null)
             {
                 _logger.LogWarning("Next utc occurence is null");
-                await Task.Delay(TimeSpan.FromMinutes(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
 
-            await CheckScheduledEventsAsync();
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }
