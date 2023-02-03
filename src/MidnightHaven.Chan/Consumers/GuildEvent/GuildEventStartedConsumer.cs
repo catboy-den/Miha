@@ -34,7 +34,6 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
         }
 
         var coverImageUrl = guildEvent.CoverImageId != null ? guildEvent.GetCoverImageUrl().Replace($"/{guildEvent.Guild.Id}", "") : null;
-        var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
         var location = guildEvent.Location ?? "Unknown";
         string? voiceChannel = null;
 
@@ -68,7 +67,7 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
             eventVerb: "Event starting!",
             eventName: guildEvent.Name,
             eventLocation: location,
-            eventDescription: description,
+            eventDescription: guildEvent.Description,
             eventImageUrl: coverImageUrl,
             embedColor: Color.Green,
             authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),

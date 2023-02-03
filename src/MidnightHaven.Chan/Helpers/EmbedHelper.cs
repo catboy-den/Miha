@@ -24,7 +24,7 @@ public static class EmbedHelper
             .WithAuthor(authorName, authorIcon)
             .WithThumbnailUrl(authorIcon)
             .WithTitle(title)
-            .WithDescription("`" + description + "`")
+            .WithDescription("```+\n" + description + "\n```")
             .WithColor(Color.Green)
             .WithVersionFooter()
             .WithCurrentTimestamp();
@@ -59,7 +59,7 @@ public static class EmbedHelper
             .WithAuthor(authorName, authorIcon)
             .WithThumbnailUrl(authorIcon)
             .WithTitle(title)
-            .WithDescription("`" + description + "`")
+            .WithDescription("```+\n" + description + "\n```")
             .WithColor(Color.Red)
             .WithFields(fields)
             .WithVersionFooter()
@@ -96,6 +96,11 @@ public static class EmbedHelper
             .WithColor(embedColor)
             .WithVersionFooter()
             .WithCurrentTimestamp();
+
+        if (!string.IsNullOrEmpty(eventDescription))
+        {
+            embed.WithDescription(eventDescription);
+        }
 
         if (fields is not null)
         {

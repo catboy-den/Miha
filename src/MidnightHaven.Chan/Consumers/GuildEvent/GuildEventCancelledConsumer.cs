@@ -32,7 +32,6 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
             return;
         }
 
-        var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
         var location = guildEvent.Location ?? "Unknown";
 
         if (location is "Unknown" && guildEvent.ChannelId.HasValue)
@@ -44,7 +43,7 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
             eventVerb: "Event cancelled",
             eventName: guildEvent.Name,
             eventLocation: location,
-            eventDescription: description,
+            eventDescription: null,
             embedColor: Color.Red,
             authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
             authorUsername: guildEvent.Creator?.Username);

@@ -94,6 +94,12 @@ public partial class GuildEventMonitorService : DiscordClientService
                     continue;
                 }
 
+                if (guildEvent.Status is GuildScheduledEventStatus.Active)
+                {
+                    _memoryCache.Set(guildEvent.Id, true, _memoryCacheEntryOptions);
+                    continue;
+                }
+
                 var announcementChannel = await _guildSettingsService.GetAnnouncementChannelAsync(guild.Id);
                 if (announcementChannel.IsFailed)
                 {
@@ -101,7 +107,6 @@ public partial class GuildEventMonitorService : DiscordClientService
                     continue;
                 }
 
-                var description = string.IsNullOrEmpty(guildEvent.Description) ? "`No event description`" : guildEvent.Description;
                 var location = guildEvent.Location ?? "Unknown";
                 string? voiceChannel = null;
 
@@ -119,12 +124,19 @@ public partial class GuildEventMonitorService : DiscordClientService
                         .WithValue(voiceChannel)
                         .WithIsInline(false));
                 }
+                else
+                {
+                    fields.Add(new EmbedFieldBuilder()
+                        .WithName("Hosted by")
+                        .WithValue(guildEvent.Creator?.Username)
+                        .WithIsInline(false));
+                }
 
                 var embed = EmbedHelper.ScheduledEvent(
                     eventVerb: "Event is starting soon!",
                     eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.RelativeTime),
                     eventLocation: location,
-                    eventDescription: description,
+                    eventDescription: string.Empty,
                     embedColor: Color.DarkBlue,
                     authorAvatarUrl: guildEvent.Creator is null ? Client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
                     authorUsername: guildEvent.Creator?.Username,
