@@ -27,8 +27,8 @@ services:
     environment:
       DOTNET_REDIS__HOST: redis
       DOTNET_REDIS__PORT: 6379
-      DOTNET_DISCORD__TOKEN:
-      DOTNET_DISCORD__DEVELOPMENT_GUILD:
+      DOTNET_DISCORD__TOKEN: MTA2ODY5NjkyNTU2MzUxOTA5Ng.Gn-2Wj.uBk8TUtOCFSpscn7AAZ8iHkNNz4Ai52h3J1514
+      DOTNET_DISCORD__GUILD: 1068697076323602503
     depends_on:
       - redis
       - redis-ui

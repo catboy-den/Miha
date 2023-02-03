@@ -83,7 +83,7 @@ public static class EmbedHelper
         string eventVerb,
         string eventName,
         string eventLocation,
-        string eventDescription,
+        string? eventDescription,
         Color embedColor,
         string authorAvatarUrl,
         string? authorUsername = null,

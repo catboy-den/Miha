@@ -135,7 +135,7 @@ public partial class GuildEventMonitorService : DiscordClientService
 
                 var embed = EmbedHelper.ScheduledEvent(
                     eventVerb: "Event is starting soon!",
-                    eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.RelativeTime),
+                    eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative),
                     eventLocation: location,
                     eventDescription: string.Empty,
                     embedColor: Color.DarkBlue,

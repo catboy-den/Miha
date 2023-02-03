@@ -47,8 +47,8 @@ public class GuildEventUpdatedConsumer : IConsumer<IGuildScheduledEvent>
             new EmbedFieldBuilder()
                 .WithName("Start time")
                 .WithValue(
-                    guildEvent.StartTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.LongDateTime) + " - " +
-                    guildEvent.StartTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.RelativeTime))
+                    guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.LongDateTime) + " - " +
+                    guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative))
                 .WithIsInline(false)
         };
 
@@ -57,8 +57,8 @@ public class GuildEventUpdatedConsumer : IConsumer<IGuildScheduledEvent>
             fields.Add(new EmbedFieldBuilder()
                 .WithName("End time")
                 .WithValue(
-                    guildEvent.EndTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.LongDateTime) + " - " +
-                    guildEvent.EndTime.ToDiscordTimestamp(DiscordTimestampHelper.Style.RelativeTime))
+                    guildEvent.EndTime.ToDiscordTimestamp(TimestampTagStyles.LongDateTime) + " - " +
+                    guildEvent.EndTime.ToDiscordTimestamp(TimestampTagStyles.Relative))
                 .WithIsInline(false));
         }
 
