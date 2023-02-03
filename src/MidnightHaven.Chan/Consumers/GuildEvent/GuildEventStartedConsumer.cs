@@ -10,23 +10,23 @@ namespace MidnightHaven.Chan.Consumers.GuildEvent;
 public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
 {
     private readonly DiscordSocketClient _client;
-    private readonly IGuildSettingsService _guildSettingsService;
+    private readonly IGuildService _guildService;
     private readonly ILogger<GuildEventStartedConsumer> _logger;
 
     public GuildEventStartedConsumer(
         DiscordSocketClient client,
-        IGuildSettingsService guildSettingsService,
+        IGuildService guildService,
         ILogger<GuildEventStartedConsumer> logger)
     {
         _client = client;
-        _guildSettingsService = guildSettingsService;
+        _guildService = guildService;
         _logger = logger;
     }
 
     public async Task OnHandle(IGuildScheduledEvent guildEvent)
     {
-        var announcementRole = await _guildSettingsService.GetAnnouncementRoleAsync(guildEvent.Guild.Id);
-        var announcementChannel = await _guildSettingsService.GetAnnouncementChannelAsync(guildEvent.Guild.Id);
+        var announcementRole = await _guildService.GetAnnouncementRoleAsync(guildEvent.Guild.Id);
+        var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guildEvent.Guild.Id);
         if (announcementChannel.IsFailed)
         {
             _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);

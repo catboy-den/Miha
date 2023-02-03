@@ -68,7 +68,7 @@ public static class Startup
 
     private static IServiceCollection AddLogicServices(this IServiceCollection services)
     {
-        services.AddTransient<IGuildSettingsService, GuildSettingsService>();
+        services.AddTransient<IGuildService, GuildService>();
 
         return services;
     }

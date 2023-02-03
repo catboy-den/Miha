@@ -3,7 +3,7 @@
 namespace MidnightHaven.Redis.Models;
 
 [Document(StorageType = StorageType.Json, Prefixes = new []{"guildOptions"})]
-public class GuildSettings
+public class GuildDocument
 {
     [Indexed]
     [RedisIdField]

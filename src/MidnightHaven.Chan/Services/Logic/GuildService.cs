@@ -8,23 +8,23 @@ using MidnightHaven.Redis.Repositories.Interfaces;
 
 namespace MidnightHaven.Chan.Services.Logic;
 
-public partial class GuildSettingsService : IGuildSettingsService
+public partial class GuildService : IGuildService
 {
     private readonly DiscordSocketClient _client;
-    private readonly IGuildOptionsRepository _repository;
-    private readonly ILogger<GuildSettingsService> _logger;
+    private readonly IGuildDocumentRepository _repository;
+    private readonly ILogger<GuildService> _logger;
 
-    public GuildSettingsService(
+    public GuildService(
         DiscordSocketClient client,
-        IGuildOptionsRepository repository,
-        ILogger<GuildSettingsService> logger)
+        IGuildDocumentRepository repository,
+        ILogger<GuildService> logger)
     {
         _client = client;
         _repository = repository;
         _logger = logger;
     }
 
-    public async Task<Result<GuildSettings?>> GetAsync(ulong? guildId)
+    public async Task<Result<GuildDocument?>> GetAsync(ulong? guildId)
     {
         try
         {
@@ -42,11 +42,11 @@ public partial class GuildSettingsService : IGuildSettingsService
         }
     }
 
-    public async Task<Result<GuildSettings?>> UpsertAsync(GuildSettings settings)
+    public async Task<Result<GuildDocument?>> UpsertAsync(GuildDocument document)
     {
         try
         {
-            return Result.Ok(await _repository.UpsertAsync(settings));
+            return Result.Ok(await _repository.UpsertAsync(document));
         }
         catch (Exception e)
         {
@@ -55,7 +55,7 @@ public partial class GuildSettingsService : IGuildSettingsService
         }
     }
 
-    public async Task<Result<GuildSettings?>> UpsertAsync(ulong? guildId, Action<GuildSettings> optionsFunc)
+    public async Task<Result<GuildDocument?>> UpsertAsync(ulong? guildId, Action<GuildDocument> optionsFunc)
     {
         try
         {
@@ -104,7 +104,7 @@ public partial class GuildSettingsService : IGuildSettingsService
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogWarning("Guild doesn't have any settings when trying to get logging channel {GuildId}", guildId);
+                _logger.LogWarning("Guild doesn't have any document when trying to get logging channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
@@ -142,7 +142,7 @@ public partial class GuildSettingsService : IGuildSettingsService
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogInformation("Guild doesn't have any settings when trying to get announcement channel {GuildId}", guildId);
+                _logger.LogInformation("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
@@ -180,7 +180,7 @@ public partial class GuildSettingsService : IGuildSettingsService
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogInformation("Guild doesn't have any settings when trying to get announcement role {GuildId}", guildId);
+                _logger.LogInformation("Guild doesn't have any document when trying to get announcement role {GuildId}", guildId);
                 return optionsResult.ToResult<IRole>();
             }
 
@@ -206,6 +206,6 @@ public partial class GuildSettingsService : IGuildSettingsService
         }
     }
 
-    [LoggerMessage(EventId = 0, Level = LogLevel.Error, Message = "Exception occurred in GuildSettingsService")]
+    [LoggerMessage(EventId = 0, Level = LogLevel.Error, Message = "Exception occurred in GuildService")]
     public partial void LogErrorException(Exception ex);
 }

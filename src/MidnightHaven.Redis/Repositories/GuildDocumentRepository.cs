@@ -5,43 +5,43 @@ using Redis.OM.Contracts;
 
 namespace MidnightHaven.Redis.Repositories;
 
-public class GuildOptionsRepository : IGuildOptionsRepository
+public class GuildDocumentRepository : IGuildDocumentRepository
 {
     private readonly IRedisConnectionProvider _provider;
 
-    public GuildOptionsRepository(IRedisConnectionProvider provider)
+    public GuildDocumentRepository(IRedisConnectionProvider provider)
     {
         _provider = provider;
     }
 
-    public async Task<GuildSettings?> GetAsync(ulong? guildId)
+    public async Task<GuildDocument?> GetAsync(ulong? guildId)
     {
         var id = guildId.ToString() ?? string.Empty;
 
         id.Should().NotBeNullOrEmpty();
 
-        var collection = _provider.RedisCollection<GuildSettings>();
+        var collection = _provider.RedisCollection<GuildDocument>();
 
         return await collection.FindByIdAsync(id);
     }
 
-    public Task<GuildSettings?> UpsertAsync(GuildSettings settings)
+    public Task<GuildDocument?> UpsertAsync(GuildDocument document)
     {
-        return UpsertAsync(settings.GuildId, guildOptions => guildOptions = settings);
+        return UpsertAsync(document.GuildId, guildDoc => guildDoc = document);
     }
 
-    public async Task<GuildSettings?> UpsertAsync(ulong? guildId, Action<GuildSettings> optionsFunc)
+    public async Task<GuildDocument?> UpsertAsync(ulong? guildId, Action<GuildDocument> optionsFunc)
     {
         var id = guildId.ToString() ?? string.Empty;
 
         id.Should().NotBeNullOrEmpty();
 
-        var collection = _provider.RedisCollection<GuildSettings>();
+        var collection = _provider.RedisCollection<GuildDocument>();
 
         var options = await collection.FindByIdAsync(id);
         var exists = options != null;
 
-        options ??= new GuildSettings { GuildId = guildId!.Value };
+        options ??= new GuildDocument { GuildId = guildId!.Value };
 
         optionsFunc(options);
 
@@ -61,7 +61,7 @@ public class GuildOptionsRepository : IGuildOptionsRepository
     {
         guildId.Should().NotBeNull();
 
-        var collection = _provider.RedisCollection<GuildSettings>();
+        var collection = _provider.RedisCollection<GuildDocument>();
         var options = await collection.FindByIdAsync(guildId.ToString()!);
 
         options.Should().NotBeNull();

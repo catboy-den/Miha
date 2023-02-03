@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddRedisRepositories(this IServiceCollection services)
     {
-        services.AddSingleton<IGuildOptionsRepository, GuildOptionsRepository>();
+        services.AddSingleton<IGuildDocumentRepository, GuildDocumentRepository>();
 
         return services;
     }

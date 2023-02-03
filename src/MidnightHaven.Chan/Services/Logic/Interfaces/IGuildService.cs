@@ -4,11 +4,11 @@ using MidnightHaven.Redis.Models;
 
 namespace MidnightHaven.Chan.Services.Logic.Interfaces;
 
-public interface IGuildSettingsService
+public interface IGuildService
 {
-    Task<Result<GuildSettings?>> GetAsync(ulong? guildId);
-    Task<Result<GuildSettings?>> UpsertAsync(GuildSettings settings);
-    Task<Result<GuildSettings?>> UpsertAsync(ulong? guildId, Action<GuildSettings> optionsFunc);
+    Task<Result<GuildDocument?>> GetAsync(ulong? guildId);
+    Task<Result<GuildDocument?>> UpsertAsync(GuildDocument document);
+    Task<Result<GuildDocument?>> UpsertAsync(ulong? guildId, Action<GuildDocument> optionsFunc);
     Task<Result> DeleteAsync(ulong? guildId);
 
     Task<Result<ITextChannel>> GetLoggingChannelAsync(ulong? guildId);
