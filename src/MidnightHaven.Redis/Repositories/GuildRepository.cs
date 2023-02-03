@@ -1,15 +1,15 @@
 ﻿using FluentAssertions;
-using MidnightHaven.Redis.Models;
+using MidnightHaven.Redis.Documents;
 using MidnightHaven.Redis.Repositories.Interfaces;
 using Redis.OM.Contracts;
 
 namespace MidnightHaven.Redis.Repositories;
 
-public class GuildDocumentRepository : IGuildDocumentRepository
+public class GuildRepository : IGuildRepository
 {
     private readonly IRedisConnectionProvider _provider;
 
-    public GuildDocumentRepository(IRedisConnectionProvider provider)
+    public GuildRepository(IRedisConnectionProvider provider)
     {
         _provider = provider;
     }
@@ -30,7 +30,7 @@ public class GuildDocumentRepository : IGuildDocumentRepository
         return UpsertAsync(document.GuildId, guildDoc => guildDoc = document);
     }
 
-    public async Task<GuildDocument?> UpsertAsync(ulong? guildId, Action<GuildDocument> optionsFunc)
+    public async Task<GuildDocument?> UpsertAsync(ulong? guildId, Action<GuildDocument> documentFunc)
     {
         var id = guildId.ToString() ?? string.Empty;
 
@@ -43,7 +43,7 @@ public class GuildDocumentRepository : IGuildDocumentRepository
 
         options ??= new GuildDocument { GuildId = guildId!.Value };
 
-        optionsFunc(options);
+        documentFunc(options);
 
         if (exists)
         {

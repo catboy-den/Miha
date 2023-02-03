@@ -3,7 +3,7 @@ using Discord.WebSocket;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
-using MidnightHaven.Redis.Models;
+using MidnightHaven.Redis.Documents;
 using MidnightHaven.Redis.Repositories.Interfaces;
 
 namespace MidnightHaven.Chan.Services.Logic;
@@ -11,12 +11,12 @@ namespace MidnightHaven.Chan.Services.Logic;
 public partial class GuildService : IGuildService
 {
     private readonly DiscordSocketClient _client;
-    private readonly IGuildDocumentRepository _repository;
+    private readonly IGuildRepository _repository;
     private readonly ILogger<GuildService> _logger;
 
     public GuildService(
         DiscordSocketClient client,
-        IGuildDocumentRepository repository,
+        IGuildRepository repository,
         ILogger<GuildService> logger)
     {
         _client = client;

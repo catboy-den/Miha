@@ -2,7 +2,7 @@
 using Discord.Interactions;
 using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
-using MidnightHaven.Redis.Models;
+using MidnightHaven.Redis.Documents;
 
 namespace MidnightHaven.Chan.Modules;
 

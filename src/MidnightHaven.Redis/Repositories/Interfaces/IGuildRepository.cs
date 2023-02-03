@@ -1,13 +1,13 @@
-﻿using MidnightHaven.Redis.Models;
+﻿using MidnightHaven.Redis.Documents;
 
 namespace MidnightHaven.Redis.Repositories.Interfaces;
 
-public interface IGuildDocumentRepository
+public interface IGuildRepository
 {
     Task<GuildDocument?> GetAsync(ulong? guildId);
 
     Task<GuildDocument?> UpsertAsync(GuildDocument document);
-    Task<GuildDocument?> UpsertAsync(ulong? guildId, Action<GuildDocument> optionsFunc);
+    Task<GuildDocument?> UpsertAsync(ulong? guildId, Action<GuildDocument> documentFunc);
 
     Task DeleteAsync(ulong? guildId);
 }

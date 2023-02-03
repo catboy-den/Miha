@@ -1,6 +1,6 @@
 ﻿using Discord;
 using FluentResults;
-using MidnightHaven.Redis.Models;
+using MidnightHaven.Redis.Documents;
 
 namespace MidnightHaven.Chan.Services.Logic.Interfaces;
 

@@ -1,8 +1,8 @@
 ﻿using Redis.OM.Modeling;
 
-namespace MidnightHaven.Redis.Models;
+namespace MidnightHaven.Redis.Documents;
 
-[Document(StorageType = StorageType.Json, Prefixes = new []{"guildOptions"})]
+[Document(StorageType = StorageType.Json, Prefixes = new []{"guild"})]
 public class GuildDocument
 {
     [Indexed]
