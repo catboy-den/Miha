@@ -2,12 +2,7 @@
 
 namespace MidnightHaven.Redis.Repositories.Interfaces;
 
-public interface IUserRepository
+public interface IUserRepository : IDocumentRepository<UserDocument>
 {
-    Task<UserDocument?> GetAsync(ulong? userId);
 
-    Task<UserDocument?> UpsertAsync(UserDocument document);
-    Task<UserDocument?> UpsertAsync(ulong? userId, Action<UserDocument> optionsFunc);
-
-    Task DeleteAsync(ulong? guildId);
 }

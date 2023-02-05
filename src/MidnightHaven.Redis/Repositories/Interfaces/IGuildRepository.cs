@@ -2,12 +2,7 @@
 
 namespace MidnightHaven.Redis.Repositories.Interfaces;
 
-public interface IGuildRepository
+public interface IGuildRepository : IDocumentRepository<GuildDocument>
 {
-    Task<GuildDocument?> GetAsync(ulong? guildId);
 
-    Task<GuildDocument?> UpsertAsync(GuildDocument document);
-    Task<GuildDocument?> UpsertAsync(ulong? guildId, Action<GuildDocument> documentFunc);
-
-    Task DeleteAsync(ulong? guildId);
 }

@@ -13,9 +13,6 @@ public partial class LinkModule : BaseInteractionModule
         [Summary("vrchatProfileUrl", "The VRChat link to your VRChat profile, found on the website")] string vrchatProfileUrl)
     {
         var usrId = UsrRegex().Match(vrchatProfileUrl);
-
-
-
         await RespondSuccessAsync("Linked VRChat profile");
     }
 

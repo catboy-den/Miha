@@ -55,7 +55,7 @@ public partial class GuildService : IGuildService
         }
     }
 
-    public async Task<Result<GuildDocument?>> UpsertAsync(ulong? guildId, Action<GuildDocument> optionsFunc)
+    public async Task<Result<GuildDocument?>> UpsertAsync(ulong? guildId, Action<GuildDocument> documentFunc)
     {
         try
         {
@@ -64,7 +64,7 @@ public partial class GuildService : IGuildService
                 throw new ArgumentNullException(nameof(guildId));
             }
 
-            return Result.Ok(await _repository.UpsertAsync(guildId, optionsFunc));
+            return Result.Ok(await _repository.UpsertAsync(guildId, documentFunc));
         }
         catch (Exception e)
         {
