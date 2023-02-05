@@ -8,88 +8,18 @@ using MidnightHaven.Redis.Repositories.Interfaces;
 
 namespace MidnightHaven.Chan.Services.Logic;
 
-public partial class GuildService : IGuildService
+public partial class GuildService : DocumentService<GuildDocument>, IGuildService
 {
     private readonly DiscordSocketClient _client;
-    private readonly IGuildRepository _repository;
     private readonly ILogger<GuildService> _logger;
 
     public GuildService(
         DiscordSocketClient client,
         IGuildRepository repository,
-        ILogger<GuildService> logger)
+        ILogger<GuildService> logger) : base(repository, logger)
     {
         _client = client;
-        _repository = repository;
         _logger = logger;
-    }
-
-    public async Task<Result<GuildDocument?>> GetAsync(ulong? guildId)
-    {
-        try
-        {
-            if (guildId is null)
-            {
-                throw new ArgumentNullException(nameof(guildId));
-            }
-
-            return Result.Ok(await _repository.GetAsync(guildId));
-        }
-        catch (Exception e)
-        {
-            LogErrorException(e);
-            return Result.Fail(e.Message);
-        }
-    }
-
-    public async Task<Result<GuildDocument?>> UpsertAsync(GuildDocument document)
-    {
-        try
-        {
-            return Result.Ok(await _repository.UpsertAsync(document));
-        }
-        catch (Exception e)
-        {
-            LogErrorException(e);
-            return Result.Fail(e.Message);
-        }
-    }
-
-    public async Task<Result<GuildDocument?>> UpsertAsync(ulong? guildId, Action<GuildDocument> documentFunc)
-    {
-        try
-        {
-            if (guildId is null)
-            {
-                throw new ArgumentNullException(nameof(guildId));
-            }
-
-            return Result.Ok(await _repository.UpsertAsync(guildId, documentFunc));
-        }
-        catch (Exception e)
-        {
-            LogErrorException(e);
-            return Result.Fail(e.Message);
-        }
-    }
-
-    public async Task<Result> DeleteAsync(ulong? guildId)
-    {
-        try
-        {
-            if (guildId is null)
-            {
-                throw new ArgumentNullException(nameof(guildId));
-            }
-
-            await _repository.DeleteAsync(guildId);
-            return Result.Ok();
-        }
-        catch (Exception e)
-        {
-            LogErrorException(e);
-            return Result.Fail(e.Message);
-        }
     }
 
     public async Task<Result<ITextChannel>> GetLoggingChannelAsync(ulong? guildId)
@@ -205,7 +135,4 @@ public partial class GuildService : IGuildService
             return Result.Fail<IRole>(e.Message);
         }
     }
-
-    [LoggerMessage(EventId = 0, Level = LogLevel.Error, Message = "Exception occurred in GuildService")]
-    public partial void LogErrorException(Exception ex);
 }

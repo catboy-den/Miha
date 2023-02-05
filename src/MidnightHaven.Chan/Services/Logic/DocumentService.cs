@@ -10,7 +10,7 @@ public partial class DocumentService<T> : IDocumentService<T>
     private readonly IDocumentRepository<T> _repository;
     private readonly ILogger _logger;
 
-    public DocumentService(
+    protected DocumentService(
         IDocumentRepository<T> repository,
         ILogger logger)
     {
