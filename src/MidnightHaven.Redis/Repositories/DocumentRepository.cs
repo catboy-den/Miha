@@ -5,7 +5,7 @@ using Redis.OM.Contracts;
 
 namespace MidnightHaven.Redis.Repositories;
 
-public class DocumentRepository<T> : IDocumentRepository<T> where T : Document
+public class DocumentRepository<T> : IDocumentRepository<T> where T : Document, new()
 {
     private readonly IRedisConnectionProvider _provider;
 
@@ -32,13 +32,16 @@ public class DocumentRepository<T> : IDocumentRepository<T> where T : Document
 
     public async Task<T?> UpsertAsync(ulong? documentId, Action<T> documentFunc)
     {
-        var id = documentId.ToString() ?? string.Empty;
+        documentId.Should().HaveValue();
 
+        var id = documentId.ToString() ?? string.Empty;
         id.Should().NotBeNullOrEmpty();
 
         var collection = _provider.RedisCollection<T>();
         var document = await collection.FindByIdAsync(id);
         var exists = document is not null;
+
+        document ??= new T { Id = documentId!.Value };
 
         documentFunc(document);
 

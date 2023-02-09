@@ -21,8 +21,8 @@ public class ConfigureModule : BaseInteractionModule
 
     [SlashCommand("logging", "Sets or updates the event logging channel")]
     public async Task LoggingAsync(
-        [Summary(description: "The channel any newly Created, Modified, or Cancelled events will be posted")] ITextChannel channel,
-        [Summary(description: "Setting this to true will disable event logging, even if you set a channel")] bool disable = false)
+        [Summary(description: "The channel newly Created, Modified, or Cancelled events will be posted")] ITextChannel channel,
+        [Summary(description: "Setting this to true will disable event logging")] bool disable = false)
     {
         var result = await _guildService.UpsertAsync(channel.GuildId, options => options.LogChannel = disable ? null : channel.Id);
 

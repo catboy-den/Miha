@@ -20,6 +20,11 @@ public static class Startup
 {
     public static void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
+        services.Configure<HostOptions>(hostOptions =>
+        {
+            hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+        });
+
         services.AddOptions(context.Configuration);
         services.AddRedis(context.Configuration);
 
