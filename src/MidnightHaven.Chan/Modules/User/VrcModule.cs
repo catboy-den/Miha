@@ -9,7 +9,7 @@ namespace MidnightHaven.Chan.Modules.User;
 /// VRChat related interactions
 /// </summary>
 [Group("vrchat", "VRChat related commands")]
-public partial class VrcModule : BaseInteractionModule
+public class VrcModule : BaseInteractionModule
 {
     [Group("user", "Manage your VRChat user profile in relation to your Discord profile")]
     public class UserModule : BaseInteractionModule
