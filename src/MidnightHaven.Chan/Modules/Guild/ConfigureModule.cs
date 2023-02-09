@@ -4,7 +4,7 @@ using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using MidnightHaven.Redis.Documents;
 
-namespace MidnightHaven.Chan.Modules;
+namespace MidnightHaven.Chan.Modules.Guild;
 
 /// <summary>
 /// Command module for configuring a guilds <see cref="GuildDocument"/>

@@ -3,7 +3,7 @@ using Discord.Interactions;
 using FluentResults;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 
-namespace MidnightHaven.Chan.Modules;
+namespace MidnightHaven.Chan.Modules.User;
 
 /// <summary>
 /// VRChat related interactions
