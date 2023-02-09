@@ -9,4 +9,7 @@ public interface IUserService
     Task<Result<UserDocument?>> UpsertAsync(UserDocument document);
     Task<Result<UserDocument?>> UpsertAsync(ulong? userId, Action<UserDocument> userFunc);
     Task<Result> DeleteAsync(ulong? userId);
+
+    Task<Result<UserDocument?>> UpsertVrcUsrIdAsync(ulong? userId, string vrcProfileUrl);
+    Task<Result<UserDocument?>> ClearVrcUsrIdAsync(ulong? userId);
 }

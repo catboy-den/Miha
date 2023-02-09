@@ -6,14 +6,38 @@ namespace MidnightHaven.Chan.Helpers;
 
 public static class EmbedHelper
 {
-    /// <summary>
-    /// Builds an embed to be sent as a "Success" indicator
-    /// </summary>
-    /// <param name="description"></param>
-    /// <param name="authorName"></param>
-    /// <param name="authorIcon"></param>
-    /// <param name="title"></param>
-    /// <returns></returns>
+    public static EmbedBuilder Basic(
+        string? authorName = null,
+        string? authorIcon = null,
+        Color? color = null,
+        string? title = null,
+        IEnumerable<EmbedFieldBuilder>? fields = null)
+    {
+        var embed = new EmbedBuilder()
+            .WithAuthor(authorName, authorIcon)
+            .WithThumbnailUrl(authorIcon)
+            .WithVersionFooter()
+            .WithCurrentTimestamp();
+
+        if (title is not null)
+        {
+            embed.WithTitle(title);
+        }
+
+        if (color is not null)
+        {
+            embed.WithColor(color.Value);
+        }
+
+        if (fields is not null)
+        {
+            embed.WithFields(fields);
+        }
+
+        return embed;
+    }
+
+
     public static EmbedBuilder Success(
         string? description,
         string? authorName = null,
@@ -30,15 +54,6 @@ public static class EmbedHelper
             .WithCurrentTimestamp();
     }
 
-    /// <summary>
-    /// Builds an embed to be sent as a "Error" or "Failure" indicator
-    /// </summary>
-    /// <param name="description"></param>
-    /// <param name="authorName"></param>
-    /// <param name="authorIcon"></param>
-    /// <param name="title">The title of the embed</param>
-    /// <param name="errors">Optional, any FluentResults errors that will be included in the embed as fields</param>
-    /// <returns></returns>
     public static EmbedBuilder Failure(
         string? description,
         string? authorName = null,
@@ -66,19 +81,6 @@ public static class EmbedHelper
             .WithCurrentTimestamp();
     }
 
-    /// <summary>
-    /// Builds an embed intended to be sent for logic related to Guild Scheduled Events
-    /// </summary>
-    /// <param name="eventVerb">eg, "Event cancelled" or "Event create"</param>
-    /// <param name="eventName">The name of the event</param>
-    /// <param name="eventLocation">The location of the event</param>
-    /// <param name="eventDescription">The description of the event</param>
-    /// <param name="embedColor">The color of the embed</param>
-    /// <param name="authorAvatarUrl">The image or avatar url to place in the author field</param>
-    /// <param name="authorUsername">Optional, the username of the event creator</param>
-    /// <param name="eventImageUrl">Optional image url</param>
-    /// <param name="fields">Optional, any fields to add to the embed</param>
-    /// <returns></returns>
     public static EmbedBuilder ScheduledEvent(
         string eventVerb,
         string eventName,
