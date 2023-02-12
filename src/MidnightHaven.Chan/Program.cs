@@ -10,6 +10,7 @@ using Serilog.Exceptions;
 using Serilog.Formatting.Compact;
 
 Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
     .WriteTo.Console(new CompactJsonFormatter())
@@ -38,7 +39,7 @@ try
 
             config.SocketConfig = new DiscordSocketConfig
             {
-                LogLevel = LogSeverity.Info,
+                LogLevel = LogSeverity.Debug,
                 AlwaysDownloadUsers = true,
                 GatewayIntents = GatewayIntents.GuildScheduledEvents
                                  | GatewayIntents.DirectMessageTyping
@@ -56,7 +57,7 @@ try
         })
         .UseInteractionService((_, config) =>
         {
-            config.LogLevel = LogSeverity.Info;
+            config.LogLevel = LogSeverity.Debug;
             config.UseCompiledLambda = true;
         })
         .ConfigureServices(Startup.ConfigureServices).Build();

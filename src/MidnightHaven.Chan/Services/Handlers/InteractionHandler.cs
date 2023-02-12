@@ -34,7 +34,7 @@ public class InteractionHandler : DiscordClientService
     {
         if (_discordOptions.Guild is null)
         {
-            throw new ArgumentNullException(nameof(_discordOptions.Guild), "We need a target guild id, we don't quite support multi-guilds yet");
+            throw new ArgumentNullException(nameof(_discordOptions.Guild), "We need a target guild id, multi-guilds aren't quite supported yet");
         }
 
         Client.InteractionCreated += HandleInteraction;
