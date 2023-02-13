@@ -28,14 +28,14 @@ public class BirthdayModule : BaseInteractionModule
     {
         try
         {
-            //var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
             var components = new ComponentBuilder()
                 .WithButton(new ButtonBuilder()
                     .WithLabel("Yes")
-                    .WithCustomId("tz")
+                    .WithCustomId("tz:y:" + timeZoneInfo.Id)
                     .WithStyle(ButtonStyle.Primary));
 
-            await RespondAsync("Press a button", components: components.Build());
+            await RespondAsync("Press a button", components: components.Build(), ephemeral: true);
         }
         catch (TimeZoneNotFoundException e)
         {
@@ -55,9 +55,9 @@ public class BirthdayModule : BaseInteractionModule
 
     }
 
-    [ComponentInteraction("tz")]
-    public async Task HandleTimeZoneAsync()
+    [ComponentInteraction("tz:*:*", true)]
+    public async Task HandleTimeZoneAsync(string confirm, string timeZoneId)
     {
-        await RespondAsync("recieved");
+        await RespondAsync(confirm + ", " + timeZoneId);
     }
 }
