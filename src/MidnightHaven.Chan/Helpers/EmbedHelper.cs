@@ -7,10 +7,11 @@ namespace MidnightHaven.Chan.Helpers;
 public static class EmbedHelper
 {
     public static EmbedBuilder Basic(
+        string? title = null,
+        string? description = null,
         string? authorName = null,
         string? authorIcon = null,
         Color? color = null,
-        string? title = null,
         IEnumerable<EmbedFieldBuilder>? fields = null)
     {
         var embed = new EmbedBuilder()
@@ -22,6 +23,11 @@ public static class EmbedHelper
         if (title is not null)
         {
             embed.WithTitle(title);
+        }
+
+        if (description is not null)
+        {
+            embed.WithDescription(description);
         }
 
         if (color is not null)
@@ -36,7 +42,6 @@ public static class EmbedHelper
 
         return embed;
     }
-
 
     public static EmbedBuilder Success(
         string? description,
@@ -55,26 +60,31 @@ public static class EmbedHelper
     }
 
     public static EmbedBuilder Failure(
-        string? description,
+        string? description = null,
         string? authorName = null,
         string? authorIcon = null,
         string? title = "Failure",
         IEnumerable<IError>? errors = null)
     {
+        var builder = new EmbedBuilder();
         var fields = new List<EmbedFieldBuilder>();
 
-        if (errors != null)
+        if (errors is not null)
         {
             fields.AddRange(errors.Select(error => new EmbedFieldBuilder().WithName("Error")
                 .WithValue("`" + error.Message + "`")
                 .WithIsInline(false)));
         }
 
-        return new EmbedBuilder()
+        if (description is not null)
+        {
+            builder.WithDescription("```+\n" + description + "\n```");
+        }
+
+        return builder
             .WithAuthor(authorName, authorIcon)
             .WithThumbnailUrl(authorIcon)
             .WithTitle(title)
-            .WithDescription("```+\n" + description + "\n```")
             .WithColor(Color.Red)
             .WithFields(fields)
             .WithVersionFooter()

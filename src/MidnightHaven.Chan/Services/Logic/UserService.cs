@@ -20,7 +20,7 @@ public partial class UserService : DocumentService<UserDocument>, IUserService
         _logger = logger;
     }
 
-    public async Task<Result<UserDocument?>> UpsertVrcUsrIdAsync(ulong? userId, string vrcProfileUrl)
+    public async Task<Result<UserDocument?>> UpdateVrcUserIdAsync(ulong? userId, string vrcProfileUrl)
     {
         try
         {
@@ -32,19 +32,6 @@ public partial class UserService : DocumentService<UserDocument>, IUserService
             }
 
             return await _repository.UpsertAsync(userId, doc => doc.VrcUsrId = usrId.Value);
-        }
-        catch (Exception e)
-        {
-            LogErrorException(e);
-            return Result.Fail(e.Message);
-        }
-    }
-
-    public async Task<Result<UserDocument?>> ClearVrcUsrIdAsync(ulong? userId)
-    {
-        try
-        {
-            return await _repository.UpsertAsync(userId, doc => doc.VrcUsrId = null);
         }
         catch (Exception e)
         {

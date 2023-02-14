@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using NodaTime;
 using Redis.OM.Modeling;
 
 namespace MidnightHaven.Redis.Documents;
@@ -20,7 +21,10 @@ public class UserDocument : Document
     public string? VrcUsrId { get; set; }
 
     [Indexed]
-    public string? IanaTimeZone { get; set; }
+    public DateTimeZone? IanaTimeZone { get; set; }
+
+    [Indexed]
+    public LocalDate? BirthdayDate { get; set; }
 
     public string? GetVrcUsrUrl() => VrcUsrId is not null ? VrcUsrUrl + VrcUsrId : null;
     public string? GetHyperLinkedVrcUsrUrl(string? hyperLinkText = null)

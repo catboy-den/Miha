@@ -25,7 +25,7 @@ public class VrcModule : BaseInteractionModule
         public async Task SetAsync(
             [Summary("vrchatProfileUrl", "VRChat usr link, ex https://vrchat.com/home/user/usr_666ca92f-ca50-4c25-994c-03d72842c92b")] string vrchatProfileUrl)
         {
-            var result = await _userService.UpsertVrcUsrIdAsync(Context.User.Id, vrchatProfileUrl);
+            var result = await _userService.UpdateVrcUserIdAsync(Context.User.Id, vrchatProfileUrl);
 
             if (result.IsFailed)
             {
@@ -54,7 +54,7 @@ public class VrcModule : BaseInteractionModule
 
             if (result.Value?.VrcUsrId is null)
             {
-                await RespondFailureAsync(new Error("User hasn't been set"));
+                await RespondFailureAsync(new Error("VRChat usr Id hasn't been set"));
                 return;
             }
 
@@ -77,7 +77,7 @@ public class VrcModule : BaseInteractionModule
         [SlashCommand("clear", "Clears set VRChat user")]
         public async Task ClearAsync()
         {
-            var result = await _userService.ClearVrcUsrIdAsync(Context.User.Id);
+            var result = await _userService.UpsertAsync(Context.User.Id, doc => doc.VrcUsrId = null);
 
             if (result.IsFailed)
             {

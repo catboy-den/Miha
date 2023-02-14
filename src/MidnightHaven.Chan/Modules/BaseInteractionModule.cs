@@ -9,22 +9,23 @@ public class BaseInteractionModule : InteractionModuleBase<SocketInteractionCont
 {
     protected virtual Task RespondBasicAsync(
         EmbedFieldBuilder field,
-        Color? color = null,
-        string? title = null)
-    {
-        return RespondBasicAsync(color, title, new List<EmbedFieldBuilder> { field });
-    }
+        string? title = null,
+        string? description = null,
+        Color? color = null)
+        => RespondBasicAsync(title, description, color, new[] { field });
 
     protected virtual Task RespondBasicAsync(
-        Color? color = null,
         string? title = null,
+        string? description = null,
+        Color? color = null,
         IEnumerable<EmbedFieldBuilder>? fields = null)
     {
         var embed = EmbedHelper.Basic(
+            title: title,
+            description: description,
             authorName: Context.User.Username,
             authorIcon: Context.User.GetAvatarUrl(),
             color: color,
-            title: title,
             fields: fields);
 
         return RespondAsync(embed: embed.Build(), ephemeral: true);
@@ -51,19 +52,18 @@ public class BaseInteractionModule : InteractionModuleBase<SocketInteractionCont
     }
 
     protected virtual Task RespondFailureAsync(IError error)
-    {
-        return RespondAsync(embed: EmbedHelper.Failure(
-                description: "Updating Guild Options",
-                authorName: Context.User.Username,
-                authorIcon: Context.User.GetAvatarUrl(),
-                errors: new List<IError> { error })
-            .Build(), ephemeral: true);
-    }
+        => RespondFailureAsync(null, new List<IError> { error });
 
     protected virtual Task RespondFailureAsync(IEnumerable<IError>? errors = null)
+        => RespondFailureAsync(null, errors);
+
+    protected virtual Task RespondFailureAsync(string? description, IError error)
+        => RespondFailureAsync(description, new List<IError> { error });
+
+    protected virtual Task RespondFailureAsync(string? description, IEnumerable<IError>? errors = null)
     {
         return RespondAsync(embed: EmbedHelper.Failure(
-                description: "Updating Guild Options",
+                description: description,
                 authorName: Context.User.Username,
                 authorIcon: Context.User.GetAvatarUrl(),
                 errors: errors)

@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Text;
+using Discord;
 using Discord.Interactions;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Extensions;
@@ -41,7 +42,13 @@ public class BirthdayModule : BaseInteractionModule
         var resolvedTimeZone = FindDateTimeZone(timeZone);
         if (resolvedTimeZone is null)
         {
-            await RespondAsync("no", ephemeral: false);
+            var stringBuilder = new StringBuilder()
+                .Append("`" + timeZone + "` wasn't matched to a time-zone")
+                .AppendLine()
+                .AppendLine()
+                .Append("Visit [this timezone tool](https://webbrowsertools.com/timezone) and try passing the 'Timezone' field into the command, or [try google](https://www.google.com/search?q=whats+is+my+timezone)");
+
+            await RespondBasicAsync("Time-zone not found", stringBuilder.ToString(), Color.Red);
             return;
         }
 
@@ -51,7 +58,19 @@ public class BirthdayModule : BaseInteractionModule
     [SlashCommand("clear", "Clears your birthday")]
     public async Task ClearAsync()
     {
-        // set timezone in user doc to null
+        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        {
+            doc.IanaTimeZone = null;
+            doc.BirthdayDate = null;
+        });
+
+        if (result.IsFailed)
+        {
+            await RespondFailureAsync(result.Errors);
+            return;
+        }
+
+        await RespondSuccessAsync("Cleared your birthday & stored time-zone");
     }
 
     [ComponentInteraction("tz:*:*", true)]
