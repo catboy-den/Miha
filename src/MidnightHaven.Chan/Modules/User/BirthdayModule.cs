@@ -50,7 +50,7 @@ public class BirthdayModule : BaseInteractionModule
 
         // Need to convert the parsedBirthDate + the parsed time-zone, to the EST equiv at 8am (configurable time), then take that and present the timestamp
         // we also need to present the timestamp for when their birthday actual is
-        // so one timesmap for the day of their birthday
+        // so one timestamp for the day of their birthday
         // then the timestamp for when it'll be announced
 
         var resolvedTimeZone = FindDateTimeZone(timeZone);
