@@ -1,6 +1,9 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using Discord.Interactions;
+using Microsoft.Extensions.Logging;
+using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
+using NodaTime;
+using TimeZoneConverter;
 
 namespace MidnightHaven.Chan.Modules.User;
 
@@ -11,53 +14,68 @@ namespace MidnightHaven.Chan.Modules.User;
 public class BirthdayModule : BaseInteractionModule
 {
     private readonly IUserService _userService;
+    private readonly ILogger<BirthdayModule> _logger;
 
-    public BirthdayModule(IUserService userService)
+    public BirthdayModule(
+        IUserService userService,
+        ILogger<BirthdayModule> logger)
     {
         _userService = userService;
+        _logger = logger;
     }
 
     [SlashCommand("get", "Gets your set birthday information")]
     public async Task GetAsync()
     {
-
+        // returns a timestamp to the users birthday (of this year)
     }
 
     [SlashCommand("set", "Sets or updates your birthday")]
-    public async Task SetAsync(string timeZone)
+    public async Task SetAsync(
+        [Summary(description: "Date of your birthday [MM/DD]")] string date,
+        [Summary(description: "Your time zone, eg Eastern Standard Time, Google 'What is my time zone' for help")] string timeZone)
     {
-        try
-        {
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
-            var components = new ComponentBuilder()
-                .WithButton(new ButtonBuilder()
-                    .WithLabel("Yes")
-                    .WithCustomId("tz:y:" + timeZoneInfo.Id)
-                    .WithStyle(ButtonStyle.Primary));
+        // takes a date and timezone, responds with a button interaction and a timestamp, for the user to verify if it's the correct date/time
 
-            await RespondAsync("Press a button", components: components.Build(), ephemeral: true);
-        }
-        catch (TimeZoneNotFoundException e)
+        var resolvedTimeZone = FindDateTimeZone(timeZone);
+        if (resolvedTimeZone is null)
         {
+            await RespondAsync("no", ephemeral: false);
             return;
         }
+
+        await RespondAsync("timezone: " + resolvedTimeZone, ephemeral: false);
     }
 
     [SlashCommand("clear", "Clears your birthday information")]
     public async Task ClearAsync()
     {
-
-    }
-
-    [SlashCommand("timezones", "Sets or updates your birthday")]
-    public async Task TimeZonesAsync(string timeZone)
-    {
-
+        // set timezone in user doc to null
     }
 
     [ComponentInteraction("tz:*:*", true)]
     public async Task HandleTimeZoneAsync(string confirm, string timeZoneId)
     {
+        // handles yes/no button interaction, sets the user doc timezone
+
         await RespondAsync(confirm + ", " + timeZoneId);
+    }
+
+    private DateTimeZone? FindDateTimeZone(string timeZone)
+    {
+        // TitleCase the timezone, so we can parse it for either iana or windows
+        timeZone = timeZone.ToTitleCase(Context.Interaction.UserLocale);
+
+        // Try to parse windows time-zone
+        if (TZConvert.TryWindowsToIana(timeZone, out var ianaTimeZoneId))
+        {
+            return DateTimeZoneProviders.Tzdb.GetZoneOrNull(ianaTimeZoneId);
+        }
+
+        // Try to parse iana time-zone
+        var ianaTimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone);
+        ianaTimeZone ??= DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone.ToUpperInvariant()); // Capitalize, maybe it's an abbreviation
+
+        return ianaTimeZone;
     }
 }
