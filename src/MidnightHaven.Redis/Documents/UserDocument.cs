@@ -19,6 +19,9 @@ public class UserDocument : Document
     [Indexed]
     public string? VrcUsrId { get; set; }
 
+    [Indexed]
+    public string? IanaTimeZone { get; set; }
+
     public string? GetVrcUsrUrl() => VrcUsrId is not null ? VrcUsrUrl + VrcUsrId : null;
     public string? GetHyperLinkedVrcUsrUrl(string? hyperLinkText = null)
     {
