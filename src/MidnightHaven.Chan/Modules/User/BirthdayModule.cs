@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
@@ -24,8 +25,8 @@ public class BirthdayModule : BaseInteractionModule
         _logger = logger;
     }
 
-    [SlashCommand("get", "Gets your set birthday information")]
-    public async Task GetAsync()
+    [SlashCommand("get", "Gets your, or another users, birthday")]
+    public async Task GetAsync(IUser? user = null)
     {
         // returns a timestamp to the users birthday (of this year)
     }
@@ -47,7 +48,7 @@ public class BirthdayModule : BaseInteractionModule
         await RespondAsync("timezone: " + resolvedTimeZone, ephemeral: false);
     }
 
-    [SlashCommand("clear", "Clears your birthday information")]
+    [SlashCommand("clear", "Clears your birthday")]
     public async Task ClearAsync()
     {
         // set timezone in user doc to null
