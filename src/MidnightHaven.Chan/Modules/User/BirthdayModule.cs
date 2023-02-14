@@ -52,6 +52,7 @@ public class BirthdayModule : BaseInteractionModule
         // we also need to present the timestamp for when their birthday actual is
         // so one timestamp for the day of their birthday
         // then the timestamp for when it'll be announced
+        // this gets weird with the year
 
         var resolvedTimeZone = FindDateTimeZone(timeZone);
         if (resolvedTimeZone is null)
