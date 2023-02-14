@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using NodaTime;
+using NodaTime.Text;
 using TimeZoneConverter;
 
 namespace MidnightHaven.Chan.Modules.User;
@@ -15,6 +16,8 @@ namespace MidnightHaven.Chan.Modules.User;
 [Group("birthday", "Birthday related commands")]
 public class BirthdayModule : BaseInteractionModule
 {
+    private static readonly LocalDatePattern BirthDatePattern = LocalDatePattern.CreateWithInvariantCulture("MM/dd");
+
     private readonly IUserService _userService;
     private readonly ILogger<BirthdayModule> _logger;
 
@@ -39,6 +42,17 @@ public class BirthdayModule : BaseInteractionModule
     {
         // takes a date and timezone, responds with a button interaction and a timestamp, for the user to verify if it's the correct date/time
 
+        if (!BirthDatePattern.Parse(date).TryGetValue(LocalDate.MinIsoValue, out var parsedBirthDate))
+        {
+            await RespondBasicAsync("Couldn't parse birth-date", "Date should be in month/day format, for example `04/14`", Color.Red);
+            return;
+        }
+
+        // Need to convert the parsedBirthDate + the parsed time-zone, to the EST equiv at 8am (configurable time), then take that and present the timestamp
+        // we also need to present the timestamp for when their birthday actual is
+        // so one timesmap for the day of their birthday
+        // then the timestamp for when it'll be announced
+
         var resolvedTimeZone = FindDateTimeZone(timeZone);
         if (resolvedTimeZone is null)
         {
@@ -52,7 +66,7 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        await RespondAsync("timezone: " + resolvedTimeZone, ephemeral: false);
+        await RespondAsync("timezone: " + resolvedTimeZone + " birthDate: " + parsedBirthDate, ephemeral: true);
     }
 
     [SlashCommand("clear", "Clears your birthday")]
@@ -73,7 +87,7 @@ public class BirthdayModule : BaseInteractionModule
         await RespondSuccessAsync("Cleared your birthday & stored time-zone");
     }
 
-    [ComponentInteraction("tz:*:*", true)]
+    [ComponentInteraction("tz:*,*", true)]
     public async Task HandleTimeZoneAsync(string confirm, string timeZoneId)
     {
         // handles yes/no button interaction, sets the user doc timezone
