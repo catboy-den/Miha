@@ -23,7 +23,11 @@ public class UserDocument : Document
     [Indexed]
     public DateTimeZone? IanaTimeZone { get; set; }
 
+    [Indexed]
     public AnnualDate? AnnualBirthdate { get; set; }
+
+    [Indexed]
+    public bool EnableBirthday { get; set; } = false;
 
     public string? GetVrcUsrUrl() => VrcUsrId is not null ? VrcUsrUrl + VrcUsrId : null;
     public string? GetHyperLinkedVrcUsrUrl(string? hyperLinkText = null)

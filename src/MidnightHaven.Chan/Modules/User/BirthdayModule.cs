@@ -67,6 +67,19 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
+        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        {
+            doc.AnnualBirthdate = parsedBirthDate;
+            doc.IanaTimeZone = resolvedTimeZone;
+            doc.EnableBirthday = false;
+        });
+
+        if (result.IsFailed)
+        {
+            await RespondFailureAsync(result.Errors);
+            return;
+        }
+
         await RespondAsync("timezone: " + resolvedTimeZone + " birthDate: " + parsedBirthDate, ephemeral: true);
     }
 
@@ -88,12 +101,12 @@ public class BirthdayModule : BaseInteractionModule
         await RespondSuccessAsync("Cleared your birthday & stored time-zone");
     }
 
-    [ComponentInteraction("tz:*,*", true)]
-    public async Task HandleTimeZoneAsync(string confirm, string timeZoneId)
+    [ComponentInteraction("tz:*", true)]
+    public async Task HandleTimeZoneAsync(string confirm)
     {
         // handles yes/no button interaction, sets the user doc timezone
 
-        await RespondAsync(confirm + ", " + timeZoneId);
+        //wait RespondAsync(confirm + ", " + timeZoneId);
     }
 
     private DateTimeZone? FindDateTimeZone(string timeZone)
