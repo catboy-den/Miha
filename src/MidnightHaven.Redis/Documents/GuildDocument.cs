@@ -1,4 +1,5 @@
-﻿using Redis.OM.Modeling;
+﻿using NodaTime;
+using Redis.OM.Modeling;
 
 namespace MidnightHaven.Redis.Documents;
 

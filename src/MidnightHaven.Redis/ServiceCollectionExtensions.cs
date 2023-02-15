@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using MidnightHaven.Redis.Repositories;
 using MidnightHaven.Redis.Repositories.Interfaces;
 using MidnightHaven.Redis.Services;
+using NodaTime;
 using Redis.OM;
 using Redis.OM.Contracts;
 
@@ -29,8 +30,9 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddHostedService<IndexCreationService>();
-
         services.AddRedisRepositories();
+
+        services.AddSingleton<IClock>(SystemClock.Instance);
 
         return services;
     }

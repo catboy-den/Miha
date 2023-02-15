@@ -1,10 +1,13 @@
 ﻿using System.Text;
 using Discord;
 using Discord.Interactions;
+using FluentResults;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Extensions;
+using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using NodaTime;
+using NodaTime.Extensions;
 using NodaTime.Text;
 using TimeZoneConverter;
 
@@ -18,13 +21,16 @@ public class BirthdayModule : BaseInteractionModule
 {
     private static readonly AnnualDatePattern BirthdatePattern = AnnualDatePattern.CreateWithInvariantCulture("MM/dd");
 
+    private readonly IClock _clock;
     private readonly IUserService _userService;
     private readonly ILogger<BirthdayModule> _logger;
 
     public BirthdayModule(
+        IClock clock,
         IUserService userService,
         ILogger<BirthdayModule> logger)
     {
+        _clock = clock;
         _userService = userService;
         _logger = logger;
     }
@@ -42,7 +48,7 @@ public class BirthdayModule : BaseInteractionModule
     {
         // takes a date and timezone, responds with a button interaction and a timestamp, for the user to verify if it's the correct date/time
 
-        if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(1, 1), out var parsedBirthDate))
+        if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(1, 1), out var birthDate))
         {
             await RespondBasicAsync("Couldn't parse birthdate", "Date should be in month/day format, for example `04/14`", Color.Red);
             return;
@@ -54,11 +60,11 @@ public class BirthdayModule : BaseInteractionModule
         // then the timestamp for when it'll be announced
         // this gets weird with the year
 
-        var resolvedTimeZone = FindDateTimeZone(timeZone);
-        if (resolvedTimeZone is null)
+        var birthDateTimezone = FindDateTimeZone(timeZone);
+        if (birthDateTimezone is null)
         {
             var stringBuilder = new StringBuilder()
-                .Append("`" + timeZone + "` wasn't matched to a time-zone")
+                .Append("`" + birthDateTimezone + "` wasn't matched to a time-zone")
                 .AppendLine()
                 .AppendLine()
                 .Append("Visit [this timezone tool](https://webbrowsertools.com/timezone) and try passing the 'Timezone' field into the command, or [try google](https://www.google.com/search?q=whats+is+my+timezone)");
@@ -69,8 +75,8 @@ public class BirthdayModule : BaseInteractionModule
 
         var result = await _userService.UpsertAsync(Context.User.Id, doc =>
         {
-            doc.AnnualBirthdate = parsedBirthDate;
-            doc.Timezone = resolvedTimeZone.Id;
+            doc.AnnualBirthdate = birthDate;
+            doc.Timezone = birthDateTimezone.Id;
             doc.EnableBirthday = false;
         });
 
@@ -85,7 +91,10 @@ public class BirthdayModule : BaseInteractionModule
             .WithButton(new ButtonBuilder().WithLabel("No").WithCustomId("tz:n").WithStyle(ButtonStyle.Secondary))
             .Build();
 
-        await RespondAsync("", components: components, ephemeral: true);
+        var currentDateInTimezone = _clock.InZone(birthDateTimezone).GetCurrentDate();
+        var birthDateCurrentYearForUser = new LocalDateTime(currentDateInTimezone.Year, birthDate.Month, birthDate.Day, 0, 0).InZoneLeniently(birthDateTimezone);
+
+        await RespondAsync(birthDateCurrentYearForUser.ToDateTimeOffset().ToDiscordTimestamp(TimestampTagStyles.LongDateTime), components: components, ephemeral: true);
     }
 
     [SlashCommand("clear", "Clears your birthday")]
@@ -122,7 +131,7 @@ public class BirthdayModule : BaseInteractionModule
                 return;
             }
 
-            await ModifyOriginalResponseAsync(properties => properties.Content = "Woop");
+            await ModifyOriginalResponseToBasicAsync("Sucess", color: Color.Green);
             return;
         }
 
