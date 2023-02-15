@@ -16,7 +16,7 @@ namespace MidnightHaven.Chan.Modules.User;
 [Group("birthday", "Birthday related commands")]
 public class BirthdayModule : BaseInteractionModule
 {
-    private static readonly LocalDatePattern BirthDatePattern = LocalDatePattern.CreateWithInvariantCulture("MM/dd");
+    private static readonly AnnualDatePattern BirthdatePattern = AnnualDatePattern.CreateWithInvariantCulture("MM/dd");
 
     private readonly IUserService _userService;
     private readonly ILogger<BirthdayModule> _logger;
@@ -42,9 +42,9 @@ public class BirthdayModule : BaseInteractionModule
     {
         // takes a date and timezone, responds with a button interaction and a timestamp, for the user to verify if it's the correct date/time
 
-        if (!BirthDatePattern.Parse(date).TryGetValue(LocalDate.MinIsoValue, out var parsedBirthDate))
+        if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(-1, -1), out var parsedBirthDate))
         {
-            await RespondBasicAsync("Couldn't parse birth-date", "Date should be in month/day format, for example `04/14`", Color.Red);
+            await RespondBasicAsync("Couldn't parse birthdate", "Date should be in month/day format, for example `04/14`", Color.Red);
             return;
         }
 
@@ -76,7 +76,7 @@ public class BirthdayModule : BaseInteractionModule
         var result = await _userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.IanaTimeZone = null;
-            doc.BirthdayDate = null;
+            doc.AnnualBirthdate = null;
         });
 
         if (result.IsFailed)
