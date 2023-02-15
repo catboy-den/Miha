@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using NodaTime;
+﻿using NodaTime;
 using Redis.OM.Modeling;
 
 namespace MidnightHaven.Redis.Documents;
@@ -11,17 +10,16 @@ public class UserDocument : Document
 
     [Indexed]
     [RedisIdField]
-    [JsonPropertyName("UserId")]
     public override ulong Id { get; set; }
 
-    [JsonIgnore]
+    [Indexed]
     public ulong UserId => base.Id;
 
     [Indexed]
     public string? VrcUsrId { get; set; }
 
     [Indexed]
-    public DateTimeZone? IanaTimeZone { get; set; }
+    public string? Timezone { get; set; }
 
     [Indexed]
     public AnnualDate? AnnualBirthdate { get; set; }

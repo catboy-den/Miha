@@ -69,4 +69,28 @@ public class BaseInteractionModule : InteractionModuleBase<SocketInteractionCont
                 errors: errors)
             .Build(), ephemeral: true);
     }
+
+    protected virtual Task ModifyOriginalResponseToFailureAsync(IError error)
+        => ModifyOriginalResponseToFailureAsync(null, new List<IError> { error });
+
+    protected virtual Task ModifyOriginalResponseToFailureAsync(IEnumerable<IError>? errors = null)
+        => ModifyOriginalResponseToFailureAsync(null, errors);
+
+    protected virtual Task ModifyOriginalResponseToFailureAsync(string? description, IError error)
+        => ModifyOriginalResponseToFailureAsync(description, new List<IError> { error });
+
+    protected virtual Task ModifyOriginalResponseToFailureAsync(string? description, IEnumerable<IError>? errors = null)
+    {
+        return ModifyOriginalResponseAsync(properties =>
+        {
+            properties.Embed = EmbedHelper.Failure(
+                description: description,
+                authorName: Context.User.Username,
+                authorIcon: Context.User.GetAvatarUrl(),
+                errors: errors).Build();
+
+            properties.Components = null;
+            properties.Content = string.Empty;
+        });
+    }
 }

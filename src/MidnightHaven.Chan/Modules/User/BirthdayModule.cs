@@ -42,7 +42,7 @@ public class BirthdayModule : BaseInteractionModule
     {
         // takes a date and timezone, responds with a button interaction and a timestamp, for the user to verify if it's the correct date/time
 
-        if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(-1, -1), out var parsedBirthDate))
+        if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(1, 1), out var parsedBirthDate))
         {
             await RespondBasicAsync("Couldn't parse birthdate", "Date should be in month/day format, for example `04/14`", Color.Red);
             return;
@@ -70,7 +70,7 @@ public class BirthdayModule : BaseInteractionModule
         var result = await _userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.AnnualBirthdate = parsedBirthDate;
-            doc.IanaTimeZone = resolvedTimeZone;
+            doc.Timezone = resolvedTimeZone.Id;
             doc.EnableBirthday = false;
         });
 
@@ -80,7 +80,12 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        await RespondAsync("timezone: " + resolvedTimeZone + " birthDate: " + parsedBirthDate, ephemeral: true);
+        var components = new ComponentBuilder()
+            .WithButton(new ButtonBuilder().WithLabel("Yes").WithCustomId("tz:y").WithStyle(ButtonStyle.Primary))
+            .WithButton(new ButtonBuilder().WithLabel("No").WithCustomId("tz:n").WithStyle(ButtonStyle.Secondary))
+            .Build();
+
+        await RespondAsync("", components: components);
     }
 
     [SlashCommand("clear", "Clears your birthday")]
@@ -88,7 +93,7 @@ public class BirthdayModule : BaseInteractionModule
     {
         var result = await _userService.UpsertAsync(Context.User.Id, doc =>
         {
-            doc.IanaTimeZone = null;
+            doc.Timezone = null;
             doc.AnnualBirthdate = null;
         });
 
@@ -104,9 +109,21 @@ public class BirthdayModule : BaseInteractionModule
     [ComponentInteraction("tz:*", true)]
     public async Task HandleTimeZoneAsync(string confirm)
     {
-        // handles yes/no button interaction, sets the user doc timezone
+        var confirmed = confirm == "y";
 
-        //wait RespondAsync(confirm + ", " + timeZoneId);
+        if (confirmed)
+        {
+            var result = await _userService.UpsertAsync(Context.User.Id, doc => doc.EnableBirthday = true);
+            if (result.IsFailed)
+            {
+               // await ModifyOriginalResponseToFailureAsync(result.Errors);
+                return;
+            }
+
+            //await ModifyOriginalResponseAsync(properties => properties.Content = "Woop");
+        }
+
+        //await ModifyOriginalResponseAsync(properties => properties.Content = "Woop");
     }
 
     private DateTimeZone? FindDateTimeZone(string timeZone)

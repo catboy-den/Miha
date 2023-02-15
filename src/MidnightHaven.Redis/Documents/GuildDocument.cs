@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using Redis.OM.Modeling;
+﻿using Redis.OM.Modeling;
 
 namespace MidnightHaven.Redis.Documents;
 
@@ -8,10 +7,9 @@ public class GuildDocument : Document
 {
     [Indexed]
     [RedisIdField]
-    [JsonPropertyName("GuildId")]
     public override ulong Id { get; set; }
 
-    [JsonIgnore]
+    [Indexed]
     public ulong GuildId => base.Id;
 
     [Indexed]
