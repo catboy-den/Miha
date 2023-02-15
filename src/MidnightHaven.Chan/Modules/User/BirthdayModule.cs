@@ -85,7 +85,7 @@ public class BirthdayModule : BaseInteractionModule
             .WithButton(new ButtonBuilder().WithLabel("No").WithCustomId("tz:n").WithStyle(ButtonStyle.Secondary))
             .Build();
 
-        await RespondAsync("", components: components);
+        await RespondAsync("", components: components, ephemeral: true);
     }
 
     [SlashCommand("clear", "Clears your birthday")]
@@ -109,6 +109,8 @@ public class BirthdayModule : BaseInteractionModule
     [ComponentInteraction("tz:*", true)]
     public async Task HandleTimeZoneAsync(string confirm)
     {
+        await DeferAsync(ephemeral: true);
+
         var confirmed = confirm == "y";
 
         if (confirmed)
@@ -116,14 +118,15 @@ public class BirthdayModule : BaseInteractionModule
             var result = await _userService.UpsertAsync(Context.User.Id, doc => doc.EnableBirthday = true);
             if (result.IsFailed)
             {
-               // await ModifyOriginalResponseToFailureAsync(result.Errors);
+                await ModifyOriginalResponseToFailureAsync(result.Errors);
                 return;
             }
 
-            //await ModifyOriginalResponseAsync(properties => properties.Content = "Woop");
+            await ModifyOriginalResponseAsync(properties => properties.Content = "Woop");
+            return;
         }
 
-        //await ModifyOriginalResponseAsync(properties => properties.Content = "Woop");
+        await Context.Interaction.DeleteOriginalResponseAsync();
     }
 
     private DateTimeZone? FindDateTimeZone(string timeZone)
