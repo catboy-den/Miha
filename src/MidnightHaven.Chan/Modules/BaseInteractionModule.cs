@@ -9,6 +9,24 @@ public class BaseInteractionModule : InteractionModuleBase<SocketInteractionCont
 {
     #region Respond
 
+    protected virtual Task RespondMinimalAsync(
+        EmbedFieldBuilder field,
+        string? title = null,
+        string? description = null,
+        Color? color = null)
+    {
+        return RespondMinimalAsync(title, description, color, new[] { field });
+    }
+
+    protected virtual Task RespondMinimalAsync(
+        string? title = null,
+        string? description = null,
+        Color? color = null,
+        IEnumerable<EmbedFieldBuilder>? fields = null)
+    {
+        return RespondAsync(embed: BuildMinimalEmbed(title, description, color, fields), ephemeral: true);
+    }
+
     protected virtual Task RespondBasicAsync(
         EmbedFieldBuilder field,
         string? title = null,
@@ -84,6 +102,19 @@ public class BaseInteractionModule : InteractionModuleBase<SocketInteractionCont
             properties.Components = null;
             properties.Content = string.Empty;
         });
+    }
+
+    private Embed BuildMinimalEmbed(
+        string? title = null,
+        string? description = null,
+        Color? color = null,
+        IEnumerable<EmbedFieldBuilder>? fields = null)
+    {
+        return EmbedHelper.Basic(
+            title: title,
+            description: description,
+            color: color,
+            fields: fields).Build();
     }
 
     private Embed BuildBasicEmbed(
