@@ -65,19 +65,11 @@ public class BirthdayModule : BaseInteractionModule
         [Summary(description: "Date of your birthday [MM/DD]")] string date,
         [Summary(description: "Your time zone, eg Eastern Standard Time, Google 'What is my time zone' for help")] string timeZone)
     {
-        // takes a date and timezone, responds with a button interaction and a timestamp, for the user to verify if it's the correct date/time
-
         if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(1, 1), out var birthDate))
         {
             await RespondBasicAsync("Couldn't parse birthdate", "Date should be in month/day format, for example `04/14`", Color.Red);
             return;
         }
-
-        // Need to convert the parsedBirthDate + the parsed time-zone, to the EST equiv at 8am (configurable time), then take that and present the timestamp
-        // we also need to present the timestamp for when their birthday actual is
-        // so one timestamp for the day of their birthday
-        // then the timestamp for when it'll be announced
-        // this gets weird with the year
 
         var birthDateTimezone = FindDateTimeZone(timeZone);
         if (birthDateTimezone is null)
