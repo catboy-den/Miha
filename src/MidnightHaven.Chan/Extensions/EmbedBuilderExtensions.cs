@@ -16,7 +16,7 @@ public static class EmbedBuilderExtensions
 
         builder
             .WithAuthor(username, avatarUrl)
-            .WithColor(Color.DarkPurple)
+            .WithColor(Color.Purple)
             .WithVersionFooter()
             .WithCurrentTimestamp();
 

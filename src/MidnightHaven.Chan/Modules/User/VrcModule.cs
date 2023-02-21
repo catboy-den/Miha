@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using FluentResults;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 
 namespace MidnightHaven.Chan.Modules.User;

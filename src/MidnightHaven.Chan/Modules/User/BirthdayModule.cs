@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
@@ -49,12 +48,10 @@ public class BirthdayModule : BaseInteractionModule
 
         if (result.Value is null || result.Value.EnableBirthday is false)
         {
-            var embed = new EmbedBuilder()
-                .WithColor(Color.Magenta)
-                .WithDescription(targetUser.Mention + " doesn't have a birthday set")
-                .WithAuthor(targetUser.Username, targetUser.GetAvatarUrl())
-                .WithVersionFooter()
-                .WithCurrentTimestamp();
+            var embed = new EmbedBuilder().AsMinimal(
+                    targetUser.Username,
+                    targetUser.GetAvatarUrl(),
+                    targetUser.Mention + " doesn't have a birthday set");
 
             await RespondAsync(embed: embed.Build(), ephemeral: true);
         }
