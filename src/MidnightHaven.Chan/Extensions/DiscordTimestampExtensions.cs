@@ -1,8 +1,8 @@
 ﻿using Discord;
 
-namespace MidnightHaven.Chan.Helpers;
+namespace MidnightHaven.Chan.Extensions;
 
-public static class DiscordTimestampHelper
+public static class DiscordTimestampExtensions
 {
     public static string ToDiscordTimestamp(this DateTimeOffset offset) => TimestampTag.FromDateTimeOffset(offset).ToString();
     public static string ToDiscordTimestamp(this DateTimeOffset offset, TimestampTagStyles style) => TimestampTag.FromDateTimeOffset(offset, style).ToString();

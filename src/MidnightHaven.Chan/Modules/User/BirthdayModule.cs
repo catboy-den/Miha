@@ -1,9 +1,9 @@
 ﻿using System.Text;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Chan.Extensions;
-using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using NodaTime;
 using NodaTime.Extensions;
@@ -43,7 +43,7 @@ public class BirthdayModule : BaseInteractionModule
 
         if (result.IsFailed)
         {
-            await RespondFailureAsync("Failed to get user document", result.Errors);
+            await RespondErrorAsync(result.Errors);
             return;
         }
 
@@ -67,7 +67,7 @@ public class BirthdayModule : BaseInteractionModule
     {
         if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(1, 1), out var birthDate))
         {
-            await RespondBasicAsync("Couldn't parse birthdate", "Date should be in month/day format, for example `04/14`", Color.Red);
+            await RespondMinimalAsync("Couldn't parse birthdate, date should be in month/dat format, for example `04/14`");
             return;
         }
 
@@ -80,7 +80,7 @@ public class BirthdayModule : BaseInteractionModule
                 .AppendLine()
                 .Append("Visit [this timezone tool](https://webbrowsertools.com/timezone) and try passing the 'Timezone' field into the command, or [try google](https://www.google.com/search?q=whats+is+my+timezone)");
 
-            await RespondBasicAsync("Time-zone not found", stringBuilder.ToString(), Color.Red);
+            await RespondFailureAsync(stringBuilder.ToString());
             return;
         }
 
@@ -93,7 +93,7 @@ public class BirthdayModule : BaseInteractionModule
 
         if (result.IsFailed)
         {
-            await RespondFailureAsync(result.Errors);
+            await RespondErrorAsync(result.Errors);
             return;
         }
 
@@ -115,14 +115,13 @@ public class BirthdayModule : BaseInteractionModule
             .WithValue(birthDateTimezone.Id)
             .WithIsInline(false);
 
-        var embed = EmbedHelper.Basic(
-            description: description.ToString(),
-            authorName: Context.User.Username,
-            authorIcon: Context.User.GetAvatarUrl(),
-            color: Color.Magenta,
-            fields: new List<EmbedFieldBuilder> { field }).Build();
+        var embed = new EmbedBuilder().AsMinimal(
+            Context.User.Username,
+            Context.User.GetAvatarUrl(),
+            description.ToString(),
+            field);
 
-        await RespondAsync(embed: embed, components: components, ephemeral: true);
+        await RespondAsync(embed: embed.Build(), components: components, ephemeral: true);
     }
 
     [SlashCommand("clear", "Clears your birthday")]
@@ -136,7 +135,7 @@ public class BirthdayModule : BaseInteractionModule
 
         if (result.IsFailed)
         {
-            await RespondFailureAsync(result.Errors);
+            await RespondErrorAsync(result.Errors);
             return;
         }
 
@@ -155,7 +154,7 @@ public class BirthdayModule : BaseInteractionModule
             var result = await _userService.UpsertAsync(Context.User.Id, doc => doc.EnableBirthday = true);
             if (result.IsFailed)
             {
-                await ModifyOriginalResponseToFailureAsync(result.Errors);
+                await ModifyOriginalResponseToErrorAsync(result.Errors);
                 return;
             }
 

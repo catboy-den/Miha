@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using MidnightHaven.Chan.Helpers;
+using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using SlimMessageBus;
 
@@ -63,13 +63,13 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
                 .WithIsInline(false));
         }
 
-        var embed = EmbedHelper.ScheduledEvent(
+        var embed = new EmbedBuilder().AsScheduledEvent(
             eventVerb: "Event starting!",
             eventName: guildEvent.Name,
             eventLocation: location,
             eventDescription: guildEvent.Description,
             eventImageUrl: coverImageUrl,
-            embedColor: Color.Green,
+            color: Color.Green,
             authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
             authorUsername: guildEvent.Creator?.Username,
             fields: fields);

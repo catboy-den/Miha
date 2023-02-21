@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using MidnightHaven.Chan.Helpers;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using MidnightHaven.Redis.Documents;
 
@@ -28,16 +27,15 @@ public class ConfigureModule : BaseInteractionModule
 
         if (result.IsFailed)
         {
-            await RespondFailureAsync(result.Errors);
+            await RespondErrorAsync(result.Errors);
             return;
         }
 
-        await RespondAsync(embed: EmbedHelper.Success(
-                description: "Updated Guild Options",
-                authorName: Context.User.Username,
-                authorIcon: Context.User.GetAvatarUrl())
-            .WithFields(EmbedFieldHelper.TextChannel("Event logging channel", disable ? null : channel.Name))
-            .Build(), ephemeral: true);
+        var fields = new EmbedFieldBuilder()
+            .WithName("Event logging channel")
+            .WithValue(disable ? "Disabled" : channel.Mention);
+
+        await RespondSuccessAsync("Updated guild options", fields);
     }
 
     [Group("announcements", "Set or update announcement settings and options")]
@@ -59,14 +57,15 @@ public class ConfigureModule : BaseInteractionModule
 
             if (result.IsFailed)
             {
-                await RespondFailureAsync(result.Errors);
+                await RespondErrorAsync(result.Errors);
                 return;
             }
 
-            await RespondSuccessAsync("Updated Announcement Channel", new List<EmbedFieldBuilder>
-            {
-                EmbedFieldHelper.TextChannel("Announcement channel", disable ? null : channel.Name)
-            });
+            var fields = new EmbedFieldBuilder()
+                .WithName("Announcement channel")
+                .WithValue(disable ? "Disabled" : channel.Mention);
+
+            await RespondSuccessAsync("Updated Announcement Channel", fields);
         }
 
         [SlashCommand("role", "Sets or updates the role that will be pinged when a event has started")]
@@ -78,14 +77,15 @@ public class ConfigureModule : BaseInteractionModule
 
             if (result.IsFailed)
             {
-                await RespondFailureAsync(result.Errors);
+                await RespondErrorAsync(result.Errors);
                 return;
             }
 
-            await RespondSuccessAsync("Updated Announcement Role", new List<EmbedFieldBuilder>
-            {
-                EmbedFieldHelper.Role("Notify role", notifyRole.Name)
-            });
+            var fields = new EmbedFieldBuilder()
+                .WithName("Notify role")
+                .WithValue(disable ? "Disabled" : notifyRole.Mention);
+
+            await RespondSuccessAsync("Updated Announcement Role", fields);
         }
     }
 }

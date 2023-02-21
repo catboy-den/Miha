@@ -6,7 +6,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MidnightHaven.Chan.Models.Options;
+using MidnightHaven.Chan.Options;
 
 namespace MidnightHaven.Chan.Services.Handlers;
 

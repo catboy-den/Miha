@@ -1,7 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
-using MidnightHaven.Chan.Helpers;
+using MidnightHaven.Chan.Extensions;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using SlimMessageBus;
 
@@ -39,12 +39,12 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
             location = "Discord";
         }
 
-        var embed = EmbedHelper.ScheduledEvent(
+        var embed = new EmbedBuilder().AsScheduledEvent(
             eventVerb: "Event cancelled",
             eventName: guildEvent.Name,
             eventLocation: location,
             eventDescription: null,
-            embedColor: Color.Red,
+            color: Color.Red,
             authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
             authorUsername: guildEvent.Creator?.Username);
 

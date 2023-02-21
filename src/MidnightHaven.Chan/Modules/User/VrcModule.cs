@@ -29,7 +29,7 @@ public class VrcModule : BaseInteractionModule
 
             if (result.IsFailed)
             {
-                await RespondFailureAsync(result.Errors);
+                await RespondErrorAsync(result.Errors);
                 return;
             }
 
@@ -48,30 +48,27 @@ public class VrcModule : BaseInteractionModule
 
             if (result.IsFailed)
             {
-                await RespondFailureAsync(result.Errors);
+                await RespondErrorAsync(result.Errors);
                 return;
             }
 
             if (result.Value?.VrcUsrId is null)
             {
-                await RespondFailureAsync(new Error("VRChat usr Id hasn't been set"));
+                await RespondFailureAsync("User hasn't linked their VRChat profile");
                 return;
             }
 
-            var fields = new List<EmbedFieldBuilder>
-            {
-                new EmbedFieldBuilder()
-                    .WithName("User Id")
-                    .WithValue(result.Value?.VrcUsrId)
-                    .WithIsInline(false),
+            var userId = new EmbedFieldBuilder()
+                .WithName("User Id")
+                .WithValue(result.Value?.VrcUsrId)
+                .WithIsInline(false);
 
-                new EmbedFieldBuilder()
-                    .WithName("User Url")
-                    .WithValue(result.Value?.GetHyperLinkedVrcUsrUrl())
-                    .WithIsInline(false)
-            };
+            var userUrl = new EmbedFieldBuilder()
+                .WithName("User Url")
+                .WithValue(result.Value?.GetHyperLinkedVrcUsrUrl())
+                .WithIsInline(false);
 
-            await RespondBasicAsync(color: Color.Green, fields: fields);
+            await RespondMinimalAsync(null, userId, userUrl);
         }
 
         [SlashCommand("clear", "Clears set VRChat user")]
@@ -81,7 +78,7 @@ public class VrcModule : BaseInteractionModule
 
             if (result.IsFailed)
             {
-                await RespondFailureAsync(result.Errors);
+                await RespondErrorAsync(result.Errors);
                 return;
             }
 

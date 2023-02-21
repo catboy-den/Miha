@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MidnightHaven.Chan.Consumers;
 using MidnightHaven.Chan.Consumers.GuildEvent;
-using MidnightHaven.Chan.Models.Options;
+using MidnightHaven.Chan.Options;
 using MidnightHaven.Chan.Services.Client;
 using MidnightHaven.Chan.Services.Handlers;
 using MidnightHaven.Chan.Services.Logic;

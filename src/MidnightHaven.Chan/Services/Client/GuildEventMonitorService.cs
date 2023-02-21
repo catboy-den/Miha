@@ -6,8 +6,8 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MidnightHaven.Chan.Helpers;
-using MidnightHaven.Chan.Models.Options;
+using MidnightHaven.Chan.Extensions;
+using MidnightHaven.Chan.Options;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 
 namespace MidnightHaven.Chan.Services.Client;
@@ -133,12 +133,12 @@ public partial class GuildEventMonitorService : DiscordClientService
                         .WithIsInline(false));
                 }
 
-                var embed = EmbedHelper.ScheduledEvent(
+                var embed = new EmbedBuilder().AsScheduledEvent(
                     eventVerb: "Event is starting soon!",
                     eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative),
                     eventLocation: location,
                     eventDescription: string.Empty,
-                    embedColor: Color.DarkBlue,
+                    color: Color.DarkBlue,
                     authorAvatarUrl: guildEvent.Creator is null ? Client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
                     authorUsername: guildEvent.Creator?.Username,
                     fields: fields);
