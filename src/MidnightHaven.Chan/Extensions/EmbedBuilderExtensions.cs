@@ -69,7 +69,7 @@ public static class EmbedBuilderExtensions
             .WithAuthor(username + " - Failed", avatarUrl)
             .WithThumbnailUrl(avatarUrl)
             .WithColor(Color.Red)
-            .WithDescription("```" + description + "```")
+            .WithDescription(description)
             .WithVersionFooter()
             .WithCurrentTimestamp();
     }

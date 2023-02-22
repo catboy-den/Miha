@@ -72,10 +72,10 @@ public class BirthdayModule : BaseInteractionModule
         if (birthDateTimezone is null)
         {
             var stringBuilder = new StringBuilder()
-                .Append("`" + birthDateTimezone + "` wasn't matched to a time-zone")
+                .Append("`" + timeZone + "` wasn't matched to a time-zone")
                 .AppendLine()
                 .AppendLine()
-                .Append("Visit [this timezone tool](https://webbrowsertools.com/timezone) and try passing the 'Timezone' field into the command, or [try google](https://www.google.com/search?q=whats+is+my+timezone)");
+                .Append("Visit [this timezone tool](https://webbrowsertools.com/timezone) and try passing the `Timezone` field into the command, or [try google](https://www.google.com/search?q=whats+is+my+timezone)");
 
             await RespondFailureAsync(stringBuilder.ToString());
             return;
@@ -103,8 +103,10 @@ public class BirthdayModule : BaseInteractionModule
         var birthDateTime = new LocalDateTime(currentDateInTimezone.Year, birthDate.Month, birthDate.Day, 0, 0).InZoneLeniently(birthDateTimezone);
         var birthDateTimeTimeOffset = birthDateTime.ToDateTimeOffset();
 
+        var birthdayAlreadyHappened = _clock.GetCurrentInstant().ToUnixTimeMilliseconds() > birthDateTimeTimeOffset.ToUnixTimeMilliseconds();
+
         var description = new StringBuilder()
-            .Append("You're birthday is/was ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
+            .Append("You're birthday ").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
             .Append(" on ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
 
         var field = new EmbedFieldBuilder()

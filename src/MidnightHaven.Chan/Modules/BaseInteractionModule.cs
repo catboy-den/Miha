@@ -33,9 +33,7 @@ public class BaseInteractionModule : InteractionModuleBase<SocketInteractionCont
         return RespondAsync(embed: embed.Build(), ephemeral: true);
     }
 
-    protected virtual Task RespondFailureAsync(
-        string description,
-        params EmbedFieldBuilder[] fields)
+    protected virtual Task RespondFailureAsync(string description)
     {
         var embed = new EmbedBuilder().AsFailure(
             Context.User.Username,
