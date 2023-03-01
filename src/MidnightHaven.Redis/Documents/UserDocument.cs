@@ -13,9 +13,6 @@ public class UserDocument : Document
     public override ulong Id { get; set; }
 
     [Indexed]
-    public ulong UserId => base.Id;
-
-    [Indexed]
     public string? VrcUsrId { get; set; }
 
     [Indexed]

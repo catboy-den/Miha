@@ -67,10 +67,6 @@ public partial class GuildEventMonitorService : DiscordClientService
 
     private async Task CheckScheduledEventsAsync()
     {
-        var memCacheStats = _memoryCache.GetCurrentStatistics();
-
-        LogDebugMemCacheStats(memCacheStats?.CurrentEntryCount, memCacheStats?.CurrentEstimatedSize);
-
         try
         {
             var guild = Client.GetGuild(_discordOptions.Guild!.Value);
@@ -153,9 +149,6 @@ public partial class GuildEventMonitorService : DiscordClientService
             LogError(e);
         }
     }
-
-    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Guild event monitor service memCache stats {entryCount} {estimatedSize}")]
-    public partial void LogDebugMemCacheStats(long? entryCount, long? estimatedSize);
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred in GuildEventMonitorService")]
     public partial void LogError(Exception e);

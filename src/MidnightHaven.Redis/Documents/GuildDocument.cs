@@ -1,5 +1,4 @@
-﻿using NodaTime;
-using Redis.OM.Modeling;
+﻿using Redis.OM.Modeling;
 
 namespace MidnightHaven.Redis.Documents;
 
@@ -9,9 +8,6 @@ public class GuildDocument : Document
     [Indexed]
     [RedisIdField]
     public override ulong Id { get; set; }
-
-    [Indexed]
-    public ulong GuildId => base.Id;
 
     [Indexed]
     public ulong? AnnouncementChannel { get; set; }

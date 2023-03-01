@@ -37,8 +37,9 @@ public class BirthdayModule : BaseInteractionModule
     public async Task GetAsync(IUser? user = null)
     {
         var targetUser = user ?? Context.User;
-
         var result = await _userService.GetAsync(targetUser.Id);
+        var userDoc = result.Value;
+        var userTimezone = FindDateTimeZone(userDoc?.Timezone);
 
         if (result.IsFailed)
         {
@@ -46,15 +47,45 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        if (result.Value is null || result.Value.EnableBirthday is false)
+        if (userDoc is null
+            || userDoc.EnableBirthday is false
+            || userDoc.AnnualBirthdate is null
+            || userTimezone is null)
         {
-            var embed = new EmbedBuilder().AsMinimal(
+            var noBirthdayEmbed = new EmbedBuilder().AsMinimal(
                     targetUser.Username,
                     targetUser.GetAvatarUrl(),
                     targetUser.Mention + " doesn't have a birthday set");
 
-            await RespondAsync(embed: embed.Build(), ephemeral: true);
+            await RespondAsync(embed: noBirthdayEmbed.Build(), ephemeral: true);
+            return;
         }
+
+        var userBirthdate = userDoc.AnnualBirthdate.Value;
+
+        var currentDateInTimezone = _clock.InZone(userTimezone).GetCurrentDate();
+        var birthDateTime = new LocalDateTime(currentDateInTimezone.Year, userBirthdate.Month, userBirthdate.Day, 0, 0).InZoneLeniently(userTimezone);
+        var birthDateTimeTimeOffset = birthDateTime.ToDateTimeOffset();
+
+        var birthdayAlreadyHappened = _clock.GetCurrentInstant().ToUnixTimeMilliseconds() > birthDateTimeTimeOffset.ToUnixTimeMilliseconds();
+
+        var description = new StringBuilder()
+            .Append(targetUser.Mention)
+            .Append("'s birthday").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
+            .Append(" on ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+
+        var field = new EmbedFieldBuilder()
+            .WithName("Timezone")
+            .WithValue(userTimezone.Id)
+            .WithIsInline(false);
+
+        var embed = new EmbedBuilder().AsMinimal(
+            Context.User.Username,
+            Context.User.GetAvatarUrl(),
+            description.ToString(),
+            field);
+
+        await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
 
     [SlashCommand("set", "Sets or updates your birthday")]
@@ -164,8 +195,13 @@ public class BirthdayModule : BaseInteractionModule
         await Context.Interaction.DeleteOriginalResponseAsync();
     }
 
-    private DateTimeZone? FindDateTimeZone(string timeZone)
+    private DateTimeZone? FindDateTimeZone(string? timeZone)
     {
+        if (string.IsNullOrEmpty(timeZone))
+        {
+            return null;
+        }
+
         // TitleCase the timezone, so we can parse it for either iana or windows
         timeZone = timeZone.ToTitleCase(Context.Interaction.UserLocale);
 
