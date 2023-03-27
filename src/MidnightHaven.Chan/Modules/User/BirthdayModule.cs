@@ -39,7 +39,7 @@ public class BirthdayModule : BaseInteractionModule
         var targetUser = user ?? Context.User;
         var result = await _userService.GetAsync(targetUser.Id);
         var userDoc = result.Value;
-        var userTimezone = FindDateTimeZone(userDoc?.Timezone);
+        var userTimezone = userDoc?.Timezone;
 
         if (result.IsFailed)
         {
@@ -115,7 +115,7 @@ public class BirthdayModule : BaseInteractionModule
         var result = await _userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.AnnualBirthdate = birthDate;
-            doc.Timezone = birthDateTimezone.Id;
+            doc.Timezone = birthDateTimezone;
             doc.EnableBirthday = false;
         });
 

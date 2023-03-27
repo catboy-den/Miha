@@ -5,6 +5,7 @@ using MidnightHaven.Redis.Repositories;
 using MidnightHaven.Redis.Repositories.Interfaces;
 using MidnightHaven.Redis.Services;
 using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 using Redis.OM;
 using Redis.OM.Contracts;
 
@@ -15,6 +16,8 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
         var redisOptions = configuration.GetSection(RedisOptions.Section);
+
+        RedisSerializationSettings.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
 
         services.AddOptions<RedisOptions>().Bind(redisOptions);
         services.AddSingleton<IRedisConnectionProvider>(provider =>

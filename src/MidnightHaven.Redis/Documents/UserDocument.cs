@@ -16,7 +16,7 @@ public class UserDocument : Document
     public string? VrcUsrId { get; set; }
 
     [Indexed]
-    public string? Timezone { get; set; }
+    public DateTimeZone? Timezone { get; set; }
 
     [Indexed]
     public AnnualDate? AnnualBirthdate { get; set; }
