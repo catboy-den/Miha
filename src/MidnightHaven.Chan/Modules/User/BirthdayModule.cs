@@ -95,7 +95,7 @@ public class BirthdayModule : BaseInteractionModule
     {
         if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(1, 1), out var birthDate))
         {
-            await RespondMinimalAsync("Couldn't parse birthdate, date should be in month/dat format, for example `04/14`");
+            await RespondMinimalAsync("Couldn't parse birthdate, date should be in month/date format, for example `04/14`");
             return;
         }
 

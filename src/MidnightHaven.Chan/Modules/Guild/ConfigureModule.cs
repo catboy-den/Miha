@@ -9,6 +9,7 @@ namespace MidnightHaven.Chan.Modules.Guild;
 /// Command module for configuring a guilds <see cref="GuildDocument"/>
 /// </summary>
 [Group("configure", "Set or update various bot settings and options")]
+[DefaultMemberPermissions(GuildPermission.Administrator)]
 public class ConfigureModule : BaseInteractionModule
 {
     private readonly IGuildService _guildService;
