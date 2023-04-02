@@ -13,7 +13,7 @@ public class UserDocument : Document
     public override ulong Id { get; set; }
 
     [Indexed]
-    public string? VrcUsrId { get; set; }
+    public string? VrcUserId { get; set; }
 
     [Indexed]
     public DateTimeZone? Timezone { get; set; }
@@ -24,7 +24,7 @@ public class UserDocument : Document
     [Indexed]
     public bool EnableBirthday { get; set; } = false;
 
-    public string? GetVrcUsrUrl() => VrcUsrId is not null ? VrcUsrUrl + VrcUsrId : null;
+    public string? GetVrcUsrUrl() => VrcUserId is not null ? VrcUsrUrl + VrcUserId : null;
     public string? GetHyperLinkedVrcUsrUrl(string? hyperLinkText = null)
     {
         var usrUrl = GetVrcUsrUrl();

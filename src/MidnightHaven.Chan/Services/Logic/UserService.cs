@@ -20,7 +20,7 @@ public partial class UserService : DocumentService<UserDocument>, IUserService
         _logger = logger;
     }
 
-    public async Task<Result<UserDocument?>> UpdateVrcUserIdAsync(ulong? userId, string vrcProfileUrl)
+    public async Task<Result<UserDocument?>> UpsertVrchatUserIdAsync(ulong? userId, string vrcProfileUrl)
     {
         try
         {
@@ -31,7 +31,7 @@ public partial class UserService : DocumentService<UserDocument>, IUserService
                 return Result.Fail<UserDocument?>("Couldn't find the usr_Id in the passed link");
             }
 
-            return await _repository.UpsertAsync(userId, doc => doc.VrcUsrId = usrId.Value);
+            return await _repository.UpsertAsync(userId, doc => doc.VrcUserId = usrId.Value);
         }
         catch (Exception e)
         {
