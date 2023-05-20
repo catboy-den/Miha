@@ -28,7 +28,7 @@ public partial class IndexCreationService : IHostedService
 
         foreach (var model in indexableModels)
         {
-            LogDebugIndexingType(model.Name);
+            LogInfoIndexingType(model.Name);
 
             await _provider.Connection.CreateIndexAsync(model);
         }
@@ -44,8 +44,8 @@ public partial class IndexCreationService : IHostedService
     [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Indexing {indexableModelsCount} indexable-models in redis")]
     public partial void LogInfoIndexableModels(int indexableModelsCount);
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Debug, Message = "Indexing model {modelTypeName} in redis")]
-    public partial void LogDebugIndexingType(string modelTypeName);
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Indexing model {modelTypeName} in redis")]
+    public partial void LogInfoIndexingType(string modelTypeName);
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Information, Message = "Finished indexing indexable-models for redis")]
     public partial void LogInfoIndexedModels();

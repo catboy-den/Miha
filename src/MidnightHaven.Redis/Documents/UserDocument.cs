@@ -19,10 +19,13 @@ public class UserDocument : Document
     public DateTimeZone? Timezone { get; set; }
 
     [Indexed]
+    public bool EnableBirthday { get; set; } = false;
+
+    [Indexed]
     public AnnualDate? AnnualBirthdate { get; set; }
 
     [Indexed]
-    public bool EnableBirthday { get; set; } = false;
+    public LocalDate? LastBirthdateAnnouncement { get; set; }
 
     public string? GetVrcUsrUrl() => VrcUserId is not null ? VrcUsrUrl + VrcUserId : null;
     public string? GetHyperLinkedVrcUsrUrl(string? hyperLinkText = null)

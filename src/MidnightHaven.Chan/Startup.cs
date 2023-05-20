@@ -11,8 +11,8 @@ using MidnightHaven.Chan.Services.Handlers;
 using MidnightHaven.Chan.Services.Logic;
 using MidnightHaven.Chan.Services.Logic.Interfaces;
 using MidnightHaven.Redis;
+using SlimMessageBus.Host;
 using SlimMessageBus.Host.Memory;
-using SlimMessageBus.Host.MsDependencyInjection;
 
 namespace MidnightHaven.Chan;
 
@@ -29,16 +29,16 @@ public static class Startup
         services.AddRedis(context.Configuration);
 
         services.AddLogicServices();
-        services.AddSlimMessageBus();
+        services.AddMessageBus();
 
         services.AddDiscordClientServices();
     }
 
-    private static IServiceCollection AddSlimMessageBus(this IServiceCollection services)
+    private static IServiceCollection AddMessageBus(this IServiceCollection services)
     {
-        services.AddSlimMessageBus(mb =>
+        services.AddSlimMessageBus(builder =>
         {
-            mb
+            builder
                 .Produce<IGuildScheduledEvent>(x => x.DefaultTopic("guildevent"))
                 .Consume<IGuildScheduledEvent>(x => x
                     .Topic(Topics.GuildEvent.Cancelled).WithConsumer<GuildEventCancelledConsumer>())
@@ -48,9 +48,13 @@ public static class Startup
                     .Topic(Topics.GuildEvent.Started).WithConsumer<GuildEventStartedConsumer>())
                 .Consume<IGuildScheduledEvent>(x => x
                     .Topic(Topics.GuildEvent.Updated).WithConsumer<GuildEventUpdatedConsumer>())
-
                 .WithProviderMemory();
-        }, addConsumersFromAssembly: new[] { Assembly.GetExecutingAssembly() }); // Auto discover consumers and register inside DI container);
+
+            // Auto discover consumers and register inside DI container);
+
+            builder.AddServicesFromAssembly(Assembly.GetExecutingAssembly());
+        });
+
         return services;
     }
 
