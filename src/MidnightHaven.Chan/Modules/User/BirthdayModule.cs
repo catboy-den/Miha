@@ -159,6 +159,7 @@ public class BirthdayModule : BaseInteractionModule
     {
         var result = await _userService.UpsertAsync(Context.User.Id, doc =>
         {
+            doc.EnableBirthday = false;
             doc.Timezone = null;
             doc.AnnualBirthdate = null;
         });
