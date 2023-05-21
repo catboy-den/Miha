@@ -62,7 +62,7 @@ public class BirthdayScannerService : BackgroundService
         // if there are birthdays, get all birthday job documents this week
         // add a birthday job document for any birthdays that don't have a corresponding birthday job document
 
-        var unannouncedBirthdaysThisWeek = _userService.GetAllUsersWithBirthdayForWeekAsync(_easternStandardZonedClock.GetCurrentDate(), false);
+        var unannouncedBirthdaysThisWeek = await _userService.GetAllUsersWithBirthdayForWeekAsync(_easternStandardZonedClock.GetCurrentDate(), false);
 
         // GetAllWithBirthdaysThisWeek, will get all user documents whose birthdays are this week (est)
         // in this service, remove users whose LastBirthdateAnnouncement (year) is not this year], and remove users who have a birthdayJobId too
