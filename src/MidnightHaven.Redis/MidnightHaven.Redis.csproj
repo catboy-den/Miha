@@ -9,8 +9,6 @@
   <ItemGroup>
     <PackageReference Include="FluentResults" Version="3.15.2" />
     <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.1.1" />
-    <PackageReference Include="NodaTime" Version="3.1.9" />
-    <PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.0.0" />
     <PackageReference Include="Redis.OM" Version="0.5.2" />
   </ItemGroup>
 

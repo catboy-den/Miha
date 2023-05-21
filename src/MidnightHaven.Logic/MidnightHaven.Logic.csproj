@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Addons.Hosting" Version="5.2.0"/>
-    <PackageReference Include="Discord.Net" Version="3.10.0"/>
+    <PackageReference Include="Discord.Addons.Hosting" Version="5.2.0" />
+    <PackageReference Include="Discord.Net" Version="3.10.0" />
     <PackageReference Include="Nerdbank.GitVersioning" Version="3.6.132">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MidnightHaven.Redis\MidnightHaven.Redis.csproj"/>
-    <ProjectReference Include="..\MidnightHaven.Shared\MidnightHaven.Shared.csproj"/>
+    <ProjectReference Include="..\MidnightHaven.Redis\MidnightHaven.Redis.csproj" />
+    <ProjectReference Include="..\MidnightHaven.Shared\MidnightHaven.Shared.csproj" />
   </ItemGroup>
 
 </Project>

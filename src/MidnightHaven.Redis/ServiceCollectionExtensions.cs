@@ -35,8 +35,6 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<IndexCreationService>();
         services.AddRedisRepositories();
 
-        services.AddSingleton<IClock>(SystemClock.Instance);
-
         return services;
     }
 

@@ -4,6 +4,7 @@ using MidnightHaven.Background;
 using MidnightHaven.Discord;
 using MidnightHaven.Logic;
 using MidnightHaven.Redis;
+using MidnightHaven.Shared;
 
 namespace MidnightHaven.Chan;
 
@@ -15,6 +16,8 @@ public static class Startup
         {
             hostOptions.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
         });
+
+        services.AddClocks();
 
         services.AddRedis(context.Configuration);
 

@@ -1,4 +1,4 @@
-namespace MidnightHaven.Logic;
+namespace MidnightHaven.Shared;
 
 public static class Timezones
 {
