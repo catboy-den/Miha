@@ -9,5 +9,5 @@ public interface IDocumentRepository<T>
     Task<T?> UpsertAsync(T documentId);
     Task<T?> UpsertAsync(ulong? userId, Action<T> optionsFunc);
 
-    Task DeleteAsync(ulong? documentId);
+    Task DeleteAsync(ulong? documentId, bool successIfNotFound = false);
 }

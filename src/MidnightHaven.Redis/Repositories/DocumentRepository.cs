@@ -80,12 +80,17 @@ public class DocumentRepository<T> : IDocumentRepository<T> where T : Document, 
         return document;
     }
 
-    public async Task DeleteAsync(ulong? documentId)
+    public async Task DeleteAsync(ulong? documentId, bool successIfNotFound = false)
     {
         documentId.Should().NotBeNull();
 
         var collection = _provider.RedisCollection<T>();
         var document = await collection.FindByIdAsync(documentId.ToString()!);
+
+        if (successIfNotFound && document is null)
+        {
+            return;
+        }
 
         document.Should().NotBeNull();
 

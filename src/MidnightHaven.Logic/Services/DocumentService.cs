@@ -80,7 +80,7 @@ public partial class DocumentService<T> : IDocumentService<T>
         }
     }
 
-    public async Task<Result> DeleteAsync(ulong? documentId)
+    public async Task<Result> DeleteAsync(ulong? documentId, bool successIfNotFound = false)
     {
         try
         {

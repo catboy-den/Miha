@@ -21,15 +21,18 @@ public class BirthdayModule : BaseInteractionModule
 
     private readonly IClock _clock;
     private readonly IUserService _userService;
+    private readonly IBirthdayJobService _birthdayJobService;
     private readonly ILogger<BirthdayModule> _logger;
 
     public BirthdayModule(
         IClock clock,
         IUserService userService,
+        IBirthdayJobService birthdayJobService,
         ILogger<BirthdayModule> logger)
     {
         _clock = clock;
         _userService = userService;
+        _birthdayJobService = birthdayJobService;
         _logger = logger;
     }
 
@@ -117,6 +120,7 @@ public class BirthdayModule : BaseInteractionModule
             doc.AnnualBirthdate = birthDate;
             doc.Timezone = birthDateTimezone;
             doc.EnableBirthday = false;
+            doc.LastBirthdateAnnouncement = null;
         });
 
         if (result.IsFailed)
@@ -157,11 +161,20 @@ public class BirthdayModule : BaseInteractionModule
     [SlashCommand("clear", "Clears your birthday")]
     public async Task ClearAsync()
     {
+        var deleteJobResult = await _birthdayJobService.DeleteAsync(Context.User.Id, true);
+
+        if (deleteJobResult.IsFailed)
+        {
+            await RespondErrorAsync(deleteJobResult.Errors);
+            return;
+        }
+
         var result = await _userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.EnableBirthday = false;
             doc.Timezone = null;
             doc.AnnualBirthdate = null;
+            doc.LastBirthdateAnnouncement = null;
         });
 
         if (result.IsFailed)
@@ -182,6 +195,14 @@ public class BirthdayModule : BaseInteractionModule
 
         if (confirmed)
         {
+            var deleteJobResult = await _birthdayJobService.DeleteAsync(Context.User.Id, true);
+
+            if (deleteJobResult.IsFailed)
+            {
+                await RespondErrorAsync(deleteJobResult.Errors);
+                return;
+            }
+
             var result = await _userService.UpsertAsync(Context.User.Id, doc => doc.EnableBirthday = true);
             if (result.IsFailed)
             {
