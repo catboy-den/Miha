@@ -12,7 +12,7 @@ namespace MidnightHaven.Background.Services;
 /// </summary>
 public class BirthdayScannerService : BackgroundService
 {
-    private const string Schedule = "0,5 ? * * *"; // https://crontab.cronhub.io/
+    private const string Schedule = "0,10,20,30,40,50 ? * * *"; // https://crontab.cronhub.io/
 
     private readonly IEasternStandardZonedClock _easternStandardZonedClock;
     private readonly IUserService _userService;
