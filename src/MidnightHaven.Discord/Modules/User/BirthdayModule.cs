@@ -199,7 +199,7 @@ public class BirthdayModule : BaseInteractionModule
 
             if (deleteJobResult.IsFailed)
             {
-                await RespondErrorAsync(deleteJobResult.Errors);
+                await ModifyOriginalResponseToErrorAsync(deleteJobResult.Errors);
                 return;
             }
 

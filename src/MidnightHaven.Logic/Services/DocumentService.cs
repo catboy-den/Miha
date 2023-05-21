@@ -89,7 +89,7 @@ public partial class DocumentService<T> : IDocumentService<T>
                 throw new ArgumentNullException(nameof(documentId));
             }
 
-            await _repository.DeleteAsync(documentId);
+            await _repository.DeleteAsync(documentId, successIfNotFound);
             return Result.Ok();
         }
         catch (Exception e)
