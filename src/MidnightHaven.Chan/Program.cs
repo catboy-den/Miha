@@ -4,7 +4,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using MidnightHaven.Chan;
-using MidnightHaven.Chan.Options;
+using MidnightHaven.Discord;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Formatting.Compact;

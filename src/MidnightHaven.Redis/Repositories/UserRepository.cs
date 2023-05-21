@@ -1,11 +1,9 @@
-﻿using FluentResults;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MidnightHaven.Redis.Documents;
 using MidnightHaven.Redis.Repositories.Interfaces;
 using NodaTime;
 using NodaTime.Calendars;
 using Redis.OM;
-using Redis.OM.Aggregation.AggregationPredicates;
 using Redis.OM.Contracts;
 
 namespace MidnightHaven.Redis.Repositories;

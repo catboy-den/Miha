@@ -1,21 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <ItemGroup>
-      <PackageReference Include="FluentResults" Version="3.15.2" />
-      <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.1.1" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="7.0.0" />
-      <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
-      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="7.0.0" />
-      <PackageReference Include="NodaTime" Version="3.1.9" />
-      <PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.0.0" />
-      <PackageReference Include="Redis.OM" Version="0.5.2" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FluentResults" Version="3.15.2" />
+    <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.1.1" />
+    <PackageReference Include="NodaTime" Version="3.1.9" />
+    <PackageReference Include="NodaTime.Serialization.SystemTextJson" Version="1.0.0" />
+    <PackageReference Include="Redis.OM" Version="0.5.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MidnightHaven.Shared\MidnightHaven.Shared.csproj" />
+  </ItemGroup>
 
 </Project>
