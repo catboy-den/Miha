@@ -2,6 +2,7 @@ using Cronos;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MidnightHaven.Logic.Services.Interfaces;
+using MidnightHaven.Redis.Documents;
 using MidnightHaven.Shared.ZonedClocks.Interfaces;
 
 namespace MidnightHaven.Background.Services;
@@ -38,8 +39,6 @@ public class BirthdayScannerService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            //await CheckScheduledEventsAsync();
-
             var utcNow = DateTime.UtcNow;
             var nextUtc = _cron.GetNextOccurrence(utcNow);
 
@@ -58,14 +57,51 @@ public class BirthdayScannerService : BackgroundService
 
     private async Task ScanBirthdaysAsync()
     {
-        // Get all birthdays this week that haven't been announced
-        // if there are birthdays, get all birthday job documents this week
-        // add a birthday job document for any birthdays that don't have a corresponding birthday job document
+        _logger.LogInformation("Scanning for birthdays");
 
-        var unannouncedBirthdaysThisWeek = await _userService.GetAllUsersWithBirthdayForWeekAsync(_easternStandardZonedClock.GetCurrentDate(), false);
+        var today = _easternStandardZonedClock.GetCurrentDate();
+        var unannouncedBirthdaysThisWeek = await _userService.GetAllUsersWithBirthdayForWeekAsync(today, false);
 
-        // GetAllWithBirthdaysThisWeek, will get all user documents whose birthdays are this week (est)
-        // in this service, remove users whose LastBirthdateAnnouncement (year) is not this year], and remove users who have a birthdayJobId too
-        // Create new job documents, if the job doc is created, set the users birthdayJobId to the new job doc id
+        if (unannouncedBirthdaysThisWeek.IsFailed)
+        {
+            _logger.LogError("Failed getting un-announced birthdays");
+            return;
+        }
+
+        if (!unannouncedBirthdaysThisWeek.Value.Any())
+        {
+            _logger.LogInformation("Found no un-announced birthdays this week");
+            return;
+        }
+
+        var birthdayJobs = await _birthdayJobService.GetAllAsync();
+
+        if (birthdayJobs.IsFailed)
+        {
+            _logger.LogError("Failed getting birthday jobs");
+            return;
+        }
+
+        var unscheduledBirthdays = unannouncedBirthdaysThisWeek.Value.Where(user => !birthdayJobs.Value.Contains(new BirthdayJobDocument { UserDocumentId = user.Id })).ToList();
+
+        if (!unscheduledBirthdays.Any())
+        {
+            _logger.LogInformation("All birthdays for this week are already scheduled");
+        }
+
+        foreach (var unscheduledBirthday in unscheduledBirthdays)
+        {
+            var result = await _birthdayJobService.UpsertAsync(new BirthdayJobDocument
+            {
+                Id = unscheduledBirthday.Id,
+                UserDocumentId = unscheduledBirthday.Id,
+                BirthdayDate = unscheduledBirthday.GetBirthdateInEst(today.Year)!.Value
+            });
+
+           if (result.IsFailed)
+           {
+               _logger.LogWarning("Birthday job creation failed for an unscheduled birthday {Id}", unscheduledBirthday.Id);
+           }
+        }
     }
 }

@@ -32,9 +32,25 @@ public class DocumentRepository<T> : IDocumentRepository<T> where T : Document, 
         return await collection.FindByIdAsync(id);
     }
 
-    public Task<T?> UpsertAsync(T document)
+    public async Task<T?> UpsertAsync(T document)
     {
-        return UpsertAsync(document.Id, doc => doc = document);
+        var id = document.Id.ToString();
+        id.Should().NotBeNullOrEmpty();
+
+        var collection = _provider.RedisCollection<T>();
+        var doc = await collection.FindByIdAsync(id);
+        var exists = doc is not null;
+
+        if (exists)
+        {
+            await collection.UpdateAsync(document);
+        }
+        else
+        {
+            await collection.InsertAsync(document);
+        }
+
+        return document;
     }
 
     public async Task<T?> UpsertAsync(ulong? documentId, Action<T> documentFunc)

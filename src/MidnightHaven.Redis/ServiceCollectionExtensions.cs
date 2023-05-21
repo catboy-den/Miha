@@ -40,6 +40,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddRedisRepositories(this IServiceCollection services)
     {
+        services.AddSingleton<IBirthdayJobRepository, BirthdayJobRepository>();
         services.AddSingleton<IGuildRepository, GuildRepository>();
         services.AddSingleton<IUserRepository, UserRepository>();
 

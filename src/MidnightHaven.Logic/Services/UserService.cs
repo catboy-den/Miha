@@ -27,18 +27,20 @@ public partial class UserService : DocumentService<UserDocument>, IUserService
         var weekNumberInYear = WeekYearRules.Iso.GetWeekOfWeekYear(weekDate);
         var usersWithBirthday = await _repository.GetAllUsersWithBirthdayEnabledAsync();
 
+        // Add a method to User document which will return the localDate or AnnualDate in EST of their birthday
+
         if (includeAlreadyAnnounced)
         {
             return Result.Ok(usersWithBirthday.Where(user =>
                 // the users birthday falls in the same week as the weekDate
-                user.AnnualBirthdate.HasValue
-                && WeekYearRules.Iso.GetWeekOfWeekYear(new LocalDate(weekDate.Year, user.AnnualBirthdate!.Value.Month, user.AnnualBirthdate.Value.Day)) == weekNumberInYear));
+                user is { AnnualBirthdate: not null, Timezone: not null }
+                && WeekYearRules.Iso.GetWeekOfWeekYear(user.GetBirthdateInEst(weekDate.Year)!.Value) == weekNumberInYear));
         }
 
         return Result.Ok(usersWithBirthday.Where(user =>
             // the users birthday falls in the same week as the weekDate
-            user.AnnualBirthdate.HasValue
-            && WeekYearRules.Iso.GetWeekOfWeekYear(new LocalDate(weekDate.Year, user.AnnualBirthdate!.Value.Month, user.AnnualBirthdate.Value.Day)) == weekNumberInYear
+            user is { AnnualBirthdate: not null, Timezone: not null }
+            && WeekYearRules.Iso.GetWeekOfWeekYear(user.GetBirthdateInEst(weekDate.Year)!.Value) == weekNumberInYear
             // the user doesn't have any last announcement OR the last announcement year is before the weekDate year
             && (!user.LastBirthdateAnnouncement.HasValue || user.LastBirthdateAnnouncement.Value.Year < weekDate.Year)));
     }

@@ -8,7 +8,7 @@ namespace MidnightHaven.Logic.Services;
 public class BirthdayJobService : DocumentService<BirthdayJobDocument>, IBirthdayJobService
 {
     public BirthdayJobService(
-        IDocumentRepository<BirthdayJobDocument> repository,
+        IBirthdayJobRepository repository,
         ILogger<BirthdayJobService> logger) : base(repository, logger)
     {
 

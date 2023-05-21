@@ -1,4 +1,5 @@
-﻿using NodaTime;
+﻿using MidnightHaven.Shared;
+using NodaTime;
 using Redis.OM.Modeling;
 
 namespace MidnightHaven.Redis.Documents;
@@ -28,9 +29,29 @@ public class UserDocument : Document
     public LocalDate? LastBirthdateAnnouncement { get; set; }
 
     public string? GetVrcUsrUrl() => VrcUserId is not null ? VrcUsrUrl + VrcUserId : null;
+
     public string? GetHyperLinkedVrcUsrUrl(string? hyperLinkText = null)
     {
         var usrUrl = GetVrcUsrUrl();
         return usrUrl is not null ?  $"[{hyperLinkText ?? usrUrl}]({GetVrcUsrUrl()})" : null;
+    }
+
+    public LocalDate? GetBirthdateInEst(int year)
+    {
+        if (Timezone is null)
+        {
+            return null;
+        }
+
+        if (AnnualBirthdate is null)
+        {
+            return null;
+        }
+
+        var localDateTime = new LocalDateTime(year,  AnnualBirthdate.Value.Month, AnnualBirthdate.Value.Day, 0, 0, 0);
+        var zonedDateTime = localDateTime.InZoneStrictly(Timezone);
+        var estZonedDateTime = zonedDateTime.WithZone(DateTimeZoneProviders.Tzdb[Timezones.EasternStandardTime]);
+
+        return estZonedDateTime.Date;
     }
 }
