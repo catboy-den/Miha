@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using MidnightHaven.Logic.Services.Interfaces;
 using MidnightHaven.Redis.Documents;
 using MidnightHaven.Redis.Repositories.Interfaces;
+using NodaTime;
+using NodaTime.Calendars;
 
 namespace MidnightHaven.Logic.Services;
 
@@ -18,6 +20,27 @@ public partial class UserService : DocumentService<UserDocument>, IUserService
     {
         _repository = repository;
         _logger = logger;
+    }
+
+    public async Task<Result<IEnumerable<UserDocument>>> GetAllUsersWithBirthdayForWeekAsync(LocalDate weekDate, bool includeAlreadyAnnounced)
+    {
+        var weekNumberInYear = WeekYearRules.Iso.GetWeekOfWeekYear(weekDate);
+        var usersWithBirthday = await _repository.GetAllUsersWithBirthdayEnabledAsync();
+
+        if (includeAlreadyAnnounced)
+        {
+            return Result.Ok(usersWithBirthday.Where(user =>
+                // the users birthday falls in the same week as the weekDate
+                user.AnnualBirthdate.HasValue
+                && WeekYearRules.Iso.GetWeekOfWeekYear(new LocalDate(weekDate.Year, user.AnnualBirthdate!.Value.Month, user.AnnualBirthdate.Value.Day)) == weekNumberInYear));
+        }
+
+        return Result.Ok(usersWithBirthday.Where(user =>
+            // the users birthday falls in the same week as the weekDate
+            user.AnnualBirthdate.HasValue
+            && WeekYearRules.Iso.GetWeekOfWeekYear(new LocalDate(weekDate.Year, user.AnnualBirthdate!.Value.Month, user.AnnualBirthdate.Value.Day)) == weekNumberInYear
+            // the user doesn't have any last announcement OR the last announcement year is before the weekDate year
+            && (!user.LastBirthdateAnnouncement.HasValue || user.LastBirthdateAnnouncement.Value.Year < weekDate.Year)));
     }
 
     public async Task<Result<UserDocument?>> UpsertVrchatUserIdAsync(ulong? userId, string vrcProfileUrl)

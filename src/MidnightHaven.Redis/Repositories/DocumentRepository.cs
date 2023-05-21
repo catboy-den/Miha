@@ -14,6 +14,13 @@ public class DocumentRepository<T> : IDocumentRepository<T> where T : Document, 
         _provider = provider;
     }
 
+    public async Task<IEnumerable<T>> GetAllAsync()
+    {
+        var collection = _provider.RedisCollection<T>();
+
+        return await collection.ToListAsync();
+    }
+
     public async Task<T?> GetAsync(ulong? documentId)
     {
         var id = documentId.ToString() ?? string.Empty;

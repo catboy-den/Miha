@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MidnightHaven.Redis.Documents;
 using MidnightHaven.Redis.Repositories.Interfaces;
-using NodaTime;
-using NodaTime.Calendars;
 using Redis.OM;
 using Redis.OM.Contracts;
 
@@ -21,16 +19,11 @@ public partial class UserRepository : DocumentRepository<UserDocument>, IUserRep
         _logger = logger;
     }
 
-    public async Task<IEnumerable<UserDocument>> GetAllUsersWithBirthdateInWeekAsync(LocalDate weekDate)
+    public async Task<IEnumerable<UserDocument>> GetAllUsersWithBirthdayEnabledAsync()
     {
         var collection = _provider.RedisCollection<UserDocument>();
 
-        var weekNumberInYear = WeekYearRules.Iso.GetWeekOfWeekYear(weekDate);
-        var usersWithBirthdate = await collection.Where(user => user.EnableBirthday).ToListAsync();
-
-        return usersWithBirthdate.Where(user =>
-            user.AnnualBirthdate.HasValue
-            && WeekYearRules.Iso.GetWeekOfWeekYear(new LocalDate(weekDate.Year, user.AnnualBirthdate!.Value.Month, user.AnnualBirthdate.Value.Day)) == weekNumberInYear);
+        return await collection.Where(user => user.EnableBirthday).ToListAsync();
     }
 
     [LoggerMessage(EventId = 0, Level = LogLevel.Error, Message = "Exception caught")]

@@ -18,6 +18,19 @@ public partial class DocumentService<T> : IDocumentService<T>
         _logger = logger;
     }
 
+    public async Task<Result<IEnumerable<T>>> GetAllAsync()
+    {
+        try
+        {
+            return Result.Ok(await _repository.GetAllAsync());
+        }
+        catch (Exception e)
+        {
+            LogErrorException(e);
+            return Result.Fail(e.Message);
+        }
+    }
+
     public async Task<Result<T?>> GetAsync(ulong? documentId)
     {
         try

@@ -2,6 +2,8 @@
 
 public interface IDocumentRepository<T>
 {
+    Task<IEnumerable<T>> GetAllAsync();
+
     Task<T?> GetAsync(ulong? documentId);
 
     Task<T?> UpsertAsync(T documentId);

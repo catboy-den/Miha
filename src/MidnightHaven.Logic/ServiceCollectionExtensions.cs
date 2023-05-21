@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddLogicServices(this IServiceCollection services)
     {
+        services.AddSingleton<IBirthdayJobService, BirthdayJobService>();
         services.AddSingleton<IGuildService, GuildService>();
         services.AddSingleton<IUserService, UserService>();
 
