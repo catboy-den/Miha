@@ -12,7 +12,7 @@ namespace MidnightHaven.Background.Services;
 /// </summary>
 public class BirthdayScannerService : BackgroundService
 {
-    private const string Schedule = "0,10,20,30,40,50 ? * * *"; // https://crontab.cronhub.io/
+    private const string Schedule = "*/5 8-19 * * * TZ=America/New_York"; // https://crontab.cronhub.io/
 
     private readonly IEasternStandardZonedClock _easternStandardZonedClock;
     private readonly IUserService _userService;
@@ -39,6 +39,8 @@ public class BirthdayScannerService : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            await ScanBirthdaysAsync();
+
             var utcNow = DateTime.UtcNow;
             var nextUtc = _cron.GetNextOccurrence(utcNow);
 
@@ -48,8 +50,6 @@ public class BirthdayScannerService : BackgroundService
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
-
-            await ScanBirthdaysAsync();
 
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }

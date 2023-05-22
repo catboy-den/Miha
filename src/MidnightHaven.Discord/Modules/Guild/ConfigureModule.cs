@@ -89,4 +89,31 @@ public class ConfigureModule : BaseInteractionModule
             await RespondSuccessAsync("Updated Announcement Role", fields);
         }
     }
+
+    [Group("birthdays", "Set or update birthday settings and options")]
+    public class BirthdayModule : BaseInteractionModule
+    {
+        private readonly IGuildService _guildService;
+
+        public BirthdayModule(IGuildService guildService)
+        {
+            _guildService = guildService;
+        }
+
+        [SlashCommand("channel", "Sets or updates the channel where birthday announcements will be posted")]
+        public async Task ChannelAsync(
+            [Summary(description: "The channel where todays birthday will be posted")] ITextChannel channel,
+            [Summary(description: "Setting this to true will disable announcements, even if you set a channel")] bool disable = false)
+        {
+
+        }
+
+        [SlashCommand("role", "Sets or updates the role that will be pinged when a event has started")]
+        public async Task NotifyRoleAsync(
+            [Summary(description: "The role that will be pinged when an event is announced as starting")] IRole notifyRole,
+            [Summary(description: "Setting this to true will disable role-pings, even if you set a role")] bool disable = false)
+        {
+
+        }
+    }
 }

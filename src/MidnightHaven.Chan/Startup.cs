@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MidnightHaven.Background;
+using MidnightHaven.Background.Services;
 using MidnightHaven.Discord;
 using MidnightHaven.Logic;
 using MidnightHaven.Redis;
@@ -29,5 +30,12 @@ public static class Startup
         services
             .AddLogicServices()
             .AddBackgroundServices();
+    }
+
+    private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+    {
+        services.AddHostedService<BirthdayScannerService>();
+
+        return services;
     }
 }

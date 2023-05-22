@@ -20,8 +20,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Discord", "Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Logic", "MidnightHaven.Logic\MidnightHaven.Logic.csproj", "{DB449965-B061-4BBD-8D9A-6CDDDF075442}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Background", "MidnightHaven.Background\MidnightHaven.Background.csproj", "{A74D31E1-98A9-473B-B63C-AE9EF09E4B88}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Shared", "MidnightHaven.Shared\MidnightHaven.Shared.csproj", "{957EEF51-3555-4C7A-928D-37DB36262921}"
 EndProject
 Global
@@ -46,10 +44,6 @@ Global
 		{DB449965-B061-4BBD-8D9A-6CDDDF075442}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB449965-B061-4BBD-8D9A-6CDDDF075442}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB449965-B061-4BBD-8D9A-6CDDDF075442}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A74D31E1-98A9-473B-B63C-AE9EF09E4B88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A74D31E1-98A9-473B-B63C-AE9EF09E4B88}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A74D31E1-98A9-473B-B63C-AE9EF09E4B88}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A74D31E1-98A9-473B-B63C-AE9EF09E4B88}.Release|Any CPU.Build.0 = Release|Any CPU
 		{957EEF51-3555-4C7A-928D-37DB36262921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{957EEF51-3555-4C7A-928D-37DB36262921}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{957EEF51-3555-4C7A-928D-37DB36262921}.Release|Any CPU.ActiveCfg = Release|Any CPU

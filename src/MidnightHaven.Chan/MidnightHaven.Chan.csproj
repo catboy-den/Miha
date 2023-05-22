@@ -15,10 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MidnightHaven.Background\MidnightHaven.Background.csproj"/>
-    <ProjectReference Include="..\MidnightHaven.Discord\MidnightHaven.Discord.csproj"/>
-    <ProjectReference Include="..\MidnightHaven.Logic\MidnightHaven.Logic.csproj"/>
-    <ProjectReference Include="..\MidnightHaven.Redis\MidnightHaven.Redis.csproj"/>
+    <ProjectReference Include="..\MidnightHaven.Discord\MidnightHaven.Discord.csproj" />
+    <ProjectReference Include="..\MidnightHaven.Logic\MidnightHaven.Logic.csproj" />
+    <ProjectReference Include="..\MidnightHaven.Redis\MidnightHaven.Redis.csproj" />
   </ItemGroup>
 
 </Project>
