@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using MidnightHaven.Background;
-using MidnightHaven.Background.Services;
+using MidnightHaven.Chan.Services;
 using MidnightHaven.Discord;
 using MidnightHaven.Logic;
 using MidnightHaven.Redis;

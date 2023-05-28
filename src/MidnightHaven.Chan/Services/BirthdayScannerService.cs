@@ -5,14 +5,14 @@ using MidnightHaven.Logic.Services.Interfaces;
 using MidnightHaven.Redis.Documents;
 using MidnightHaven.Shared.ZonedClocks.Interfaces;
 
-namespace MidnightHaven.Background.Services;
+namespace MidnightHaven.Chan.Services;
 
 /// <summary>
 /// Scans birthdays, and creates BirthdayJobDocuments
 /// </summary>
 public class BirthdayScannerService : BackgroundService
 {
-    private const string Schedule = "*/5 8-19 * * * TZ=America/New_York"; // https://crontab.cronhub.io/
+    private const string Schedule = "*/5 8-19 * * *"; // https://crontab.cronhub.io/
 
     private readonly IEasternStandardZonedClock _easternStandardZonedClock;
     private readonly IUserService _userService;
@@ -41,8 +41,8 @@ public class BirthdayScannerService : BackgroundService
         {
             await ScanBirthdaysAsync();
 
-            var utcNow = DateTime.UtcNow;
-            var nextUtc = _cron.GetNextOccurrence(utcNow);
+            var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
 
             if (nextUtc is null)
             {
@@ -51,6 +51,7 @@ public class BirthdayScannerService : BackgroundService
                 continue;
             }
 
+            _logger.LogInformation("Waiting {Time}", nextUtc.Value - utcNow);
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }

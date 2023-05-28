@@ -136,9 +136,9 @@ public class BirthdayModule : BaseInteractionModule
 
         var currentDateInTimezone = _clock.InZone(birthDateTimezone).GetCurrentDate();
         var birthDateTime = new LocalDateTime(currentDateInTimezone.Year, birthDate.Month, birthDate.Day, 0, 0).InZoneLeniently(birthDateTimezone);
-        var birthDateTimeTimeOffset = birthDateTime.ToDateTimeOffset();
+        var birthDateTimeTimeOffset = birthDateTime.LocalDateTime.InUtc().ToDateTimeOffset();
 
-        var birthdayAlreadyHappened = _clock.GetCurrentInstant().ToUnixTimeMilliseconds() > birthDateTimeTimeOffset.ToUnixTimeMilliseconds();
+        var birthdayAlreadyHappened = _clock.InZone(birthDateTimezone).GetCurrentInstant() > birthDateTime.ToInstant();
 
         var description = new StringBuilder()
             .Append("You're birthday ").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))

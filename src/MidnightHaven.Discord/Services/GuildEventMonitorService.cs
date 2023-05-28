@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MidnightHaven.Discord.Extensions;
 using MidnightHaven.Logic.Services.Interfaces;
+using MidnightHaven.Shared.ZonedClocks.Interfaces;
 
 namespace MidnightHaven.Discord.Services;
 
@@ -15,6 +16,7 @@ public partial class GuildEventMonitorService : DiscordClientService
 {
     private readonly DiscordOptions _discordOptions;
     private readonly IGuildService _guildService;
+    private readonly IEasternStandardZonedClock _easternStandardZonedClock;
     private readonly ILogger<GuildEventMonitorService> _logger;
 
     private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 ? * * *"; // https://crontab.cronhub.io/
@@ -26,11 +28,13 @@ public partial class GuildEventMonitorService : DiscordClientService
     public GuildEventMonitorService(
         DiscordSocketClient client,
         IGuildService guildService,
+        IEasternStandardZonedClock easternStandardZonedClock,
         IOptions<DiscordOptions> discordOptions,
         ILogger<GuildEventMonitorService> logger) : base(client, logger)
     {
         _discordOptions = discordOptions.Value;
         _guildService = guildService;
+        _easternStandardZonedClock = easternStandardZonedClock;
         _logger = logger;
 
         _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 32 });
@@ -50,8 +54,8 @@ public partial class GuildEventMonitorService : DiscordClientService
         {
             await CheckScheduledEventsAsync();
 
-            var utcNow = DateTime.UtcNow;
-            var nextUtc = _cron.GetNextOccurrence(utcNow);
+            var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
 
             if (nextUtc is null)
             {
