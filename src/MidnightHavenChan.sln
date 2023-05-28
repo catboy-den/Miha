@@ -11,7 +11,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		appsettings.json = appsettings.json
 		Dockerfile = Dockerfile
 		..\docker-compose.dev.yml = ..\docker-compose.dev.yml
-		..\docker-compose.yml = ..\docker-compose.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MidnightHaven.Redis", "MidnightHaven.Redis\MidnightHaven.Redis.csproj", "{51E2A7AC-9B3D-4453-89E7-EF81DAE37E41}"

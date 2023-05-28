@@ -3,7 +3,6 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
-COPY ["MidnightHaven.Background/MidnightHaven.Background.csproj", "MidnightHaven.Background/"]
 COPY ["MidnightHaven.Chan/MidnightHaven.Chan.csproj", "MidnightHaven.Chan/"]
 COPY ["MidnightHaven.Discord/MidnightHaven.Discord.csproj", "MidnightHaven.Discord/"]
 COPY ["MidnightHaven.Logic/MidnightHaven.Logic.csproj", "MidnightHaven.Logic/"]
