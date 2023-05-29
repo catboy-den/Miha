@@ -50,7 +50,7 @@ public class UserDocument : Document
 
         var localDateTime = new LocalDateTime(year,  AnnualBirthdate.Value.Month, AnnualBirthdate.Value.Day, 0, 0, 0);
         var zonedDateTime = localDateTime.InZoneStrictly(Timezone);
-        var estZonedDateTime = zonedDateTime.WithZone(DateTimeZoneProviders.Tzdb[Timezones.EasternStandardTime]);
+        var estZonedDateTime = zonedDateTime.WithZone(DateTimeZoneProviders.Tzdb[Timezones.IanaEasternTime]);
 
         return estZonedDateTime.Date;
     }

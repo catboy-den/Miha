@@ -65,28 +65,34 @@ public class BirthdayModule : BaseInteractionModule
         }
 
         var userBirthdate = userDoc.AnnualBirthdate.Value;
-
         var currentDateInTimezone = _clock.InZone(userTimezone).GetCurrentDate();
-        var birthDateTime = new LocalDateTime(currentDateInTimezone.Year, userBirthdate.Month, userBirthdate.Day, 0, 0).InZoneLeniently(userTimezone);
-        var birthDateTimeTimeOffset = birthDateTime.ToDateTimeOffset();
 
-        var birthdayAlreadyHappened = _clock.GetCurrentInstant().ToUnixTimeMilliseconds() > birthDateTimeTimeOffset.ToUnixTimeMilliseconds();
+        var localBirthdate = new LocalDate(currentDateInTimezone.Year, userBirthdate.Month, userBirthdate.Day);
+        var birthDateTime = localBirthdate.AtStartOfDayInZone(userTimezone).ToInstant();
+        var birthDateTimeOffset = birthDateTime.ToDateTimeOffset();
+
+        var birthdayAlreadyHappened = _clock.InZone(userTimezone).GetCurrentInstant() > birthDateTime;
 
         var description = new StringBuilder()
             .Append(targetUser.Mention)
-            .Append("'s birthday").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
-            .Append(" on ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            .Append("'s birthday").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
+            .Append(" on ").Append(birthDateTimeOffset.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
 
-        var field = new EmbedFieldBuilder()
+        var timeZoneField = new EmbedFieldBuilder()
             .WithName("Timezone")
             .WithValue(userTimezone.Id)
+            .WithIsInline(false);
+
+        var enabledField = new EmbedFieldBuilder()
+            .WithName("Enabled")
+            .WithValue(userDoc.EnableBirthday)
             .WithIsInline(false);
 
         var embed = new EmbedBuilder().AsMinimal(
             Context.User.Username,
             Context.User.GetAvatarUrl(),
             description.ToString(),
-            field);
+            timeZoneField, enabledField);
 
         await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
@@ -135,14 +141,16 @@ public class BirthdayModule : BaseInteractionModule
             .Build();
 
         var currentDateInTimezone = _clock.InZone(birthDateTimezone).GetCurrentDate();
-        var birthDateTime = new LocalDateTime(currentDateInTimezone.Year, birthDate.Month, birthDate.Day, 0, 0).InZoneLeniently(birthDateTimezone);
-        var birthDateTimeTimeOffset = birthDateTime.LocalDateTime.InUtc().ToDateTimeOffset();
 
-        var birthdayAlreadyHappened = _clock.InZone(birthDateTimezone).GetCurrentInstant() > birthDateTime.ToInstant();
+        var localBirthdate = new LocalDate(currentDateInTimezone.Year, birthDate.Month, birthDate.Day);
+        var birthDateTime = localBirthdate.AtStartOfDayInZone(birthDateTimezone).ToInstant();
+        var birthDateTimeOffset = birthDateTime.ToDateTimeOffset();
+
+        var birthdayAlreadyHappened = _clock.InZone(birthDateTimezone).GetCurrentInstant() > birthDateTime;
 
         var description = new StringBuilder()
-            .Append("You're birthday ").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
-            .Append(" on ").Append(birthDateTimeTimeOffset.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            .Append("You're birthday ").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
+            .Append(" on ").Append(birthDateTimeOffset.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
 
         var field = new EmbedFieldBuilder()
             .WithName("Timezone")
@@ -184,6 +192,76 @@ public class BirthdayModule : BaseInteractionModule
         }
 
         await RespondSuccessAsync("Cleared your birthday & stored time-zone");
+    }
+
+    [SlashCommand("enable", "Enables your birthday if previously disabled, when enabled it'll be announced the day-of")]
+    public async Task EnableAsync()
+    {
+        var userDoc = await _userService.GetAsync(Context.User.Id);
+
+        if (userDoc.IsFailed)
+        {
+            await RespondErrorAsync(userDoc.Errors);
+            return;
+        }
+
+        if (userDoc.Value?.AnnualBirthdate is null)
+        {
+            await RespondMinimalAsync("You don't have a birthday set to enable");
+            return;
+        }
+
+        var deleteJobResult = await _birthdayJobService.DeleteAsync(Context.User.Id, true);
+
+        if (deleteJobResult.IsFailed)
+        {
+            await RespondErrorAsync(deleteJobResult.Errors);
+            return;
+        }
+
+        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        {
+            doc.EnableBirthday = true;
+        });
+
+        if (result.IsFailed)
+        {
+            await RespondErrorAsync(result.Errors);
+            return;
+        }
+
+        await RespondSuccessAsync("Birthday announcement enabled");
+    }
+
+    [SlashCommand("disable", "Disables your birthday if previously enabled, when disabled your birthday won't be announced")]
+    public async Task DisableAsync()
+    {
+        var userDoc = await _userService.GetAsync(Context.User.Id);
+
+        if (userDoc.IsFailed)
+        {
+            await RespondErrorAsync(userDoc.Errors);
+            return;
+        }
+
+        if (userDoc.Value?.AnnualBirthdate is null)
+        {
+            await RespondMinimalAsync("You don't have a birthday set to disable");
+            return;
+        }
+
+        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        {
+            doc.EnableBirthday = false;
+        });
+
+        if (result.IsFailed)
+        {
+            await RespondErrorAsync(result.Errors);
+            return;
+        }
+
+        await RespondSuccessAsync("Birthday announcement disabled");
     }
 
     [ComponentInteraction("tz:*", true)]
@@ -233,9 +311,15 @@ public class BirthdayModule : BaseInteractionModule
             return DateTimeZoneProviders.Tzdb.GetZoneOrNull(ianaTimeZoneId);
         }
 
-        // Try to parse iana time-zone
+        // Iana is very specific, EST only has -05 UTC, when EST is typically considered -05/-04
+        // Due to how heavily used EST might be, let's convert it to the common -05/-04 variant
+        if (timeZone.ToUpperInvariant() == "EST")
+        {
+            timeZone = "EST5EDT";
+        }
+
         var ianaTimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone);
-        ianaTimeZone ??= DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone.ToUpperInvariant()); // Capitalize, maybe it's an abbreviation
+        ianaTimeZone ??= DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZone.ToUpperInvariant());
 
         return ianaTimeZone;
     }

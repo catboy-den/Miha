@@ -10,11 +10,11 @@ public class EasternStandardZonedClock : ZonedClock, IEasternStandardZonedClock
     private readonly BclDateTimeZone _bclDateTimeZone;
     private readonly TimeZoneInfo _timeZoneInfo;
 
-    public EasternStandardZonedClock(IClock clock) : base(clock, DateTimeZoneProviders.Tzdb[Timezones.EasternStandardTime], CalendarSystem.Iso)
+    public EasternStandardZonedClock(IClock clock) : base(clock, DateTimeZoneProviders.Tzdb[Timezones.IanaEasternTime], CalendarSystem.Iso)
     {
-        _timeZone = DateTimeZoneProviders.Tzdb[Timezones.EasternStandardTime];
-        _bclDateTimeZone = (BclDateTimeZone) DateTimeZoneProviders.Bcl[Timezones.EasternStandardTime];
-        _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(Timezones.EasternStandardTime);
+        _timeZone = DateTimeZoneProviders.Tzdb[Timezones.IanaEasternTime];
+        _bclDateTimeZone = (BclDateTimeZone) DateTimeZoneProviders.Bcl[Timezones.IanaEasternTime];
+        _timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(Timezones.WindowsEasternTime);
     }
 
     public DateTimeZone GetTzdbTimeZone() => _timeZone;
