@@ -19,7 +19,7 @@ public class GuildDocument : Document
     public ulong? BirthdayAnnouncementChannel { get; set; }
 
     [Indexed]
-    public List<ulong>? BirthdayBlacklistedRoles { get; set; }
+    public List<ulong>? BirthdayAnnouncementRoles { get; set; }
 
     [Indexed]
     public ulong? LogChannel { get; set; }
