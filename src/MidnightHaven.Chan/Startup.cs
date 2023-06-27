@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MidnightHaven.Chan.Health;
 using MidnightHaven.Chan.Services;
@@ -20,7 +21,7 @@ public static class Startup
         });
 
         services.AddClocks();
-        services.AddHealthServices();
+        services.AddHealthServices(context.Configuration);
 
         services.AddRedis(context.Configuration);
 
@@ -34,14 +35,19 @@ public static class Startup
             .AddBackgroundServices();
     }
 
-    private static IServiceCollection AddHealthServices(this IServiceCollection services)
+    private static IServiceCollection AddHealthServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCustomTinyHealthCheck<ReadinessHealthCheck>(config =>
-        {
-            config.Port = 8000;
-            config.Hostname = "*";
-            config.UrlPath = "/readiness";
+        services.AddOptions<HealthOptions>().Bind(configuration.GetSection(HealthOptions.Section));
 
+        var options = configuration.GetSection(HealthOptions.Section).Get<HealthOptions>();
+
+        options ??= new HealthOptions();
+
+        services.AddCustomTinyHealthCheck<MihaHealthCheck>(config =>
+        {
+            config.Port = options.Port;
+            config.Hostname = "*";
+            config.UrlPath = options.Endpoint;
             return config;
         });
 
