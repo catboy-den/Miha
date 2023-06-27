@@ -20,4 +20,7 @@
     <ProjectReference Include="..\MidnightHaven.Redis\MidnightHaven.Redis.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="TinyHealthCheck" Version="0.0.16" />
+  </ItemGroup>
 </Project>
