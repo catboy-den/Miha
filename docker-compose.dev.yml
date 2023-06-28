@@ -22,8 +22,8 @@ services:
   mhchan:
     container_name: mhchan
     build:
-      context: ./src
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: src/Dockerfile
     environment:
       DOTNET_REDIS__HOST: redis
       DOTNET_REDIS__PORT: 6379
