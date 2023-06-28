@@ -31,7 +31,6 @@ services:
       DOTNET_DISCORD__GUILD: 1068697076323602503
     ports:
       - "8000:8000"
-      - "8001:8001"
     depends_on:
       - redis
       - redis-ui
