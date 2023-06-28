@@ -19,8 +19,8 @@ services:
     ports:
       - "8081:8081"
 
-  mhchan:
-    container_name: mhchan
+  miha:
+    container_name: miha
     build:
       context: .
       dockerfile: src/Dockerfile

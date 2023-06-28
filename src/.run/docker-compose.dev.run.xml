@@ -4,16 +4,11 @@
       <settings>
         <option name="envFilePath" value="" />
         <option name="commandLineOptions" value="--build" />
-        <option name="services">
-          <list>
-            <option value="mhchan" />
-          </list>
-        </option>
         <option name="sourceFilePath" value="../docker-compose.dev.yml" />
         <option name="upRemoveOrphans" value="true" />
       </settings>
     </deployment>
-    <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isPublishEnabled="true" />
+    <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
     <method v="2" />
   </configuration>
 </component>

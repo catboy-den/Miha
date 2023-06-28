@@ -3,20 +3,20 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR "/src"
-COPY ["src/MidnightHaven.Chan/MidnightHaven.Chan.csproj", "MidnightHaven.Chan/"]
-COPY ["src/MidnightHaven.Discord/MidnightHaven.Discord.csproj", "MidnightHaven.Discord/"]
-COPY ["src/MidnightHaven.Logic/MidnightHaven.Logic.csproj", "MidnightHaven.Logic/"]
-COPY ["src/MidnightHaven.Redis/MidnightHaven.Redis.csproj", "MidnightHaven.Redis/"]
-COPY ["src/MidnightHaven.Shared/MidnightHaven.Shared.csproj", "MidnightHaven.Shared/"]
+COPY ["src/Miha/Miha.csproj", "Miha/"]
+COPY ["src/Miha.Discord/Miha.Discord.csproj", "Miha.Discord/"]
+COPY ["src/Miha.Logic/Miha.Logic.csproj", "Miha.Logic/"]
+COPY ["src/Miha.Redis/Miha.Redis.csproj", "Miha.Redis/"]
+COPY ["src/Miha.Shared/Miha.Shared.csproj", "Miha.Shared/"]
 COPY . .
-WORKDIR "src/MidnightHaven.Chan/"
-RUN dotnet restore "MidnightHaven.Chan.csproj"
-RUN dotnet build "MidnightHaven.Chan.csproj" -c Release -o /app/build
+WORKDIR "src/Miha/"
+RUN dotnet restore "Miha.csproj"
+RUN dotnet build "Miha.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "MidnightHaven.Chan.csproj" -c Release -o /app/publish
+RUN dotnet publish "Miha.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "MidnightHaven.Chan.dll"]
+ENTRYPOINT ["dotnet", "Miha.dll"]
