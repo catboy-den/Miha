@@ -29,6 +29,6 @@ public class SlimMessageBusService : DiscordClientService
         Client.GuildScheduledEventUpdated += (_, @event) => _bus.Publish(@event, Topics.GuildEvent.Updated, cancellationToken: stoppingToken);
 
         await Client.WaitForReadyAsync(stoppingToken);
-        await Client.SetActivityAsync(new Game("on " + ThisAssembly.Git.Commit));
+        await Client.SetActivityAsync(new Game("on miha-" + ThisAssembly.Git.Commit));
     }
 }
