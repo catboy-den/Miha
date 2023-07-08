@@ -30,9 +30,9 @@ jobs:
         flavor: latest=false
         images: miha
         tags: |
-          # branch
+          # on branch push
           type=sha,format=short,prefix={{branch}}-,event=branch
           type=edge,branch=$repo.default_branch,event=branch
-          # on tag / releases
+          # on tag / release
           type=semver,pattern={{raw}},event=tag
           type=raw,value=latest,event=tag
