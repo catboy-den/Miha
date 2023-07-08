@@ -1,3 +1,4 @@
+name: Build - Push
 on:
   release:
     types: [published, prereleased]
@@ -9,7 +10,6 @@ on:
 # miha:1.0.0
 
 # don't put latest on pre-releases
-
 jobs:
   build-push:
     runs-on: ubuntu-latest
@@ -35,5 +35,4 @@ jobs:
         flavor: latest=false
         images: miha-ci
         tags: |
-          type=ref,event=branch
-          type=sha
+          type=ref,event=branch,type=sha
