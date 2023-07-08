@@ -37,4 +37,4 @@ jobs:
           type=sha,format=short,prefix={{branch}}-,event=branch,enable=${{ env.IS-TAG == 'false' }}
           type=edge,branch=main,event=branch,enable=${{ env.IS-TAG == 'false' }}
           # on new tag / release
-          type=semver,pattern={{raw}},event=tag,enable=${{ env.IS-TAG == 'true' }}
+          type=semver,pattern={{version}},event=tag,enable=${{ env.IS-TAG == 'true' }}
