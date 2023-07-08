@@ -32,5 +32,6 @@ jobs:
         flavor: latest=false
         images: miha
         tags: |
+          type=sha,prefix={{branch}}-,event=branch
           type=sha,format=long,event=branch
           type=edge,event=branch
