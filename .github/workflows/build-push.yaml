@@ -35,6 +35,4 @@ jobs:
         flavor: latest=false
         images: miha-ci
         tags: |
-          type=ref,event=branch,
-          type=edge,
-          type=sha
+          type=edge,branch=main
