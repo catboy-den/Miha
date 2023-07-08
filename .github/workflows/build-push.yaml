@@ -29,8 +29,9 @@ jobs:
     - id: meta
       uses: docker/metadata-action@v4
       with:
-        flavor: latest=false
+        flavor: latest={{is_default_branch}}
         images: miha
         tags: |
           type=sha,format=long,prefix={{branch}}-,event=branch
           type=edge,branch=build-push,event=branch
+          type=semver,pattern={{raw}},event=tag
