@@ -53,7 +53,7 @@ jobs:
     - run: |
         echo "## Pushed docker images :cloud:" >> $GITHUB_STEP_SUMMARY
 
-        tags=${{ steps.meta.outputs.tags }}
+        tags="${{ steps.meta.outputs.tags }}"
 
         IFS=$'\n'
 
