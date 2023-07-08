@@ -27,7 +27,7 @@ jobs:
     - id: meta
       uses: docker/metadata-action@v4
       with:
-        flavor: latest=false
+        flavor: latest=auto
         images: miha
         tags: |
           # on branch push
@@ -36,4 +36,3 @@ jobs:
           type=edge,branch=main,event=branch
           # on tag / release
           type=semver,pattern={{raw}},event=tag
-          type=raw,value=latest,event=tag
