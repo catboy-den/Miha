@@ -8,11 +8,11 @@ public static class Versioning
     public static string GetVersion()
     {
         var version = new StringBuilder();
-        var versionPrefix = Environment.GetEnvironmentVariable("MIHA_VERSION_PREFIX");
+        var customVersion = Environment.GetEnvironmentVariable("MIHA_CUSTOM_VERSION");
 
-        if (!string.IsNullOrEmpty(versionPrefix))
+        if (!string.IsNullOrEmpty(customVersion))
         {
-            version.Append(versionPrefix).Append(' ').Append(Git.Commit);
+            version.Append(customVersion).Append(' ').Append(Git.Commit);
         }
         else
         {
