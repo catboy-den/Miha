@@ -1,15 +1,8 @@
 name: Build - Push
 on:
   release:
-    types: [published, prereleased]
+    types: [published]
   push:
-
-# I want to do pull requests
-# we could do ci images
-# miha-ci:<branch-name>-<sha>
-# miha:1.0.0
-
-# don't put latest on pre-releases
 jobs:
   build-push:
     runs-on: ubuntu-latest
@@ -28,11 +21,13 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
 
-    # push
-    - if: ${{ github.event_name == 'push' }}
+    # push: <branch-name>-long-sha, edge
+    # release: v1.0.0, latest 
+    - id: meta
       uses: docker/metadata-action@v4
       with:
         flavor: latest=false
-        images: miha-ci
+        images: miha
         tags: |
-          type=edge,branch=main
+          type=sha,event=branch
+          type=edge,event=branch
