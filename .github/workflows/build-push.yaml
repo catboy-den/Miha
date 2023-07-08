@@ -36,4 +36,4 @@ jobs:
           type=edge,branch=main,event=branch
           # on tag / release
           type=semver,pattern={{raw}},event=tag
-          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=latest,event=tag
