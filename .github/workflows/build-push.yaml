@@ -6,6 +6,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref_name }}
   cancel-in-progress: true
 
+env:
+  IS-TAG: ${{ startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   build-push:
     runs-on: ubuntu-latest
@@ -31,8 +34,8 @@ jobs:
         images: miha
         tags: |
           # on branch push
-          type=sha,format=short,prefix={{branch}}-,event=branch,enabled=${{ !startsWith(github.ref, 'refs/tags/') }}
+          type=sha,format=short,prefix={{branch}}-,event=branch,enable=${{ !startsWith(github.ref, 'refs/tags/') }}
           # on any push to main branch
-          type=edge,branch=main,event=branch,enabled=${{ startsWith(github.ref, 'refs/tags/') }}
+          type=edge,branch=main,event=branch,enable=${{ startsWith(github.ref, 'refs/tags/') }}
           # on tag / release
-          type=semver,pattern={{raw}},event=tag,enabled=${{ startsWith(github.ref, 'refs/tags/') }}
+          type=semver,pattern={{raw}},event=tag,enable=${{ startsWith(github.ref, 'refs/tags/') }}
