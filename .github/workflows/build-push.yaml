@@ -24,14 +24,15 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ github.token }}
 
-    # push: <branch-name>-long-sha, edge
-    # release: v1.0.0, latest 
     - id: meta
       uses: docker/metadata-action@v4
       with:
-        flavor: latest={{is_default_branch}}
+        flavor: latest=false
         images: miha
         tags: |
+          # branch
           type=sha,format=long,prefix={{branch}}-,event=branch
           type=edge,branch=build-push,event=branch
+          # tag / releases
           type=semver,pattern={{raw}},event=tag
+          type=raw,value=latest,enable={{is_default_branch}}
