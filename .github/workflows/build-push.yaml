@@ -34,8 +34,8 @@ jobs:
         images: miha
         tags: |
           # on branch push
-          type=sha,format=short,prefix={{branch}}-,event=branch,enable=${{ !startsWith(github.ref, 'refs/tags/') }}
+          type=sha,format=short,prefix={{branch}}-,event=branch,enable=${{ !env.IS-TAG }}
           # on any push to main branch
-          type=edge,branch=main,event=branch,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+          type=edge,branch=main,event=branch,enable=${{ !env.IS-TAG }}
           # on tag / release
-          type=semver,pattern={{raw}},event=tag,enable=${{ startsWith(github.ref, 'refs/tags/') }}
+          type=semver,pattern={{raw}},event=tag,enable=${{ env.IS-TAG }}
