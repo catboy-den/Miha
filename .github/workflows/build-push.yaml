@@ -31,7 +31,7 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         flavor: latest=auto
-        images: miha
+        images: ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
         tags: |
           # for non-tagged pushes
           type=sha,format=short,prefix={{branch}}-,event=branch,enable=${{ env.IS-TAG == 'false' }}
