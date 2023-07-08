@@ -33,4 +33,4 @@ jobs:
         images: miha
         tags: |
           type=sha,format=long,prefix={{branch}}-,event=branch
-          type=edge,event=branch
+          type=edge,branch=build-push,event=branch
