@@ -1,0 +1,39 @@
+on:
+  release:
+    types: [published, prereleased]
+  push:
+
+# I want to do pull requests
+# we could do ci images
+# miha-ci:<branch-name>-<sha>
+# miha:1.0.0
+
+# don't put latest on pre-releases
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - uses: docker/setup-buildx-action@v2
+
+    - uses: docker/login-action@v2
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    # push
+    - if: ${{ github.event_name == 'push' }}
+      uses: docker/metadata-action@v4
+      with:
+        flavor: latest=false
+        images: miha-ci
+        tags: |
+          type=ref,event=branch
+          type=sha
