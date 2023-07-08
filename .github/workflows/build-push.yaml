@@ -33,9 +33,8 @@ jobs:
         flavor: latest=auto
         images: miha
         tags: |
-          # on branch push
+          # for non-tagged pushes
           type=sha,format=short,prefix={{branch}}-,event=branch,enable=${{ env.IS-TAG == 'false' }}
-          # on any push to main branch
           type=edge,branch=main,event=branch,enable=${{ env.IS-TAG == 'false' }}
-          # on tag / release
+          # on new tag / release
           type=semver,pattern={{raw}},event=tag,enable=${{ env.IS-TAG == 'true' }}
