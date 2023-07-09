@@ -23,6 +23,7 @@ try
         .ConfigureAppConfiguration(builder =>
         {
             builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
+            builder.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false);
             builder.AddEnvironmentVariables();
         })
         .UseSerilog()
