@@ -22,8 +22,12 @@ try
     var host = Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration(builder =>
         {
-            builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
-            builder.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: false);
+            foreach (var s in builder.Sources)
+            {
+                if (s is FileConfigurationSource source)
+                    source.ReloadOnChange = false;
+            }
+
             builder.AddEnvironmentVariables();
         })
         .UseSerilog()
