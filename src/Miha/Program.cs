@@ -20,7 +20,11 @@ try
     Log.Information("Starting host");
 
     var host = Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration(builder => builder.AddEnvironmentVariables())
+        .ConfigureAppConfiguration(builder =>
+        {
+            builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
+            builder.AddEnvironmentVariables();
+        })
         .UseSerilog()
         .ConfigureDiscordHost((context, config) =>
         {
