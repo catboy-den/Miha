@@ -22,6 +22,8 @@ try
     var host = Host.CreateDefaultBuilder(args)
         .ConfigureAppConfiguration(builder =>
         {
+            // Disable ReloadOnChange for all sources, we don't intend to support this
+            // and it creates a lot of inotify issues on docker hosts running on linux
             foreach (var s in builder.Sources)
             {
                 if (s is FileConfigurationSource source)
