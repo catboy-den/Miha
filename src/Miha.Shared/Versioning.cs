@@ -16,8 +16,9 @@ public static class Versioning
         }
         else
         {
+            version.Append('v');
             version.Append(Git.BaseVersion.Major).Append('.').Append(Git.BaseVersion.Minor).Append('.').Append(Git.BaseVersion.Patch);
-            version.Append(' ').Append(Git.Commit);
+            version.Append('-').Append(Git.Commit);
         }
 
         return version.ToString();

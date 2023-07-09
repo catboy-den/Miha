@@ -58,7 +58,7 @@ jobs:
           # on new tag / release
           type=semver,pattern={{version}},event=tag,enable=${{ env.IS-TAG == 'true' }}
           # add global tag
-          type=raw,priority=200,value=${{ steps.global-tag.outputs.tag }}
+          type=raw,priority=700,value=${{ steps.global-tag.outputs.tag }}
 
     - uses: docker/build-push-action@v3
       with:
