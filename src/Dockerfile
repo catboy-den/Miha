@@ -1,5 +1,5 @@
 ﻿FROM mcr.microsoft.com/dotnet/runtime:7.0 AS base
-ARG CUSTOM_VERSION="test"
+ARG CUSTOM_VERSION=""
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
