@@ -1,4 +1,5 @@
 ﻿FROM mcr.microsoft.com/dotnet/runtime:7.0 AS base
+ARG CUSTOM_VERSION=""
 WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
@@ -19,4 +20,5 @@ RUN dotnet publish "Miha.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV MIHA_CUSTOM_VERSION=${CUSTOM_VERSION}
 ENTRYPOINT ["dotnet", "Miha.dll"]

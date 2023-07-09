@@ -4,6 +4,7 @@ using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Miha.Discord.Consumers;
+using Miha.Shared;
 using SlimMessageBus;
 
 namespace Miha.Discord.Services;
@@ -29,6 +30,6 @@ public class SlimMessageBusService : DiscordClientService
         Client.GuildScheduledEventUpdated += (_, @event) => _bus.Publish(@event, Topics.GuildEvent.Updated, cancellationToken: stoppingToken);
 
         await Client.WaitForReadyAsync(stoppingToken);
-        await Client.SetActivityAsync(new Game("on miha-" + ThisAssembly.Git.Commit));
+        await Client.SetActivityAsync(new Game("on " + Versioning.GetVersion()));
     }
 }
