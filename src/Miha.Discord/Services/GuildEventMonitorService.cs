@@ -99,7 +99,7 @@ public partial class GuildEventMonitorService : DiscordClientService
                 // "Round" our minutes up
                 if (startsIn.Seconds <= 60)
                 {
-                    startsIn = TimeSpan.FromMinutes(startsIn.Minutes + 1);
+                    startsIn = TimeSpan.FromMinutes(startsIn.TotalMinutes + 1);
                 }
 
                 _logger.LogInformation("GuildEvent {EventId} starts in (rounded) {StartsIn}, {StartsInTotalMinutes}", guildEvent.Id, startsIn, startsIn.TotalMinutes);
