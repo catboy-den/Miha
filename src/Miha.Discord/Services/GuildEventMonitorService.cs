@@ -71,35 +71,45 @@ public partial class GuildEventMonitorService : DiscordClientService
 
     private async Task CheckScheduledEventsAsync()
     {
+        SocketGuild guild;
+
         try
         {
-            var guild = Client.GetGuild(_discordOptions.Guild!.Value);
+            guild = Client.GetGuild(_discordOptions.Guild!.Value);
             if (guild is null)
             {
                 _logger.LogCritical("Guild is null {GuildId}", _discordOptions.Guild.Value);
                 return;
             }
+        }
+        catch (Exception e)
+        {
+            LogError(e);
+            return;
+        }
 
-            foreach (var guildEvent in guild.Events)
+        foreach (var guildEvent in guild.Events)
+        {
+            try
             {
                 var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
-                _logger.LogInformation("GuildEvent {eventId} starts in (pre-round) {startsIn}", guildEvent.Id, startsIn);
+                _logger.LogInformation("GuildEvent {EventId} starts in (pre-round) {StartsIn} {StartsInTotalMinutes}", guildEvent.Id, startsIn, startsIn.TotalMinutes);
 
                 // "Round" our minutes up
                 if (startsIn.Seconds <= 60)
                 {
-                    startsIn = TimeSpan.FromMinutes(startsIn.Minutes + 1);
+                    startsIn = new TimeSpan(startsIn.Days, startsIn.Hours, startsIn.Minutes + 1, 0);
                 }
 
-                _logger.LogInformation("GuildEvent {eventId} starts in (rounded) {startsIn}", guildEvent.Id, startsIn);
+                _logger.LogInformation("GuildEvent {EventId} starts in (rounded) {StartsIn}, {StartsInTotalMinutes}", guildEvent.Id, startsIn, startsIn.TotalMinutes);
 
-                if (startsIn.Minutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
+                if (startsIn.TotalMinutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
                 {
                     continue;
                 }
 
-                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                _logger.LogInformation("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
                 {
                     guildEvent.StartTime,
                     guildEvent.Id,
@@ -136,15 +146,14 @@ public partial class GuildEventMonitorService : DiscordClientService
                         .WithValue(voiceChannel)
                         .WithIsInline(false));
                 }
-                else
+                else if (!string.IsNullOrEmpty(guildEvent.Creator.Username))
                 {
                     fields.Add(new EmbedFieldBuilder()
                         .WithName("Hosted by")
-                        .WithValue(guildEvent.Creator?.Username)
+                        .WithValue(guildEvent.Creator.Username)
                         .WithIsInline(false));
                 }
 
-                return;
                 var embed = new EmbedBuilder().AsScheduledEvent(
                     eventVerb: "Event is starting soon!",
                     eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative),
@@ -159,13 +168,16 @@ public partial class GuildEventMonitorService : DiscordClientService
 
                 _memoryCache.Set(guildEvent.Id, true, _memoryCacheEntryOptions);
             }
-        }
-        catch (Exception e)
-        {
-            LogError(e);
+            catch (Exception e)
+            {
+                LogError(e, guildEvent.Id);
+            }
         }
     }
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred in GuildEventMonitorService")]
     public partial void LogError(Exception e);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Exception occurred in GuildEventMonitorService during guildEvent {guildEventId}")]
+    public partial void LogError(Exception e, ulong guildEventId);
 }
