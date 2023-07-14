@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Cronos;
+﻿using Cronos;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Miha.Discord.Extensions;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
+using Newtonsoft.Json;
 
 namespace Miha.Discord.Services;
 
@@ -99,7 +99,12 @@ public partial class GuildEventMonitorService : DiscordClientService
                     continue;
                 }
 
-                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonSerializer.Serialize(guildEvent));
+                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                {
+                    guildEvent.StartTime,
+                    guildEvent.Id,
+                    guildEvent.EndTime,
+                }, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
                 {
@@ -139,6 +144,7 @@ public partial class GuildEventMonitorService : DiscordClientService
                         .WithIsInline(false));
                 }
 
+                return;
                 var embed = new EmbedBuilder().AsScheduledEvent(
                     eventVerb: "Event is starting soon!",
                     eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative),
