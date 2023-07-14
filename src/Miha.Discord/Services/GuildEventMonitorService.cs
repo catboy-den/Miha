@@ -131,11 +131,11 @@ public partial class GuildEventMonitorService : DiscordClientService
                         .WithValue(voiceChannel)
                         .WithIsInline(false));
                 }
-                else
+                else if (!string.IsNullOrEmpty(guildEvent.Creator.Username))
                 {
                     fields.Add(new EmbedFieldBuilder()
                         .WithName("Hosted by")
-                        .WithValue(guildEvent.Creator?.Username)
+                        .WithValue(guildEvent.Creator.Username)
                         .WithIsInline(false));
                 }
 
