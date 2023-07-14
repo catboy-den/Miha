@@ -85,6 +85,7 @@ public partial class GuildEventMonitorService : DiscordClientService
         catch (Exception e)
         {
             LogError(e);
+            return;
         }
 
         foreach (var guildEvent in guild.Events)
@@ -93,7 +94,7 @@ public partial class GuildEventMonitorService : DiscordClientService
             {
                 var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
-                _logger.LogInformation("GuildEvent {eventId} starts in (pre-round) {startsIn}", guildEvent.Id, startsIn);
+                _logger.LogInformation("GuildEvent {EventId} starts in (pre-round) {StartsIn}", guildEvent.Id, startsIn);
 
                 // "Round" our minutes up
                 if (startsIn.Seconds <= 60)
@@ -101,7 +102,7 @@ public partial class GuildEventMonitorService : DiscordClientService
                     startsIn = TimeSpan.FromMinutes(startsIn.Minutes + 1);
                 }
 
-                _logger.LogInformation("GuildEvent {eventId} starts in (rounded) {startsIn}", guildEvent.Id, startsIn);
+                _logger.LogInformation("GuildEvent {EventId} starts in (rounded) {StartsIn}", guildEvent.Id, startsIn);
 
                 if (startsIn.Minutes is < 5 or > 20 ||
                     _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
@@ -109,7 +110,12 @@ public partial class GuildEventMonitorService : DiscordClientService
                     continue;
                 }
 
-                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonSerializer.Serialize(guildEvent));
+                _logger.LogInformation("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                {
+                    guildEvent.StartTime,
+                    guildEvent.Id,
+                    guildEvent.EndTime,
+                }, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
                 {
