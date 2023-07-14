@@ -99,7 +99,7 @@ public partial class GuildEventMonitorService : DiscordClientService
                     continue;
                 }
 
-                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonSerializer.Serialize(guildEvent));
+                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonSerializer.Serialize(guildEvent, new JsonSerializerOptions { MaxDepth = 5 }));
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
                 {
