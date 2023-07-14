@@ -82,76 +82,84 @@ public partial class GuildEventMonitorService : DiscordClientService
 
             foreach (var guildEvent in guild.Events)
             {
-                var startsIn = guildEvent.StartTime - DateTime.UtcNow;
-
-                _logger.LogInformation("GuildEvent {eventId} starts in (pre-round) {startsIn}", guildEvent.Id, startsIn);
-
-                // "Round" our minutes up
-                if (startsIn.Seconds <= 60)
+                try
                 {
-                    startsIn = TimeSpan.FromMinutes(startsIn.Minutes + 1);
-                }
+                    var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
-                _logger.LogInformation("GuildEvent {eventId} starts in (rounded) {startsIn}", guildEvent.Id, startsIn);
+                    _logger.LogInformation("GuildEvent {eventId} starts in (pre-round) {startsIn}", guildEvent.Id, startsIn);
 
-                if (startsIn.Minutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
-                {
-                    continue;
-                }
+                    // "Round" our minutes up
+                    if (startsIn.Seconds <= 60)
+                    {
+                        startsIn = TimeSpan.FromMinutes(startsIn.Minutes + 1);
+                    }
 
-                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonSerializer.Serialize(guildEvent));
+                    _logger.LogInformation("GuildEvent {eventId} starts in (rounded) {startsIn}", guildEvent.Id, startsIn);
 
-                if (guildEvent.Status is GuildScheduledEventStatus.Active)
-                {
+                    if (startsIn.Minutes is < 5 or > 20 ||
+                        _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
+                    {
+                        continue;
+                    }
+
+                    _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonSerializer.Serialize(guildEvent));
+
+                    if (guildEvent.Status is GuildScheduledEventStatus.Active)
+                    {
+                        _memoryCache.Set(guildEvent.Id, true, _memoryCacheEntryOptions);
+                        continue;
+                    }
+
+                    var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
+                    if (announcementChannel.IsFailed)
+                    {
+                        _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
+                        continue;
+                    }
+
+                    var location = guildEvent.Location ?? "Unknown";
+                    string? voiceChannel = null;
+
+                    if (location is "Unknown" && guildEvent.Channel is not null)
+                    {
+                        voiceChannel = guildEvent.Channel.Name;
+                        location = "Discord";
+                    }
+
+                    var fields = new List<EmbedFieldBuilder>();
+                    if (voiceChannel is not null)
+                    {
+                        fields.Add(new EmbedFieldBuilder()
+                            .WithName("Voice channel")
+                            .WithValue(voiceChannel)
+                            .WithIsInline(false));
+                    }
+                    else if (!string.IsNullOrEmpty(guildEvent.Creator.Username))
+                    {
+                        fields.Add(new EmbedFieldBuilder()
+                            .WithName("Hosted by")
+                            .WithValue(guildEvent.Creator.Username)
+                            .WithIsInline(false));
+                    }
+
+                    var embed = new EmbedBuilder().AsScheduledEvent(
+                        eventVerb: "Event is starting soon!",
+                        eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative),
+                        eventLocation: location,
+                        eventDescription: string.Empty,
+                        color: Color.DarkBlue,
+                        authorAvatarUrl: guildEvent.Creator is null ? Client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
+                        authorUsername: guildEvent.Creator?.Username,
+                        fields: fields);
+
+                    await announcementChannel.Value.SendMessageAsync(embed: embed.Build());
+
                     _memoryCache.Set(guildEvent.Id, true, _memoryCacheEntryOptions);
-                    continue;
                 }
-
-                var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
-                if (announcementChannel.IsFailed)
+                catch (Exception e)
                 {
-                    _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
-                    continue;
+                    LogError(e, guildEvent.Id);
                 }
-
-                var location = guildEvent.Location ?? "Unknown";
-                string? voiceChannel = null;
-
-                if (location is "Unknown" && guildEvent.Channel is not null)
-                {
-                    voiceChannel = guildEvent.Channel.Name;
-                    location = "Discord";
-                }
-
-                var fields = new List<EmbedFieldBuilder>();
-                if (voiceChannel is not null)
-                {
-                    fields.Add(new EmbedFieldBuilder()
-                        .WithName("Voice channel")
-                        .WithValue(voiceChannel)
-                        .WithIsInline(false));
-                }
-                else if (!string.IsNullOrEmpty(guildEvent.Creator.Username))
-                {
-                    fields.Add(new EmbedFieldBuilder()
-                        .WithName("Hosted by")
-                        .WithValue(guildEvent.Creator.Username)
-                        .WithIsInline(false));
-                }
-
-                var embed = new EmbedBuilder().AsScheduledEvent(
-                    eventVerb: "Event is starting soon!",
-                    eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative),
-                    eventLocation: location,
-                    eventDescription: string.Empty,
-                    color: Color.DarkBlue,
-                    authorAvatarUrl: guildEvent.Creator is null ? Client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
-                    authorUsername: guildEvent.Creator?.Username,
-                    fields: fields);
-
-                await announcementChannel.Value.SendMessageAsync(embed: embed.Build());
-
-                _memoryCache.Set(guildEvent.Id, true, _memoryCacheEntryOptions);
             }
         }
         catch (Exception e)
@@ -162,4 +170,7 @@ public partial class GuildEventMonitorService : DiscordClientService
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred in GuildEventMonitorService")]
     public partial void LogError(Exception e);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Exception occurred in GuildEventMonitorService during guildEvent {guildEventId}")]
+    public partial void LogError(Exception e, ulong guildEventId);
 }
