@@ -94,7 +94,7 @@ public partial class GuildEventMonitorService : DiscordClientService
             {
                 var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
-                _logger.LogInformation("GuildEvent {EventId} starts in (pre-round) {StartsIn}", guildEvent.Id, startsIn);
+                _logger.LogInformation("GuildEvent {EventId} starts in (pre-round) {StartsIn} {StartsInTotalMinutes}", guildEvent.Id, startsIn, startsIn.TotalMinutes);
 
                 // "Round" our minutes up
                 if (startsIn.Seconds <= 60)
@@ -102,10 +102,9 @@ public partial class GuildEventMonitorService : DiscordClientService
                     startsIn = TimeSpan.FromMinutes(startsIn.Minutes + 1);
                 }
 
-                _logger.LogInformation("GuildEvent {EventId} starts in (rounded) {StartsIn}", guildEvent.Id, startsIn);
+                _logger.LogInformation("GuildEvent {EventId} starts in (rounded) {StartsIn}, {StartsInTotalMinutes}", guildEvent.Id, startsIn, startsIn.TotalMinutes);
 
-                if (startsIn.Minutes is < 5 or > 20 ||
-                    _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
+                if (startsIn.TotalMinutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
                 {
                     continue;
                 }
