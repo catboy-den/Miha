@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using Cronos;
+﻿using Cronos;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
@@ -10,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Miha.Discord.Extensions;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
+using Newtonsoft.Json;
 
 namespace Miha.Discord.Services;
 
