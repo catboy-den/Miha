@@ -1,4 +1,5 @@
-﻿using Cronos;
+﻿using System.Text.Json;
+using Cronos;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
@@ -83,16 +84,22 @@ public partial class GuildEventMonitorService : DiscordClientService
             {
                 var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
+                _logger.LogInformation("GuildEvent {eventId} starts in (pre-round) {startsIn}", guildEvent.Id, startsIn);
+
                 // "Round" our minutes up
                 if (startsIn.Seconds <= 60)
                 {
                     startsIn = TimeSpan.FromMinutes(startsIn.Minutes + 1);
                 }
 
+                _logger.LogInformation("GuildEvent {eventId} starts in (rounded) {startsIn}", guildEvent.Id, startsIn);
+
                 if (startsIn.Minutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
                 {
                     continue;
                 }
+
+                _logger.LogInformation("GuildEvent {eventId} {guildEventJson}", guildEvent.Id, JsonSerializer.Serialize(guildEvent));
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
                 {
