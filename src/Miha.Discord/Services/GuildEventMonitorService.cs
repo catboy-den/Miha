@@ -139,6 +139,7 @@ public partial class GuildEventMonitorService : DiscordClientService
                         .WithIsInline(false));
                 }
 
+                return;
                 var embed = new EmbedBuilder().AsScheduledEvent(
                     eventVerb: "Event is starting soon!",
                     eventName: guildEvent.Name + " - " + guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative),
