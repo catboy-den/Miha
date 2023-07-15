@@ -28,6 +28,12 @@ public class GuildEventCancelledConsumer : IConsumer<IGuildScheduledEvent>
         var loggingChannel = await _guildService.GetLoggingChannelAsync(guildEvent.Guild.Id);
         if (loggingChannel.IsFailed)
         {
+            if (loggingChannel.Reasons.Any(m => m.Message == "Logging channel not set"))
+            {
+                _logger.LogDebug("Guild logging channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                return;
+            }
+
             _logger.LogInformation("Failed getting logging channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
             return;
         }

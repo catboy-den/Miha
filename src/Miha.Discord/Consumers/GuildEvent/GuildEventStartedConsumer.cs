@@ -29,6 +29,12 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
         var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guildEvent.Guild.Id);
         if (announcementChannel.IsFailed)
         {
+            if (announcementChannel.Reasons.Any(m => m.Message == "Announcement channel not set"))
+            {
+                _logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                return;
+            }
+
             _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
             return;
         }

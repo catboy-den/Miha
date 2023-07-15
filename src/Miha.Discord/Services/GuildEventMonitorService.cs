@@ -92,9 +92,20 @@ public partial class GuildEventMonitorService : DiscordClientService
         {
             try
             {
-                var startsIn = guildEvent.StartTime - DateTime.UtcNow;
+                var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
+                if (announcementChannel.IsFailed)
+                {
+                    if (announcementChannel.Reasons.Any(m => m.Message == "Announcement channel not set"))
+                    {
+                        _logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                        return;
+                    }
 
-                _logger.LogInformation("GuildEvent {EventId} starts in (pre-round) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
+                    _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
+                    continue;
+                }
+
+                var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
                 // "Round" our minutes up
                 if (startsIn.Seconds <= 60)
@@ -102,34 +113,35 @@ public partial class GuildEventMonitorService : DiscordClientService
                     startsIn = new TimeSpan(startsIn.Days, startsIn.Hours, startsIn.Minutes + 1, 0);
                 }
 
-                _logger.LogInformation("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
+                _logger.LogDebug("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
 
                 if (startsIn.TotalMinutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
                 {
+                    _logger.LogDebug("GuildEvent {EventId} starts too soon or is already notified", guildEvent.Id);
                     continue;
                 }
 
-                _logger.LogInformation("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    guildEvent.StartTime,
-                    guildEvent.Id,
-                    guildEvent.EndTime,
-                    guildEvent.Creator,
-                    guildEvent.Location,
-                    guildEvent.Channel,
-                    guildEvent.Status,
-                }, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+                    _logger.LogDebug("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                    {
+                        guildEvent.StartTime,
+                        guildEvent.Id,
+                        guildEvent.EndTime,
+                        creator = guildEvent.Creator is null ? "null" : "[ ]",
+                        location = guildEvent.Location is null ? "null" : "[ ]",
+                        channel = guildEvent.Channel is null ? "null" : "[ ]",
+                        guildEvent.Status
+                    }, new JsonSerializerSettings
+                    {
+                        MaxDepth = 1,
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    }));
+                }
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
                 {
                     _memoryCache.Set(guildEvent.Id, true, _memoryCacheEntryOptions);
-                    continue;
-                }
-
-                var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
-                if (announcementChannel.IsFailed)
-                {
-                    _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
                     continue;
                 }
 
@@ -150,7 +162,7 @@ public partial class GuildEventMonitorService : DiscordClientService
                         .WithValue(voiceChannel)
                         .WithIsInline(false));
                 }
-                else if (!string.IsNullOrEmpty(guildEvent.Creator.Username))
+                else if (!string.IsNullOrEmpty(guildEvent.Creator?.Username))
                 {
                     fields.Add(new EmbedFieldBuilder()
                         .WithName("Hosted by")

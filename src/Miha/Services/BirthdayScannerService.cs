@@ -51,7 +51,7 @@ public class BirthdayScannerService : BackgroundService
                 continue;
             }
 
-            _logger.LogInformation("Waiting {Time}", nextUtc.Value - utcNow);
+            _logger.LogDebug("Waiting {Time}", nextUtc.Value - utcNow);
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }

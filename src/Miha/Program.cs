@@ -20,8 +20,13 @@ try
     Log.Information("Starting host");
 
     var host = Host.CreateDefaultBuilder(args)
-        .ConfigureAppConfiguration(builder =>
+        .ConfigureAppConfiguration((context, builder) =>
         {
+            if (context.HostingEnvironment.IsDevelopment())
+            {
+                builder.AddJsonFile("appsettings.edge.json", optional: true, reloadOnChange: false);
+            }
+
             // Disable ReloadOnChange for all sources, we don't intend to support this
             // and it creates a lot of inotify issues on docker hosts running on linux
             foreach (var s in builder.Sources)
@@ -32,7 +37,11 @@ try
 
             builder.AddEnvironmentVariables();
         })
-        .UseSerilog()
+        .UseSerilog((context, logger) => logger
+            .ReadFrom.Configuration(context.Configuration)
+            .Enrich.FromLogContext()
+            .Enrich.WithExceptionDetails()
+            .WriteTo.Console(new CompactJsonFormatter()))
         .ConfigureDiscordHost((context, config) =>
         {
             var discordOptions = context.Configuration.GetSection(DiscordOptions.Section).Get<DiscordOptions>();
