@@ -8,12 +8,11 @@ using Miha.Discord;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Formatting.Compact;
-using Serilog.Templates;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
-    .WriteTo.Console(new ExpressionTemplate("{ {@t, @l, @m, @r, @x} }\n"))
+    .WriteTo.Console(new RenderedCompactJsonFormatter())
     .CreateLogger();
 
 try
@@ -37,7 +36,7 @@ try
             .ReadFrom.Configuration(context.Configuration)
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails()
-            .WriteTo.Console(new ExpressionTemplate("{ {@t, @l, @m, @r, @x} }\n")))
+            .WriteTo.Console(new RenderedCompactJsonFormatter()))
         .ConfigureDiscordHost((context, config) =>
         {
             var discordOptions = context.Configuration.GetSection(DiscordOptions.Section).Get<DiscordOptions>();
