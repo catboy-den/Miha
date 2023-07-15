@@ -32,7 +32,11 @@ try
 
             builder.AddEnvironmentVariables();
         })
-        .UseSerilog()
+        .UseSerilog((context, logger) => logger
+            .Enrich.FromLogContext()
+            .Enrich.WithExceptionDetails()
+            .WriteTo.Console(new CompactJsonFormatter())
+            .ReadFrom.Configuration(context.Configuration))
         .ConfigureDiscordHost((context, config) =>
         {
             var discordOptions = context.Configuration.GetSection(DiscordOptions.Section).Get<DiscordOptions>();
