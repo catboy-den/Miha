@@ -107,31 +107,33 @@ public partial class GuildEventMonitorService : DiscordClientService
 
                 var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
-                _logger.LogInformation("GuildEvent {EventId} starts in (pre-round) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
-
                 // "Round" our minutes up
                 if (startsIn.Seconds <= 60)
                 {
                     startsIn = new TimeSpan(startsIn.Days, startsIn.Hours, startsIn.Minutes + 1, 0);
                 }
 
-                _logger.LogInformation("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
+                _logger.LogDebug("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
 
                 if (startsIn.TotalMinutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
                 {
+                    _logger.LogDebug("GuildEvent {EventId} starts too soon or is already notified", guildEvent.Id);
                     continue;
                 }
 
-                _logger.LogInformation("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    guildEvent.StartTime,
-                    guildEvent.Id,
-                    guildEvent.EndTime,
-                    guildEvent.Creator,
-                    guildEvent.Location,
-                    guildEvent.Channel,
-                    guildEvent.Status,
-                }, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+                    _logger.LogDebug("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                    {
+                        guildEvent.StartTime,
+                        guildEvent.Id,
+                        guildEvent.EndTime,
+                        guildEvent.Creator,
+                        guildEvent.Location,
+                        guildEvent.Channel,
+                        guildEvent.Status,
+                    }, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+                }
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
                 {
