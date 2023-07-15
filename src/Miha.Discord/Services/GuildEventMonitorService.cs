@@ -10,7 +10,6 @@ using Miha.Discord.Extensions;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
 using Newtonsoft.Json;
-using JsonSerializer = SpanJson.JsonSerializer;
 
 namespace Miha.Discord.Services;
 
@@ -124,7 +123,20 @@ public partial class GuildEventMonitorService : DiscordClientService
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("GuildEvent {GuildEventJson}", JsonSerializer.Generic.Utf16.Serialize(guildEvent));
+                    _logger.LogDebug("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                    {
+                        guildEvent.StartTime,
+                        guildEvent.Id,
+                        guildEvent.EndTime,
+                        creator = guildEvent.Creator is null ? "null" : "[ ]",
+                        location = guildEvent.Location is null ? "null" : "[ ]",
+                        channel = guildEvent.Channel is null ? "null" : "[ ]",
+                        guildEvent.Status
+                    }, new JsonSerializerSettings
+                    {
+                        MaxDepth = 1,
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    }));
                 }
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
