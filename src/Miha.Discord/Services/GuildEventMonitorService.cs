@@ -128,9 +128,9 @@ public partial class GuildEventMonitorService : DiscordClientService
                         guildEvent.StartTime,
                         guildEvent.Id,
                         guildEvent.EndTime,
-                        guildEvent.Creator,
-                        guildEvent.Location,
-                        guildEvent.Channel,
+                        creator = guildEvent.Creator is null ? "null" : "[ ]",
+                        location = guildEvent.Location is null ? "null" : "[ ]",
+                        channel = guildEvent.Channel is null ? "null" : "[ ]",
                         guildEvent.Status,
                     }, new JsonSerializerSettings
                     {
