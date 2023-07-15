@@ -12,7 +12,7 @@ using Serilog.Formatting.Compact;
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
-    .WriteTo.Console(new RenderedCompactJsonFormatter())
+    .WriteTo.Console(new CompactJsonFormatter())
     .CreateLogger();
 
 try
@@ -41,7 +41,7 @@ try
             .ReadFrom.Configuration(context.Configuration)
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails()
-            .WriteTo.Console(new RenderedCompactJsonFormatter()))
+            .WriteTo.Console(new CompactJsonFormatter()))
         .ConfigureDiscordHost((context, config) =>
         {
             var discordOptions = context.Configuration.GetSection(DiscordOptions.Section).Get<DiscordOptions>();
