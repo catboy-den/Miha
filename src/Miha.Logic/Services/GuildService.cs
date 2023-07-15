@@ -41,7 +41,7 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
             var logChannel = optionsResult.Value?.LogChannel;
             if (!logChannel.HasValue)
             {
-                _logger.LogInformation("Guild doesn't have a logging channel set {GuildId}", guildId);
+                _logger.LogDebug("Guild doesn't have a logging channel set {GuildId}", guildId);
                 return Result.Fail<ITextChannel>("Logging channel not set");
             }
 
@@ -72,14 +72,14 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogInformation("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
+                _logger.LogWarning("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
             var announcementChannel = optionsResult.Value?.AnnouncementChannel;
             if (!announcementChannel.HasValue)
             {
-                _logger.LogInformation("Guild doesn't have a announcement channel set {GuildId}", guildId);
+                _logger.LogDebug("Guild doesn't have a announcement channel set {GuildId}", guildId);
                 return Result.Fail<ITextChannel>("Announcement channel not set");
             }
 
@@ -110,14 +110,14 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogInformation("Guild doesn't have any document when trying to get announcement role {GuildId}", guildId);
+                _logger.LogWarning("Guild doesn't have any document when trying to get announcement role {GuildId}", guildId);
                 return optionsResult.ToResult<IRole>();
             }
 
             var announcementRoleId = optionsResult.Value?.AnnouncementRoleId;
             if (!announcementRoleId.HasValue)
             {
-                _logger.LogInformation("Guild doesn't have a announcement role set {GuildId}", guildId);
+                _logger.LogDebug("Guild doesn't have a announcement role set {GuildId}", guildId);
                 return Result.Fail<IRole>("Announcement role not set");
             }
 
