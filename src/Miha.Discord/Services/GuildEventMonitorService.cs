@@ -92,6 +92,19 @@ public partial class GuildEventMonitorService : DiscordClientService
         {
             try
             {
+                var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
+                if (announcementChannel.IsFailed)
+                {
+                    if (announcementChannel.Reasons.Any(m => m.Message == "Announcement channel not set"))
+                    {
+                        _logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                        return;
+                    }
+
+                    _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
+                    continue;
+                }
+
                 var startsIn = guildEvent.StartTime - DateTime.UtcNow;
 
                 _logger.LogInformation("GuildEvent {EventId} starts in (pre-round) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
@@ -123,13 +136,6 @@ public partial class GuildEventMonitorService : DiscordClientService
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
                 {
                     _memoryCache.Set(guildEvent.Id, true, _memoryCacheEntryOptions);
-                    continue;
-                }
-
-                var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
-                if (announcementChannel.IsFailed)
-                {
-                    _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
                     continue;
                 }
 
