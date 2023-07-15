@@ -12,7 +12,7 @@ using Serilog.Formatting.Compact;
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
-    .WriteTo.Console(new CompactJsonFormatter())
+    .WriteTo.Console(new RenderedCompactJsonFormatter())
     .CreateLogger();
 
 try
