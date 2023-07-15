@@ -132,7 +132,11 @@ public partial class GuildEventMonitorService : DiscordClientService
                         guildEvent.Location,
                         guildEvent.Channel,
                         guildEvent.Status,
-                    }, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore }));
+                    }, new JsonSerializerSettings
+                    {
+                        MaxDepth = 1,
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                    }));
                 }
 
                 if (guildEvent.Status is GuildScheduledEventStatus.Active)
