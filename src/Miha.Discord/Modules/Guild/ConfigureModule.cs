@@ -51,7 +51,8 @@ public class ConfigureModule : BaseInteractionModule
 
         [SlashCommand("channel", "Sets or updates the channel where event announcements will be posted")]
         public async Task ChannelAsync(
-            [Summary(description: "The channel where announcements will be posted")] ITextChannel channel,
+            [Summary(description: "The channel where announcements will be posted")]
+            [ChannelTypes(ChannelType.News, ChannelType.Text)] ITextChannel channel,
             [Summary(description: "Setting this to true will disable announcements, even if you set a channel")] bool disable = false)
         {
             var result = await _guildService.UpsertAsync(channel.GuildId, options => options.AnnouncementChannel = disable ? null : channel.Id);
@@ -102,7 +103,8 @@ public class ConfigureModule : BaseInteractionModule
 
         [SlashCommand("channel", "Sets or updates the channel where birthday announcements will be posted")]
         public async Task ChannelAsync(
-            [Summary(description: "The channel where today's birthday will be posted")] ITextChannel channel,
+            [Summary(description: "The channel where today's birthday will be posted")]
+            [ChannelTypes(ChannelType.News, ChannelType.Voice)] ITextChannel channel,
             [Summary(description: "Setting this to true will disable announcements, even if you set a channel")] bool disable = false)
         {
             var result = await _guildService.UpsertAsync(channel.GuildId, options => options.BirthdayAnnouncementChannel = disable ? null : channel.Id);
