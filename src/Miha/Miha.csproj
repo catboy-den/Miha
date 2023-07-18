@@ -24,6 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TinyHealthCheck" Version="0.0.16" />
+    <PackageReference Include="TinyHealthCheck" Version="1.0.0" />
   </ItemGroup>
 </Project>
