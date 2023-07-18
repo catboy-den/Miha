@@ -51,11 +51,17 @@ public class ConfigureModule : BaseInteractionModule
 
         [SlashCommand("channel", "Sets or updates the channel where event announcements will be posted")]
         public async Task ChannelAsync(
-            [Summary(description: "The channel where announcements will be posted")] ITextChannel channel,
+            [Summary(description: "The channel where announcements will be posted")]
+            [ChannelTypes(ChannelType.News, ChannelType.Text)] IChannel channel,
             [Summary(description: "Setting this to true will disable announcements, even if you set a channel")] bool disable = false)
         {
-            var result = await _guildService.UpsertAsync(channel.GuildId, options => options.AnnouncementChannel = disable ? null : channel.Id);
+            if (channel is not ITextChannel textChannel)
+            {
+                await RespondFailureAsync("The channel passed doesn't appear to be a Text Channel");
+                return;
+            }
 
+            var result = await _guildService.UpsertAsync(textChannel.GuildId, options => options.AnnouncementChannel = disable ? null : channel.Id);
             if (result.IsFailed)
             {
                 await RespondErrorAsync(result.Errors);
@@ -64,7 +70,7 @@ public class ConfigureModule : BaseInteractionModule
 
             var fields = new EmbedFieldBuilder()
                 .WithName("Announcement channel")
-                .WithValue(disable ? "Disabled" : channel.Mention);
+                .WithValue(disable ? "Disabled" : textChannel.Mention);
 
             await RespondSuccessAsync("Updated Announcement Channel", fields);
         }
@@ -102,10 +108,17 @@ public class ConfigureModule : BaseInteractionModule
 
         [SlashCommand("channel", "Sets or updates the channel where birthday announcements will be posted")]
         public async Task ChannelAsync(
-            [Summary(description: "The channel where today's birthday will be posted")] ITextChannel channel,
+            [Summary(description: "The channel where today's birthday will be posted")]
+            [ChannelTypes(ChannelType.News, ChannelType.Text)] IChannel channel,
             [Summary(description: "Setting this to true will disable announcements, even if you set a channel")] bool disable = false)
         {
-            var result = await _guildService.UpsertAsync(channel.GuildId, options => options.BirthdayAnnouncementChannel = disable ? null : channel.Id);
+            if (channel is not ITextChannel textChannel)
+            {
+                await RespondFailureAsync("The channel passed doesn't appear to be a Text Channel");
+                return;
+            }
+
+            var result = await _guildService.UpsertAsync(textChannel.GuildId, options => options.BirthdayAnnouncementChannel = disable ? null : channel.Id);
 
             if (result.IsFailed)
             {
@@ -115,7 +128,7 @@ public class ConfigureModule : BaseInteractionModule
 
             var fields = new EmbedFieldBuilder()
                 .WithName("Birthday announcement channel")
-                .WithValue(disable ? "Disabled" : channel.Mention);
+                .WithValue(disable ? "Disabled" : textChannel.Mention);
 
             await RespondSuccessAsync("Updated Birthday announcement Channel", fields);
         }
