@@ -101,12 +101,12 @@ public class ConfigureModule : BaseInteractionModule
     [Group("birthdays", "Set or update birthday settings and options")]
     public class BirthdayModule : BaseInteractionModule
     {
-        private readonly IDiscordClient _client;
+        private readonly DiscordSocketClient _client;
         private readonly IGuildService _guildService;
         private readonly ILogger<BirthdayModule> _logger;
 
         public BirthdayModule(
-            IDiscordClient client,
+            DiscordSocketClient client,
             IGuildService guildService,
             ILogger<BirthdayModule> logger)
         {
