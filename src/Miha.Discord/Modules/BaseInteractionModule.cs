@@ -63,6 +63,62 @@ public class BaseInteractionModule : InteractionModuleBase<SocketInteractionCont
         return RespondAsync(embed: embed.Build(), ephemeral: true);
     }
 
+    protected virtual Task FollowupMinimalAsync(
+        string? description,
+        params EmbedFieldBuilder[] fields)
+    {
+        var embed = new EmbedBuilder().AsMinimal(
+            Context.User.Username,
+            Context.User.GetAvatarUrl(),
+            description,
+            fields);
+
+        return FollowupAsync(embed: embed.Build(), ephemeral: true);
+    }
+
+    protected virtual Task FollowupSuccessAsync(
+        string description,
+        params EmbedFieldBuilder[] fields)
+    {
+        var embed = new EmbedBuilder().AsSuccess(
+            Context.User.Username,
+            Context.User.GetAvatarUrl(),
+            description,
+            fields);
+
+        return FollowupAsync(embed: embed.Build(), ephemeral: true);
+    }
+
+    protected virtual Task FollowupFailureAsync(string description)
+    {
+        var embed = new EmbedBuilder().AsFailure(
+            Context.User.Username,
+            Context.User.GetAvatarUrl(),
+            description);
+
+        return FollowupAsync(embed: embed.Build(), ephemeral: true);
+    }
+
+    protected virtual Task FollowupErrorAsync(IEnumerable<IError> errors)
+    {
+        var embed = new EmbedBuilder().AsError(
+            Context.User.Username,
+            Context.User.GetAvatarUrl(),
+            errors.ToArray());
+
+        return FollowupAsync(embed: embed.Build(), ephemeral: true);
+    }
+
+    protected virtual Task FollowupErrorAsync(params IError[] errors)
+    {
+        var embed = new EmbedBuilder().AsError(
+            Context.User.Username,
+            Context.User.GetAvatarUrl(),
+            errors);
+
+        return FollowupAsync(embed: embed.Build(), ephemeral: true);
+    }
+
     protected virtual Task ModifyOriginalResponseToSuccessAsync(string description, params EmbedFieldBuilder[] fields)
     {
         var embed = new EmbedBuilder().AsSuccess(

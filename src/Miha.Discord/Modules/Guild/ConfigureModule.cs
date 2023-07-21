@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using Miha.Logic.Services.Interfaces;
 using Miha.Redis.Documents;
 
@@ -99,11 +101,18 @@ public class ConfigureModule : BaseInteractionModule
     [Group("birthdays", "Set or update birthday settings and options")]
     public class BirthdayModule : BaseInteractionModule
     {
+        private readonly IDiscordClient _client;
         private readonly IGuildService _guildService;
+        private readonly ILogger<BirthdayModule> _logger;
 
-        public BirthdayModule(IGuildService guildService)
+        public BirthdayModule(
+            IDiscordClient client,
+            IGuildService guildService,
+            ILogger<BirthdayModule> logger)
         {
+            _client = client;
             _guildService = guildService;
+            _logger = logger;
         }
 
         [SlashCommand("channel", "Sets or updates the channel where birthday announcements will be posted")]
@@ -138,6 +147,9 @@ public class ConfigureModule : BaseInteractionModule
             [Summary(description: "Role to add to the list, if a user has any roles in the list, their birthday can be announced")] IRole? add = null,
             [Summary(description: "Role to remove from the list, if the list is empty any user can have their birthday announced")] IRole? remove = null)
         {
+            // Acknowledge to Discord that we're processing stuff
+            await DeferAsync();
+
             var guildDocResult = await _guildService.GetAsync(Context.Guild.Id);
 
             if (guildDocResult.IsFailed)
@@ -167,11 +179,28 @@ public class ConfigureModule : BaseInteractionModule
             }
 
             var result = await _guildService.UpsertAsync(guildDoc);
-
             if (result.IsFailed)
             {
                 await RespondErrorAsync(guildDocResult.Errors);
                 return;
+            }
+
+            var roles = new List<string>();
+            if (result.Value?.BirthdayAnnouncementRoles is not null)
+            {
+                var guild = await _client.GetGuildAsync(Context.Guild.Id);
+                if (guild is null)
+                {
+                    _logger.LogError("Failed getting the guild when trying to configure birthday announcement roles {GuildId}", Context.Guild.Id);
+                    await FollowupFailureAsync("Failed trying to get the context guild");
+                    return;
+                }
+
+                foreach (var announcementRole in result.Value!.BirthdayAnnouncementRoles!)
+                {
+                    var role = guild.GetRole(announcementRole);
+                    roles.Add(role.Mention);
+                }
             }
 
             // respond with success + the list
