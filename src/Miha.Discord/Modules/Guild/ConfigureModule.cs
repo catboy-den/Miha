@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Miha.Logic.Services.Interfaces;
 using Miha.Redis.Documents;
@@ -101,16 +100,13 @@ public class ConfigureModule : BaseInteractionModule
     [Group("birthdays", "Set or update birthday settings and options")]
     public class BirthdayModule : BaseInteractionModule
     {
-        private readonly DiscordSocketClient _client;
         private readonly IGuildService _guildService;
         private readonly ILogger<BirthdayModule> _logger;
 
         public BirthdayModule(
-            DiscordSocketClient client,
             IGuildService guildService,
             ILogger<BirthdayModule> logger)
         {
-            _client = client;
             _guildService = guildService;
             _logger = logger;
         }
@@ -188,7 +184,7 @@ public class ConfigureModule : BaseInteractionModule
             var roles = new List<string>();
             if (result.Value?.BirthdayAnnouncementRoles is not null)
             {
-                var guild = _client.GetGuild(Context.Guild.Id);
+                var guild = Context.Client.GetGuild(Context.Guild.Id);
                 if (guild is null)
                 {
                     _logger.LogError("Failed getting the guild when trying to configure birthday announcement roles {GuildId}", Context.Guild.Id);
@@ -202,6 +198,8 @@ public class ConfigureModule : BaseInteractionModule
                     roles.Add(role.Mention);
                 }
             }
+
+            await FollowupMinimalAsync(roles.ToString());
 
             // respond with success + the list
         }
