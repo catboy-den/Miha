@@ -199,7 +199,7 @@ public class ConfigureModule : BaseInteractionModule
                 }
             }
 
-            await FollowupMinimalAsync(roles.ToString());
+            await FollowupMinimalAsync(string.Join(" ", roles));
 
             // respond with success + the list
         }
