@@ -58,7 +58,8 @@ try
 
             config.SocketConfig = new DiscordSocketConfig
             {
-                LogLevel = LogSeverity.Info,
+                LogLevel = LogSeverity.Verbose,
+                LogGatewayIntentWarnings = true,
                 AlwaysDownloadUsers = true,
                 GatewayIntents = GatewayIntents.GuildScheduledEvents
                                  | GatewayIntents.DirectMessageTyping
@@ -76,7 +77,7 @@ try
         })
         .UseInteractionService((_, config) =>
         {
-            config.LogLevel = LogSeverity.Info;
+            config.LogLevel = LogSeverity.Verbose;
             config.UseCompiledLambda = true;
         })
         .ConfigureServices(Startup.ConfigureServices).Build();

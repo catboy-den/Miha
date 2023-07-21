@@ -188,7 +188,7 @@ public class ConfigureModule : BaseInteractionModule
             var roles = new List<string>();
             if (result.Value?.BirthdayAnnouncementRoles is not null)
             {
-                var guild = await _client.GetGuildAsync(Context.Guild.Id);
+                var guild = _client.GetGuild(Context.Guild.Id);
                 if (guild is null)
                 {
                     _logger.LogError("Failed getting the guild when trying to configure birthday announcement roles {GuildId}", Context.Guild.Id);
