@@ -144,10 +144,10 @@ public class ConfigureModule : BaseInteractionModule
             [Summary(description: "Role to remove from the list, if the list is empty any user can have their birthday announced")] IRole? remove = null)
         {
             // Acknowledge to Discord that we're processing stuff
-            await DeferAsync();
+            // note the ephemeral
+            await DeferAsync(ephemeral: true);
 
             var guildDocResult = await _guildService.GetAsync(Context.Guild.Id);
-
             if (guildDocResult.IsFailed)
             {
                 await RespondErrorAsync(guildDocResult.Errors);
@@ -155,13 +155,6 @@ public class ConfigureModule : BaseInteractionModule
             }
 
             var guildDoc = guildDocResult.Value ?? new GuildDocument { Id = Context.Guild.Id };
-
-            if (add is null && remove is null)
-            {
-                // respond with just the list
-                return;
-            }
-
             guildDoc.BirthdayAnnouncementRoles ??= new List<ulong>();
 
             if (add is not null && !guildDoc.BirthdayAnnouncementRoles.Contains(add.Id))
@@ -174,34 +167,28 @@ public class ConfigureModule : BaseInteractionModule
                 guildDoc.BirthdayAnnouncementRoles.RemoveAll(roleId => roleId == remove.Id);
             }
 
-            var result = await _guildService.UpsertAsync(guildDoc);
-            if (result.IsFailed)
+            if (add is not null || remove is not null)
             {
-                await RespondErrorAsync(guildDocResult.Errors);
+                var result = await _guildService.UpsertAsync(guildDoc);
+                if (result.IsFailed)
+                {
+                    await RespondErrorAsync(guildDocResult.Errors);
+                    return;
+                }
+            }
+
+            var guild = Context.Client.GetGuild(Context.Guild.Id);
+            if (guild is null)
+            {
+                _logger.LogError("Failed getting the guild when trying to configure birthday announcement roles {GuildId}", Context.Guild.Id);
+                await FollowupFailureAsync("Failed trying to get the context guild");
                 return;
             }
 
-            var roles = new List<string>();
-            if (result.Value?.BirthdayAnnouncementRoles is not null)
-            {
-                var guild = Context.Client.GetGuild(Context.Guild.Id);
-                if (guild is null)
-                {
-                    _logger.LogError("Failed getting the guild when trying to configure birthday announcement roles {GuildId}", Context.Guild.Id);
-                    await FollowupFailureAsync("Failed trying to get the context guild");
-                    return;
-                }
-
-                foreach (var announcementRole in result.Value!.BirthdayAnnouncementRoles!)
-                {
-                    var role = guild.GetRole(announcementRole);
-                    roles.Add(role.Mention);
-                }
-            }
+            var roles = guildDoc.BirthdayAnnouncementRoles.Select(announcementRole =>
+                guild.GetRole(announcementRole)).Select(role => role.Mention).ToList();
 
             await FollowupMinimalAsync(string.Join(" ", roles));
-
-            // respond with success + the list
         }
     }
 }
