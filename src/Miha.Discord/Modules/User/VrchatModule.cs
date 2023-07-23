@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using FluentAssertions;
 using Miha.Discord.Extensions;
 using Miha.Logic.Services.Interfaces;
 
@@ -35,8 +34,7 @@ public class VrchatModule : BaseInteractionModule
         var embed = new EmbedBuilder().AsMinimal(
             targetUser.Username,
             targetUser.GetAvatarUrl(),
-            null)
-            .WithThumbnailUrl(targetUser.GetAvatarUrl());
+            null);
 
         if (userDoc?.VrcUserId is null)
         {
@@ -45,11 +43,11 @@ public class VrchatModule : BaseInteractionModule
             return;
         }
 
-        var fields = new EmbedFieldBuilder()
-            .WithName("VRChat profile")
-            .WithValue(userDoc.GetHyperLinkedVrcUsrUrl(targetUser.Username));
-
-        embed.WithFields(fields);
+        embed
+            .WithThumbnailUrl(targetUser.GetAvatarUrl())
+            .WithFields(new EmbedFieldBuilder()
+                .WithName("VRChat profile")
+                .WithValue(userDoc.GetHyperLinkedVrcUsrUrl(targetUser.Username)));
 
         await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
