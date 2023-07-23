@@ -36,6 +36,8 @@ public class VrchatModule : BaseInteractionModule
             targetUser.GetAvatarUrl(),
             null);
 
+        embed.WithThumbnailUrl(targetUser.GetAvatarUrl());
+
         if (userDoc?.VrcUserId is null)
         {
             embed.Description = targetUser.Mention + " hasn't linked their VRChat profile";
