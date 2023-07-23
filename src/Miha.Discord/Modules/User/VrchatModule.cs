@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using FluentAssertions;
 using Miha.Discord.Extensions;
 using Miha.Logic.Services.Interfaces;
 
@@ -34,9 +35,8 @@ public class VrchatModule : BaseInteractionModule
         var embed = new EmbedBuilder().AsMinimal(
             targetUser.Username,
             targetUser.GetAvatarUrl(),
-            null);
-
-        embed.WithThumbnailUrl(targetUser.GetAvatarUrl());
+            null)
+            .WithThumbnailUrl(targetUser.GetAvatarUrl());
 
         if (userDoc?.VrcUserId is null)
         {
