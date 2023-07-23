@@ -188,7 +188,11 @@ public class ConfigureModule : BaseInteractionModule
             var roles = guildDoc.BirthdayAnnouncementRoles.Select(announcementRole =>
                 guild.GetRole(announcementRole)).Select(role => role.Mention).ToList();
 
-            await FollowupMinimalAsync(string.Join(" ", roles));
+            var fields = new EmbedFieldBuilder()
+                .WithName("Roles")
+                .WithValue(roles.Any() ? string.Join(" ", roles) : "Any users with any roles will have their birthday announced");
+
+            await FollowupSuccessAsync("Updated birthday announcement roles list", fields);
         }
     }
 }
