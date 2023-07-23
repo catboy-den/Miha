@@ -102,9 +102,11 @@ public class BirthdayModule : BaseInteractionModule
         [Summary(description: "Date of your birthday [MM/DD]")] string date,
         [Summary(description: "Your time zone, eg Eastern Standard Time, Google 'What is my time zone' for help")] string timeZone)
     {
+        await DeferAsync(ephemeral: true);
+
         if (!BirthdatePattern.Parse(date).TryGetValue(new AnnualDate(1, 1), out var birthDate))
         {
-            await RespondMinimalAsync("Couldn't parse birthdate, date should be in month/date format, for example `04/14`");
+            await FollowupMinimalAsync("Couldn't parse birthdate, date should be in month/date format, for example `04/14`");
             return;
         }
 
@@ -117,7 +119,7 @@ public class BirthdayModule : BaseInteractionModule
                 .AppendLine()
                 .Append("Visit [this timezone tool](https://webbrowsertools.com/timezone) and try passing the `Timezone` field into the command, or [try google](https://www.google.com/search?q=whats+is+my+timezone)");
 
-            await RespondFailureAsync(stringBuilder.ToString());
+            await FollowupFailureAsync(stringBuilder.ToString());
             return;
         }
 
@@ -131,7 +133,7 @@ public class BirthdayModule : BaseInteractionModule
 
         if (result.IsFailed)
         {
-            await RespondErrorAsync(result.Errors);
+            await FollowupErrorAsync(result.Errors);
             return;
         }
 
@@ -163,7 +165,7 @@ public class BirthdayModule : BaseInteractionModule
             description.ToString(),
             field);
 
-        await RespondAsync(embed: embed.Build(), components: components, ephemeral: true);
+        await FollowupAsync(embed: embed.Build(), components: components, ephemeral: true);
     }
 
     [SlashCommand("clear", "Clears your birthday")]
