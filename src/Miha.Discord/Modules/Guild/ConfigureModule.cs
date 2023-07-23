@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Microsoft.Extensions.Logging;
 using Miha.Logic.Services.Interfaces;
 using Miha.Redis.Documents;
 
@@ -100,10 +101,14 @@ public class ConfigureModule : BaseInteractionModule
     public class BirthdayModule : BaseInteractionModule
     {
         private readonly IGuildService _guildService;
+        private readonly ILogger<BirthdayModule> _logger;
 
-        public BirthdayModule(IGuildService guildService)
+        public BirthdayModule(
+            IGuildService guildService,
+            ILogger<BirthdayModule> logger)
         {
             _guildService = guildService;
+            _logger = logger;
         }
 
         [SlashCommand("channel", "Sets or updates the channel where birthday announcements will be posted")]
@@ -138,8 +143,11 @@ public class ConfigureModule : BaseInteractionModule
             [Summary(description: "Role to add to the list, if a user has any roles in the list, their birthday can be announced")] IRole? add = null,
             [Summary(description: "Role to remove from the list, if the list is empty any user can have their birthday announced")] IRole? remove = null)
         {
-            var guildDocResult = await _guildService.GetAsync(Context.Guild.Id);
+            // Acknowledge to Discord that we're processing stuff
+            // note the ephemeral
+            await DeferAsync(ephemeral: true);
 
+            var guildDocResult = await _guildService.GetAsync(Context.Guild.Id);
             if (guildDocResult.IsFailed)
             {
                 await RespondErrorAsync(guildDocResult.Errors);
@@ -147,13 +155,6 @@ public class ConfigureModule : BaseInteractionModule
             }
 
             var guildDoc = guildDocResult.Value ?? new GuildDocument { Id = Context.Guild.Id };
-
-            if (add is null && remove is null)
-            {
-                // respond with just the list
-                return;
-            }
-
             guildDoc.BirthdayAnnouncementRoles ??= new List<ulong>();
 
             if (add is not null && !guildDoc.BirthdayAnnouncementRoles.Contains(add.Id))
@@ -166,15 +167,38 @@ public class ConfigureModule : BaseInteractionModule
                 guildDoc.BirthdayAnnouncementRoles.RemoveAll(roleId => roleId == remove.Id);
             }
 
-            var result = await _guildService.UpsertAsync(guildDoc);
-
-            if (result.IsFailed)
+            if (add is not null || remove is not null)
             {
-                await RespondErrorAsync(guildDocResult.Errors);
+                var result = await _guildService.UpsertAsync(guildDoc);
+                if (result.IsFailed)
+                {
+                    await RespondErrorAsync(guildDocResult.Errors);
+                    return;
+                }
+            }
+
+            var guild = Context.Client.GetGuild(Context.Guild.Id);
+            if (guild is null)
+            {
+                _logger.LogError("Failed getting the guild when trying to configure birthday announcement roles {GuildId}", Context.Guild.Id);
+                await FollowupFailureAsync("Failed trying to get the context guild");
                 return;
             }
 
-            // respond with success + the list
+            var roles = guildDoc.BirthdayAnnouncementRoles.Select(announcementRole =>
+                guild.GetRole(announcementRole)).Select(role => role.Mention).ToList();
+
+            var fields = new EmbedFieldBuilder()
+                .WithName("Roles")
+                .WithValue(roles.Any() ? string.Join(" ", roles) : "Any users with any roles will have their birthday announced");
+
+            if (add is not null || remove is not null)
+            {
+                await FollowupSuccessAsync("Updated birthday announcement roles list", fields);
+                return;
+            }
+
+            await FollowupMinimalAsync("Any users that have any roles in the list are allowed to have their birthdays announced", fields);
         }
     }
 }
