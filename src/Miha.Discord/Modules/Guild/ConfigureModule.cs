@@ -192,7 +192,13 @@ public class ConfigureModule : BaseInteractionModule
                 .WithName("Roles")
                 .WithValue(roles.Any() ? string.Join(" ", roles) : "Any users with any roles will have their birthday announced");
 
-            await FollowupSuccessAsync("Updated birthday announcement roles list", fields);
+            if (add is not null || remove is not null)
+            {
+                await FollowupSuccessAsync("Updated birthday announcement roles list", fields);
+                return;
+            }
+
+            await FollowupMinimalAsync("Any users that have any roles in the list are allowed to have their birthdays announced", fields);
         }
     }
 }
