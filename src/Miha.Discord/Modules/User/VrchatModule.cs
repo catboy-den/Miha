@@ -42,7 +42,7 @@ public class VrchatModule : BaseInteractionModule
             return;
         }
 
-        await RespondMinimalAsync(result.Value?.GetHyperLinkedVrcUsrUrl());
+        await RespondMinimalAsync(result.Value?.GetHyperLinkedVrcUsrUrl("Twinki"));
     }
 
     [SlashCommand("set", "Sets or updates your VRChat user profile, makes it easier for event-attendees to find you")]
