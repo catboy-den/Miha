@@ -31,23 +31,25 @@ public class VrchatModule : BaseInteractionModule
             return;
         }
 
+        var embed = new EmbedBuilder().AsMinimal(
+            targetUser.Username,
+            targetUser.GetAvatarUrl(),
+            null);
+
         if (userDoc?.VrcUserId is null)
         {
-            var noBirthdayEmbed = new EmbedBuilder().AsMinimal(
-                targetUser.Username,
-                targetUser.GetAvatarUrl(),
-                targetUser.Mention + " hasn't linked their VRChat profile");
-
-            await RespondAsync(embed: noBirthdayEmbed.Build(), ephemeral: true);
+            embed.Description = targetUser.Mention + " hasn't linked their VRChat profile";
+            await RespondAsync(embed: embed.Build(), ephemeral: true);
             return;
         }
 
-        var userUrl = new EmbedFieldBuilder()
-            .WithName("Profile")
-            .WithValue(result.Value?.GetHyperLinkedVrcUsrUrl())
-            .WithIsInline(false);
+        embed
+            .WithThumbnailUrl(targetUser.GetAvatarUrl())
+            .WithFields(new EmbedFieldBuilder()
+                .WithName("VRChat profile")
+                .WithValue(userDoc.GetHyperLinkedVrcUsrUrl(targetUser.Username)));
 
-        await RespondMinimalAsync(null, userUrl);
+        await RespondAsync(embed: embed.Build(), ephemeral: true);
     }
 
     [SlashCommand("set", "Sets or updates your VRChat user profile, makes it easier for event-attendees to find you")]
