@@ -42,12 +42,7 @@ public class VrchatModule : BaseInteractionModule
             return;
         }
 
-        var userUrl = new EmbedFieldBuilder()
-            .WithName("Profile")
-            .WithValue(result.Value?.GetHyperLinkedVrcUsrUrl())
-            .WithIsInline(false);
-
-        await RespondMinimalAsync(null, userUrl);
+        await RespondMinimalAsync(result.Value?.GetHyperLinkedVrcUsrUrl());
     }
 
     [SlashCommand("set", "Sets or updates your VRChat user profile, makes it easier for event-attendees to find you")]
