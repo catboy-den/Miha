@@ -62,7 +62,7 @@ jobs:
           # add global tag
           type=raw,priority=700,value=${{ steps.global-tag.outputs.tag }}
 
-    - uses: docker/build-push-action@v3
+    - uses: docker/build-push-action@v4
       with:
         context: .
         build-args: CUSTOM_VERSION=${{ steps.global-tag.outputs.custom-version }}
