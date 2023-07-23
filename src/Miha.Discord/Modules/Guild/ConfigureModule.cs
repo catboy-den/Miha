@@ -150,7 +150,7 @@ public class ConfigureModule : BaseInteractionModule
             var guildDocResult = await _guildService.GetAsync(Context.Guild.Id);
             if (guildDocResult.IsFailed)
             {
-                await RespondErrorAsync(guildDocResult.Errors);
+                await FollowupErrorAsync(guildDocResult.Errors);
                 return;
             }
 
@@ -172,7 +172,7 @@ public class ConfigureModule : BaseInteractionModule
                 var result = await _guildService.UpsertAsync(guildDoc);
                 if (result.IsFailed)
                 {
-                    await RespondErrorAsync(guildDocResult.Errors);
+                    await FollowupErrorAsync(guildDocResult.Errors);
                     return;
                 }
             }
