@@ -67,7 +67,7 @@ jobs:
         context: .
         build-args: CUSTOM_VERSION=${{ steps.global-tag.outputs.custom-version }}
         file: ./src/Dockerfile
-        push: true
+        push: ${{ github.actor != 'dependabot[bot]' }}
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
         cache-from: type=gha
