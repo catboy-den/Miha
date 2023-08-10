@@ -11,7 +11,7 @@
     <PackageReference Include="Discord.Addons.Hosting" Version="5.2.0" />
     <PackageReference Include="Discord.Net" Version="3.11.0" />
     <PackageReference Include="SlimMessageBus" Version="2.0.1" />
-    <PackageReference Include="SlimMessageBus.Host.Memory" Version="2.1.8" />
+    <PackageReference Include="SlimMessageBus.Host.Memory" Version="2.1.9" />
   </ItemGroup>
 
   <ItemGroup>
