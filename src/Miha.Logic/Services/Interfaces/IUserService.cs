@@ -1,4 +1,5 @@
-﻿using FluentResults;
+﻿using Discord;
+using FluentResults;
 using Miha.Redis.Documents;
 using NodaTime;
 
@@ -11,6 +12,7 @@ public interface IUserService
     Task<Result<UserDocument?>> UpsertAsync(ulong? userId, Action<UserDocument> userFunc);
     Task<Result> DeleteAsync(ulong? userId, bool successIfNotFound = false);
 
+    Task<Result<IUser>> GetUserAsync(ulong? userId);
     Task<Result<IEnumerable<UserDocument>>> GetAllUsersWithBirthdayForWeekAsync(LocalDate weekDate, bool includeAlreadyAnnounced);
     Task<Result<UserDocument?>> UpsertVrchatUserIdAsync(ulong? userId, string vrcProfileUrl);
 }

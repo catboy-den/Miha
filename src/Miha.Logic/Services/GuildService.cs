@@ -98,6 +98,44 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
         }
     }
 
+    public async Task<Result<ITextChannel>> GetBirthdayAnnouncementChannelAsync(ulong? guildId)
+    {
+        try
+        {
+            if (guildId is null)
+            {
+                throw new ArgumentNullException(nameof(guildId));
+            }
+
+            var optionsResult = await GetAsync(guildId);
+            if (optionsResult.IsFailed)
+            {
+                _logger.LogWarning("Guild doesn't have any document when trying to get birthday announcement channel {GuildId}", guildId);
+                return optionsResult.ToResult<ITextChannel>();
+            }
+
+            var birthdayAnnouncementChannel = optionsResult.Value?.BirthdayAnnouncementChannel;
+            if (!birthdayAnnouncementChannel.HasValue)
+            {
+                _logger.LogDebug("Guild doesn't have a birthday announcement channel set {GuildId}", guildId);
+                return Result.Fail<ITextChannel>("Announcement channel not set");
+            }
+
+            if (await _client.GetChannelAsync(birthdayAnnouncementChannel.Value) is ITextChannel loggingChannel)
+            {
+                return Result.Ok(loggingChannel);
+            }
+
+            _logger.LogWarning("Guild's birthday announcement channel wasn't found, or might not be a Text Channel {GuildId} {BirthdayAnnouncementChannelAnnouncementChannelId}", guildId, birthdayAnnouncementChannel.Value);
+            return Result.Fail<ITextChannel>("Announcement channel not found");
+        }
+        catch (Exception e)
+        {
+            LogErrorException(e);
+            return Result.Fail<ITextChannel>(e.Message);
+        }
+    }
+
     public async Task<Result<IRole>> GetAnnouncementRoleAsync(ulong? guildId)
     {
         try
