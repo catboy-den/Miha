@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using Discord;
+using Discord.WebSocket;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Miha.Logic.Services.Interfaces;
@@ -11,15 +13,42 @@ namespace Miha.Logic.Services;
 
 public partial class UserService : DocumentService<UserDocument>, IUserService
 {
+    private readonly DiscordSocketClient _client;
     private readonly IUserRepository _repository;
     private readonly ILogger<UserService> _logger;
 
     public UserService(
+        DiscordSocketClient client,
         IUserRepository repository,
         ILogger<UserService> logger) : base(repository, logger)
     {
+        _client = client;
         _repository = repository;
         _logger = logger;
+    }
+
+    public async Task<Result<IUser>> GetUserAsync(ulong? userId)
+    {
+        try
+        {
+            if (userId is null)
+            {
+                throw new ArgumentNullException(nameof(userId));
+            }
+
+            if (await _client.GetUserAsync(userId.Value) is { } user)
+            {
+                return Result.Ok(user);
+            }
+
+            _logger.LogWarning("User Id did not correspond to a known Discord user {UserId}", userId.Value);
+            return Result.Fail<IUser>("User not found");
+        }
+        catch (Exception e)
+        {
+            LogErrorException(e);
+            return Result.Fail<IUser>(e.Message);
+        }
     }
 
     public async Task<Result<IEnumerable<UserDocument>>> GetAllUsersWithBirthdayForWeekAsync(LocalDate weekDate, bool includeAlreadyAnnounced)

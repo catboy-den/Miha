@@ -75,19 +75,19 @@ public class BirthdayScannerService : BackgroundService
             return;
         }
 
-        var birthdayJobs = await _birthdayJobService.GetAllAsync();
+        // TODO This could be changed to query birthday job documents whose UserId matches any of the users who have birthdays this week
 
+        var birthdayJobs = await _birthdayJobService.GetAllAsync();
         if (birthdayJobs.IsFailed)
         {
             _logger.LogError("Failed getting birthday jobs");
             return;
         }
 
-        var unscheduledBirthdays = unannouncedBirthdaysThisWeek.Value.Where(user => !birthdayJobs.Value.Contains(new BirthdayJobDocument { UserDocumentId = user.Id })).ToList();
-
+        var unscheduledBirthdays = unannouncedBirthdaysThisWeek.Value.Where(user => !birthdayJobs.Value.Contains(new BirthdayJobDocument { UserId = user.Id })).ToList();
         if (!unscheduledBirthdays.Any())
         {
-            _logger.LogInformation("All birthdays for this week are already scheduled");
+            _logger.LogDebug("All birthdays for this week are already scheduled");
         }
 
         foreach (var unscheduledBirthday in unscheduledBirthdays)
@@ -95,7 +95,7 @@ public class BirthdayScannerService : BackgroundService
             var result = await _birthdayJobService.UpsertAsync(new BirthdayJobDocument
             {
                 Id = unscheduledBirthday.Id,
-                UserDocumentId = unscheduledBirthday.Id,
+                UserId = unscheduledBirthday.Id,
                 BirthdayDate = unscheduledBirthday.GetBirthdateInEst(today.Year)!.Value
             });
 

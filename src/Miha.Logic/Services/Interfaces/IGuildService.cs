@@ -13,5 +13,6 @@ public interface IGuildService
 
     Task<Result<ITextChannel>> GetLoggingChannelAsync(ulong? guildId);
     Task<Result<ITextChannel>> GetAnnouncementChannelAsync(ulong? guildId);
+    Task<Result<ITextChannel>> GetBirthdayAnnouncementChannelAsync(ulong? guildId);
     Task<Result<IRole>> GetAnnouncementRoleAsync(ulong? guildId);
 }

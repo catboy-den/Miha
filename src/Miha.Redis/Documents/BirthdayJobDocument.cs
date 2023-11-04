@@ -7,8 +7,11 @@ namespace Miha.Redis.Documents;
 public class BirthdayJobDocument : Document
 {
     [Indexed]
-    public ulong UserDocumentId { get; set; }
+    public ulong UserId { get; set; }
 
+    /// <summary>
+    /// Users birthdate converted to EST
+    /// </summary>
     [Indexed]
     public LocalDate BirthdayDate { get; set; }
 }
