@@ -90,6 +90,7 @@ public partial class BirthdayAnnouncementService : DiscordClientService
         var birthdayAnnouncementChannel = await _guildService.GetBirthdayAnnouncementChannelAsync(guild.Id);
         if (birthdayAnnouncementChannel.IsFailed)
         {
+            // TODO
             return;
         }
 
@@ -121,6 +122,8 @@ public partial class BirthdayAnnouncementService : DiscordClientService
                 await _userService.UpsertAsync(userDoc.Value.Id, doc => doc.LastBirthdateAnnouncement = today);
             }
 
+            // do announcement
+            
             var result = await _userService.UpsertAsync(userDoc.Value.Id, doc => doc.LastBirthdateAnnouncement = today);
             var delete = await _birthdayJobService.DeleteAsync(birthday.Id);
         }
@@ -135,4 +138,7 @@ public partial class BirthdayAnnouncementService : DiscordClientService
 
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred in BirthdayAnnouncementService")]
     public partial void LogError(Exception e);
+    
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Failed to get the configured announcement channel")]
+    public partial void LogBirthdayAnnouncementChannelFailure();
 }
