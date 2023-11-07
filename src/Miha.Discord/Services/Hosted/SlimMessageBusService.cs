@@ -7,7 +7,7 @@ using Miha.Discord.Consumers;
 using Miha.Shared;
 using SlimMessageBus;
 
-namespace Miha.Discord.Services;
+namespace Miha.Discord.Services.Hosted;
 
 public class SlimMessageBusService : DiscordClientService
 {

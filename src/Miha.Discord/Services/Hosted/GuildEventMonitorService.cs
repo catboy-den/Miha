@@ -11,7 +11,7 @@ using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
 using Newtonsoft.Json;
 
-namespace Miha.Discord.Services;
+namespace Miha.Discord.Services.Hosted;
 
 public partial class GuildEventMonitorService : DiscordClientService
 {

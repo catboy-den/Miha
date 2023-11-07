@@ -27,7 +27,8 @@ public static class Startup
 
         services
             .AddDiscordOptions(context.Configuration)
-            .AddDiscordClientServices()
+            .AddDiscordServices()
+            .AddDiscordHostedServices()
             .AddDiscordMessageBus();
 
         services
