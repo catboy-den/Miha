@@ -22,5 +22,8 @@ public class GuildDocument : Document
     public List<ulong>? BirthdayAnnouncementRoles { get; set; }
 
     [Indexed]
+    public ulong? WeeklyScheduleChannel { get; set; }
+    
+    [Indexed]
     public ulong? LogChannel { get; set; }
 }

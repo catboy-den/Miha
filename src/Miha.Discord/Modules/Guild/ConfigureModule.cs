@@ -201,4 +201,24 @@ public class ConfigureModule : BaseInteractionModule
             await FollowupMinimalAsync("Any users that have any roles in the list are allowed to have their birthdays announced", fields);
         }
     }
+    
+    [SlashCommand("weekly-schedule", "Sets or updates the weekly event schedule channel")]
+    public async Task WeeklyScheduleAsync(
+        [Summary(description: "The channel a weekly schedule of events will be posted")] ITextChannel channel,
+        [Summary(description: "Setting this to true will disable the weekly event schedule")] bool disable = false)
+    {
+        var result = await _guildService.UpsertAsync(channel.GuildId, options => options.WeeklyScheduleChannel = disable ? null : channel.Id);
+
+        if (result.IsFailed)
+        {
+            await RespondErrorAsync(result.Errors);
+            return;
+        }
+
+        var fields = new EmbedFieldBuilder()
+            .WithName("Weekly event schedule channel")
+            .WithValue(disable ? "Disabled" : channel.Mention);
+
+        await RespondSuccessAsync("Updated guild options", fields);
+    }
 }
