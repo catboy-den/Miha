@@ -33,6 +33,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddHostedService<InteractionHandler>();
         services.AddHostedService<GuildEventMonitorService>();
+        services.AddHostedService<GuildEventScheduleService>();
         services.AddHostedService<SlimMessageBusService>();
 
         return services;
