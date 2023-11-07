@@ -42,6 +42,11 @@ public class GuildEventScheduleService : DiscordClientService
 
         var eventsThisWeek = await _scheduledEventService.GetScheduledWeeklyEventsAsync(_discordOptions.Guild.Value, _easternStandardZonedClock.GetCurrentDate());
         
+        foreach (var guildScheduledEvent in eventsThisWeek.Value)
+        {
+            _logger.LogInformation("Event this week {eventName}, {eventId}, {eventDate}", guildScheduledEvent.Name, guildScheduledEvent.Id, guildScheduledEvent.StartTime.Date.ToShortDateString());
+        }
+        
         _logger.LogInformation("Events this week {events}", eventsThisWeek.Value);
         
         while (!stoppingToken.IsCancellationRequested)
