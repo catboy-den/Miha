@@ -152,7 +152,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             }
 
             var embed = new EmbedBuilder()
-                .WithColor(Color.Purple)
+                .WithColor(Color.Magenta)
                 .WithDescription(builder.ToString());
             
             await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
