@@ -142,10 +142,20 @@ public partial class GuildEventScheduleService : DiscordClientService
                     location = "Discord";
                 }
 
-                builder.AppendLine($"- [{location}]({url})");
+                builder.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
+                builder.AppendLine($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)} - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+
+                if (guildEvent.Creator is not null)
+                {
+                    builder.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
+                }
             }
 
-            await weeklyScheduleChannel.SendMessageAsync(builder.ToString());
+            var embed = new EmbedBuilder()
+                .WithColor(Color.Purple)
+                .WithDescription(builder.ToString());
+            
+            await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
 
             /*### Monday - <t:1699132740:d>
             - [Discord - Lord of the Rings: Fellowship of the Ring - 20th Anniversary viewing!](https://discord.gg/VqqEgBTe?event=1170558838718603284)
