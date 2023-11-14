@@ -1,18 +1,23 @@
-﻿using Cronos;
+﻿using System.Text;
+using Cronos;
+using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Miha.Discord.Extensions;
 using Miha.Discord.Services.Interfaces;
+using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
 
 namespace Miha.Discord.Services.Hosted;
 
-public class GuildEventScheduleService : DiscordClientService
+public partial class GuildEventScheduleService : DiscordClientService
 {
     private readonly DiscordSocketClient _client;
     private readonly IEasternStandardZonedClock _easternStandardZonedClock;
+    private readonly IGuildService _guildService;
     private readonly IGuildScheduledEventService _scheduledEventService;
     private readonly DiscordOptions _discordOptions;
     private readonly ILogger<GuildEventScheduleService> _logger;
@@ -23,12 +28,14 @@ public class GuildEventScheduleService : DiscordClientService
     public GuildEventScheduleService(
         DiscordSocketClient client,
         IEasternStandardZonedClock easternStandardZonedClock,
+        IGuildService guildService,
         IGuildScheduledEventService scheduledEventService,
         IOptions<DiscordOptions> discordOptions,
         ILogger<GuildEventScheduleService> logger) : base(client, logger)
     {
         _client = client;
         _easternStandardZonedClock = easternStandardZonedClock;
+        _guildService = guildService;
         _scheduledEventService = scheduledEventService;
         _discordOptions = discordOptions.Value;
         _logger = logger;
@@ -42,6 +49,8 @@ public class GuildEventScheduleService : DiscordClientService
         
         while (!stoppingToken.IsCancellationRequested)
         {
+            await PostWeeklyScheduleAsync();
+            
             var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
             var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
 
@@ -55,4 +64,93 @@ public class GuildEventScheduleService : DiscordClientService
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }
+
+    private async Task PostWeeklyScheduleAsync()
+    {
+        if (_discordOptions.Guild is null)
+        {
+            _logger.LogWarning("Guild isn't configured");
+            return;
+        }
+
+        var guildResult = await _guildService.GetAsync(_discordOptions.Guild);
+        var guild = guildResult.Value;
+
+        if (guildResult.IsFailed || guild is null)
+        {
+            _logger.LogWarning("Guild doc failed, or the guild is null for some reason {Errors}", guildResult.Errors);
+            return;
+        }
+
+        if (guild.WeeklyScheduleChannel is null)
+        {
+            _logger.LogDebug("Guild doesn't have a configured weekly schedule channel");
+            return;
+        }
+        
+        _logger.LogInformation("Trying to post weekly schedule");
+
+        var eventsThisWeekResult = await _scheduledEventService.GetScheduledWeeklyEventsAsync(guild.Id, _easternStandardZonedClock.GetCurrentDate());
+        var eventsThisWeek = eventsThisWeekResult.Value;
+        
+        if (eventsThisWeekResult.IsFailed || eventsThisWeek is null)
+        {
+            _logger.LogWarning("Fetching this weeks events failed, or is null {Errors}", eventsThisWeekResult.Errors);
+            return;
+        }
+        
+        var weeklyScheduleChannelResult = await _guildService.GetWeeklyScheduleChannel(guild.Id);
+        var weeklyScheduleChannel = weeklyScheduleChannelResult.Value;
+        
+        if (weeklyScheduleChannelResult.IsFailed || weeklyScheduleChannel is null)
+        {
+            _logger.LogWarning("Fetching the guilds weekly schedule channel failed, or is null {Errors}", weeklyScheduleChannelResult.Errors);
+            return;
+        }
+
+        var eventsByDay = new Dictionary<string, IList<IGuildScheduledEvent>>();
+        foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
+        {
+            var day = guildScheduledEvent.StartTime.Date.ToString("dddd");
+            
+            if (!eventsByDay.ContainsKey(day))
+            {
+                eventsByDay.Add(day, new List<IGuildScheduledEvent>());
+            }
+
+            eventsByDay[day].Add(guildScheduledEvent);
+        }
+        
+        foreach (var (day, events) in eventsByDay)
+        {
+            var builder = new StringBuilder();
+            
+            builder.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date));
+            
+            foreach (var guildEvent in events)
+            {
+                var location = guildEvent.Location ?? "Unknown";
+                var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
+
+                if (location is "Unknown" && guildEvent.ChannelId is not null)
+                {
+                    location = "Discord";
+                }
+
+                builder.AppendLine($"- [{location}]({url})");
+            }
+
+            await weeklyScheduleChannel.SendMessageAsync(builder.ToString());
+
+            /*### Monday - <t:1699132740:d>
+            - [Discord - Lord of the Rings: Fellowship of the Ring - 20th Anniversary viewing!](https://discord.gg/VqqEgBTe?event=1170558838718603284)
+                - <t:1699132740:T> - <t:1699149720:R>
+                - Hosted by @Hunt*/
+        }
+        
+        // loop through eventsByDay, order the events by day by start time
+    }
+    
+    [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred")]
+    public partial void LogError(Exception e);
 }
