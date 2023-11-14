@@ -125,7 +125,7 @@ public partial class GuildEventScheduleService : DiscordClientService
         {
             var builder = new StringBuilder();
             
-            builder.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date));
+            builder.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date, TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events)
             {
