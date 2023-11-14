@@ -46,6 +46,8 @@ public partial class GuildEventScheduleService : DiscordClientService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Waiting for client to be ready...");
+        
         await Client.WaitForReadyAsync(stoppingToken);
         
         while (!stoppingToken.IsCancellationRequested)
@@ -64,6 +66,8 @@ public partial class GuildEventScheduleService : DiscordClientService
 
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
+        
+        _logger.LogInformation("Hosted service ended");
     }
 
     private async Task PostWeeklyScheduleAsync()
@@ -125,12 +129,23 @@ public partial class GuildEventScheduleService : DiscordClientService
 
             eventsByDay[day].Add(guildScheduledEvent);
         }
+
+        var postedHeader = false;
+        var postedFooter = false;
         
         foreach (var (day, events) in eventsByDay)
         {
-            var builder = new StringBuilder();
+            var embed = new EmbedBuilder();
+            var description = new StringBuilder();
+
+            if (!postedHeader && day == eventsByDay.First().Key)
+            {
+                embed.WithAuthor(string.Empty, _client.CurrentUser.GetAvatarUrl());
+                description.AppendLine("# Weekly event schedule");
+                postedHeader = true;
+            }
             
-            builder.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date, TimestampTagStyles.ShortDate));
+            description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date, TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events)
             {
@@ -142,18 +157,27 @@ public partial class GuildEventScheduleService : DiscordClientService
                     location = "Discord";
                 }
 
-                builder.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
-                builder.AppendLine($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)} - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+                description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
+                description.AppendLine($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)} - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
 
                 if (guildEvent.Creator is not null)
                 {
-                    builder.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
+                    description.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
                 }
             }
 
-            var embed = new EmbedBuilder()
-                .WithColor(Color.Magenta)
-                .WithDescription(builder.ToString());
+            if (!postedFooter && day == eventsByDay.Last().Key)
+            {
+                embed
+                    .WithVersionFooter()
+                    .WithCurrentTimestamp();
+
+                postedFooter = true;
+            }
+            
+            embed
+                .WithColor(new Color(255, 43, 241))
+                .WithDescription(description.ToString());
             
             await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
 
