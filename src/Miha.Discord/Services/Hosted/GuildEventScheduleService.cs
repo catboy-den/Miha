@@ -10,6 +10,7 @@ using Miha.Discord.Extensions;
 using Miha.Discord.Services.Interfaces;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
+using NodaTime.Extensions;
 
 namespace Miha.Discord.Services.Hosted;
 
@@ -111,7 +112,11 @@ public partial class GuildEventScheduleService : DiscordClientService
         var eventsByDay = new Dictionary<string, IList<IGuildScheduledEvent>>();
         foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
         {
-            var day = guildScheduledEvent.StartTime.Date.ToString("dddd");
+            var day = guildScheduledEvent
+                .StartTime
+                .ToZonedDateTime()
+                .WithZone(_easternStandardZonedClock.GetTzdbTimeZone())
+                .Date.AtMidnight().ToDateTimeUnspecified().ToString("dddd");
             
             if (!eventsByDay.ContainsKey(day))
             {
