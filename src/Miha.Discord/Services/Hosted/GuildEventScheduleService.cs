@@ -22,7 +22,7 @@ public partial class GuildEventScheduleService : DiscordClientService
     private readonly IGuildScheduledEventService _scheduledEventService;
     private readonly DiscordOptions _discordOptions;
     private readonly ILogger<GuildEventScheduleService> _logger;
-    private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 8-19 * * *"; // https://crontab.cronhub.io/
+    private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 * * * *"; // https://crontab.cronhub.io/
 
     private readonly CronExpression _cron;
 
