@@ -92,8 +92,6 @@ public partial class GuildEventScheduleService : DiscordClientService
             _logger.LogDebug("Guild doesn't have a configured weekly schedule channel");
             return;
         }
-        
-        _logger.LogInformation("Trying to post weekly schedule");
 
         var eventsThisWeekResult = await _scheduledEventService.GetScheduledWeeklyEventsAsync(guild.Id, _easternStandardZonedClock.GetCurrentDate());
         var eventsThisWeek = eventsThisWeekResult.Value;
@@ -130,6 +128,19 @@ public partial class GuildEventScheduleService : DiscordClientService
             eventsByDay[day].Add(guildScheduledEvent);
         }
 
+        _logger.LogInformation("Wiping weekly schedule messages");
+        
+        var messages = await weeklyScheduleChannel
+            .GetMessagesAsync(50)
+            .FlattenAsync();
+
+        foreach (var message in messages.Where(m => m.Author.Id == _client.CurrentUser.Id))
+        {
+            await message.DeleteAsync();
+        }
+
+        _logger.LogInformation("Posting weekly schedule");
+        
         var postedHeader = false;
         var postedFooter = false;
         
@@ -140,8 +151,10 @@ public partial class GuildEventScheduleService : DiscordClientService
 
             if (!postedHeader && day == eventsByDay.First().Key)
             {
-                embed.WithAuthor(string.Empty, _client.CurrentUser.GetAvatarUrl());
-                description.AppendLine("# Weekly event schedule");
+                embed
+                    .WithThumbnailUrl(_client.CurrentUser.GetAvatarUrl())
+                    .WithAuthor(author => author.WithIconUrl(_client.CurrentUser.GetAvatarUrl()));
+                description.AppendLine("## Weekly event schedule");
                 postedHeader = true;
             }
             
