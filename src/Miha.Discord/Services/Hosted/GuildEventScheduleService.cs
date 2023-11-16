@@ -153,8 +153,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             {
                 embed
                     .WithThumbnailUrl(_client.CurrentUser.GetAvatarUrl())
-                    .WithAuthor(author => author.WithIconUrl(_client.CurrentUser.GetAvatarUrl()));
-                description.AppendLine("## Weekly event schedule");
+                    .WithAuthor("Weekly event schedule", _client.CurrentUser.GetAvatarUrl());
                 postedHeader = true;
             }
             
