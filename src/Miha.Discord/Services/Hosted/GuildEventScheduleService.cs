@@ -158,34 +158,25 @@ public partial class GuildEventScheduleService : DiscordClientService
             }
             
             description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date, TimestampTagStyles.ShortDate));
+            
+            foreach (var guildEvent in events.OrderBy(e => e.StartTime))
+            {
+                var location = guildEvent.Location ?? "Unknown";
+                var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
 
-            if (!events.Any())
-            {
-                description.AppendLine("No events are scheduled this day");
-            }
-            else
-            {
-                foreach (var guildEvent in events.OrderBy(e => e.StartTime))
+                if (location is "Unknown" && guildEvent.ChannelId is not null)
                 {
-                    var location = guildEvent.Location ?? "Unknown";
-                    var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
-    
-                    if (location is "Unknown" && guildEvent.ChannelId is not null)
-                    {
-                        location = "Discord";
-                    }
-    
-                    description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
-                    description.AppendLine($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)} - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
-    
-                    if (guildEvent.Creator is not null)
-                    {
-                        description.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
-                    }
+                    location = "Discord";
+                }
+
+                description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
+                description.AppendLine($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)} - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+
+                if (guildEvent.Creator is not null)
+                {
+                    description.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
                 }
             }
-            
-
 
             if (!postedFooter && day == eventsByDay.Last().Key)
             {
