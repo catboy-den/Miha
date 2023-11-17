@@ -159,7 +159,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             
             description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date, TimestampTagStyles.ShortDate));
             
-            foreach (var guildEvent in events)
+            foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
                 var location = guildEvent.Location ?? "Unknown";
                 var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
