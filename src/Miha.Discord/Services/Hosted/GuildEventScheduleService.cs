@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Text;
 using Cronos;
 using Discord;
 using Discord.Addons.Hosting;
@@ -165,7 +166,8 @@ public partial class GuildEventScheduleService : DiscordClientService
             }
 
             var dayUnspecified = day.ToDateTimeOffset();
-            description.AppendLine("### " + day.ToString("dddd") + " - "  + dayUnspecified.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            var dayInEst = day.ToLocalDateTime().Date.AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).Date.ToString("dddd", new CultureInfo("en-us"));
+            description.AppendLine("### " + dayInEst + " - "  + dayUnspecified.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
