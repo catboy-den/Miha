@@ -56,7 +56,7 @@ public interface IZonedClock : IClock
     /// to the time zone of this <see cref="IZonedClock"/> and abides by the ISO-8601 standard.
     /// </summary>
     /// <returns>A list of dates of the current week, adjusted to the time zone of this <see cref="IZonedClock"/>.</returns>
-    public IEnumerable<LocalDate> GetCurrentWeekAsDates(IsoDayOfWeek isoDayOfWeek = IsoDayOfWeek.Monday);
+    public IEnumerable<DateOnly> GetCurrentWeekAsDates(IsoDayOfWeek isoDayOfWeek = IsoDayOfWeek.Monday);
 
     /// <summary>
     /// Converts an offset to a <see cref="ZonedDateTime"/> using the time zone of this <see cref="IZonedClock"/>.

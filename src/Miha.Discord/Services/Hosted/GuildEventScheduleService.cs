@@ -118,8 +118,21 @@ public partial class GuildEventScheduleService : DiscordClientService
             _logger.LogWarning("Fetching the guilds weekly schedule channel failed, or is null {Errors}", weeklyScheduleChannelResult.Errors);
             return;
         }
+
+        var daysThisWeek = _easternStandardZonedClock.GetCurrentWeekAsDates();
         
-        var eventsByDay = new Dictionary<DateTime, IList<IGuildScheduledEvent>>();
+        var eventsByDay = new Dictionary<DateOnly, IList<IGuildScheduledEvent>>();
+        foreach (var dayOfWeek in daysThisWeek.OrderBy(d => d))
+        {
+            eventsByDay.Add(dayOfWeek, new List<IGuildScheduledEvent>());
+            
+            foreach (var guildScheduledEvent in eventsThisWeek.Where(e => _easternStandardZonedClock.ToZonedDateTime(e.StartTime).Date.ToDateOnly() == dayOfWeek))
+            {
+                eventsByDay[dayOfWeek].Add(guildScheduledEvent);
+            }
+        }
+        
+        /*var eventsByDay = new Dictionary<DateTime, IList<IGuildScheduledEvent>>();
         foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
         {
             var day = guildScheduledEvent.StartTime.Date.AtMidnight();
@@ -130,7 +143,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             }
 
             eventsByDay[day].Add(guildScheduledEvent);
-        }
+        }*/
 
         _logger.LogInformation("Wiping weekly schedule messages");
 
@@ -165,13 +178,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                 postedHeader = true;
             }
             
-            var dayInEst = day
-                .ToLocalDateTime()
-                .InZoneLeniently(_easternStandardZonedClock.GetTzdbTimeZone())
-                .Date
-                .ToString("dddd", new CultureInfo("en-us"));
-            
-            description.AppendLine("### " + dayInEst + " - "  + day.ToDateTimeOffset().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            description.AppendLine("### " + day.ToString("dddd") + " - "  + day.ToLocalDate().AtMidnight().ToDateTimeUnspecified().ToDateTimeOffset().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {

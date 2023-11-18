@@ -63,7 +63,7 @@ public class ZonedClock : IZonedClock
     public int GetCurrentWeek() => WeekYearRules.Iso.GetWeekOfWeekYear(GetCurrentDate());
 
     /// <inheritdoc/>
-    public IEnumerable<LocalDate> GetCurrentWeekAsDates(IsoDayOfWeek isoDayOfWeek = IsoDayOfWeek.Monday)
+    public IEnumerable<DateOnly> GetCurrentWeekAsDates(IsoDayOfWeek isoDayOfWeek = IsoDayOfWeek.Monday)
     {
         // Get the current date
         var currentDate = GetCurrentDate();
@@ -74,10 +74,10 @@ public class ZonedClock : IZonedClock
         // Get the first day of the week (Monday) for the current week
         var firstDayOfWeek = LocalDate.FromWeekYearWeekAndDay(currentDate.Year, currentWeek, isoDayOfWeek);
         
-        var daysOfWeek = new List<LocalDate>();
+        var daysOfWeek = new List<DateOnly>();
         for (var i = 0; i < 7; i++)
         {
-            var day = firstDayOfWeek.PlusDays(i);
+            var day = firstDayOfWeek.PlusDays(i).ToDateOnly();
             daysOfWeek.Add(day);
         }
 
