@@ -232,8 +232,6 @@ public partial class GuildEventScheduleService : DiscordClientService
                 });
             }
             
-            await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
-            
             _logger.LogInformation("Finished updating weekly schedule");
         }
     }
