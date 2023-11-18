@@ -178,36 +178,44 @@ public partial class GuildEventScheduleService : DiscordClientService
                 postedHeader = true;
             }
             
+            _logger.LogInformation("{DateTime}", day.ToLocalDate().AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).ToInstant().ToUnixTimeSeconds());
             description.AppendLine("### " + day.ToString("dddd") + " - "  + day.ToLocalDate().AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).ToInstant().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
-            
-            foreach (var guildEvent in events.OrderBy(e => e.StartTime))
+
+            if (!events.Any())
             {
-                var location = guildEvent.Location ?? "Unknown";
-                var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
-
-                if (location is "Unknown" && guildEvent.ChannelId is not null)
+                description.AppendLine("*No events scheduled*");
+            }
+            else
+            {
+                foreach (var guildEvent in events.OrderBy(e => e.StartTime))
                 {
-                    location = "Discord";
-                }
+                    var location = guildEvent.Location ?? "Unknown";
+                    var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
 
-                description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
+                    if (location is "Unknown" && guildEvent.ChannelId is not null)
+                    {
+                        location = "Discord";
+                    }
 
-                description.Append($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)}");
-                if (guildEvent.Status is GuildScheduledEventStatus.Active)
-                {
-                    description.AppendLine(" - Happening now!");
-                }
-                else
-                {
-                    description.AppendLine($" - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
-                }
+                    description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
 
-                if (guildEvent.Creator is not null)
-                {
-                    description.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
+                    description.Append($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)}");
+                    if (guildEvent.Status is GuildScheduledEventStatus.Active)
+                    {
+                        description.AppendLine(" - Happening now!");
+                    }
+                    else
+                    {
+                        description.AppendLine($" - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+                    }
+
+                    if (guildEvent.Creator is not null)
+                    {
+                        description.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
+                    }
                 }
             }
-
+            
             embed.WithFooter(day.ToString("dddd"));
             
             if (!postedFooter && day == eventsByDay.Last().Key)
