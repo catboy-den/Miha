@@ -208,7 +208,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                 .WithColor(new Color(255, 43, 241))
                 .WithDescription(description.ToString());
             
-            await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
+            await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build(), flags: MessageFlags.SuppressNotification);
             
             _logger.LogInformation("Finished posting weekly schedule");
         }
