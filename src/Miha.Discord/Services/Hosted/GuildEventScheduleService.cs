@@ -166,7 +166,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                 postedHeader = true;
             }
             
-            description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(day.AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).ToDateTimeUtc(), TimestampTagStyles.ShortDate));
+            description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(day.ToDateTimeUnspecified(), TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
