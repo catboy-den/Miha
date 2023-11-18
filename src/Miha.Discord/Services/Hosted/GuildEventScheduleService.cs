@@ -133,7 +133,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             }
         }
         
-        _logger.LogInformation("Posting weekly schedule");
+        _logger.LogInformation("Updating weekly schedule");
         
         var postedHeader = false;
         var postedFooter = false;
@@ -216,9 +216,12 @@ public partial class GuildEventScheduleService : DiscordClientService
                 .FirstOrDefault(m =>
                     m.Author.Id == _client.CurrentUser.Id &&
                     m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
+            
+            _logger.LogInformation("{Messages}", messages.SelectMany(e => e.Embeds.First().Description));
 
             if (lastPostedMessage is null)
             {
+                _logger.LogInformation("Posting new message");
                 await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
             }
             else
@@ -231,7 +234,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             
             await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
             
-            _logger.LogInformation("Finished posting or updating weekly schedule");
+            _logger.LogInformation("Finished updating weekly schedule");
         }
     }
     
