@@ -173,6 +173,12 @@ public partial class GuildEventScheduleService : DiscordClientService
                 }
 
                 _logger.LogInformation("Deleted {DeletedMessages} messages", deletedMessages);
+                
+                // Update the messages list
+                messages = (await weeklyScheduleChannel
+                        .GetMessagesAsync(50)
+                        .FlattenAsync())
+                    .ToList();
             }
             
             break;
