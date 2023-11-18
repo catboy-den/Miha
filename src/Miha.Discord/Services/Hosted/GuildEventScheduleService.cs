@@ -13,7 +13,6 @@ using Miha.Discord.Extensions;
 using Miha.Discord.Services.Interfaces;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
-using NodaTime;
 using NodaTime.Extensions;
 
 namespace Miha.Discord.Services.Hosted;
@@ -164,10 +163,14 @@ public partial class GuildEventScheduleService : DiscordClientService
                     .WithAuthor("Weekly event schedule", _client.CurrentUser.GetAvatarUrl());
                 postedHeader = true;
             }
-
-            var dayUnspecified = day.ToDateTimeOffset();
-            var dayInEst = day.ToLocalDateTime().Date.AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).Date.ToString("dddd", new CultureInfo("en-us"));
-            description.AppendLine("### " + dayInEst + " - "  + dayUnspecified.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            
+            var dayInEst = day
+                .ToLocalDateTime()
+                .InZoneLeniently(_easternStandardZonedClock.GetTzdbTimeZone())
+                .Date
+                .ToString("dddd", new CultureInfo("en-us"));
+            
+            description.AppendLine("### " + dayInEst + " - "  + day.ToDateTimeOffset().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
@@ -210,7 +213,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                 .WithColor(new Color(255, 43, 241))
                 .WithDescription(description.ToString());
             
-            await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build(), flags: MessageFlags.SuppressNotification);
+            await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
             
             _logger.LogInformation("Finished posting weekly schedule");
         }
