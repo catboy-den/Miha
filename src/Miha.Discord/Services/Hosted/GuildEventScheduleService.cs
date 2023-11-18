@@ -178,6 +178,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                 postedHeader = true;
             }
             
+            _logger.LogInformation("{DateTimeUnspecified}", day.ToLocalDate().ToDateTimeUnspecified());
             description.AppendLine("### " + day.ToString("dddd") + " - "  + day.ToLocalDate().ToDateTimeUnspecified().ToDateTimeOffset().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
@@ -208,10 +209,12 @@ public partial class GuildEventScheduleService : DiscordClientService
                 }
             }
 
+            embed.WithFooter(day.ToString("dddd"));
+            
             if (!postedFooter && day == eventsByDay.Last().Key)
             {
                 embed
-                    .WithVersionFooter()
+                    //.WithVersionFooter()
                     .WithCurrentTimestamp();
 
                 postedFooter = true;
