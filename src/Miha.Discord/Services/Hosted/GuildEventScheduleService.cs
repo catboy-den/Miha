@@ -165,8 +165,9 @@ public partial class GuildEventScheduleService : DiscordClientService
                     .WithAuthor("Weekly event schedule", _client.CurrentUser.GetAvatarUrl());
                 postedHeader = true;
             }
-            
-            description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(day.ToDateTimeUnspecified(), TimestampTagStyles.ShortDate));
+
+            var dayUnspecified = day.ToDateTimeUnspecified();
+            description.AppendLine("### " + dayUnspecified.ToString("dddd") + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(dayUnspecified, TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
@@ -179,7 +180,16 @@ public partial class GuildEventScheduleService : DiscordClientService
                 }
 
                 description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
-                description.AppendLine($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)} - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+
+                description.Append($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)}");
+                if (guildEvent.Status is GuildScheduledEventStatus.Active)
+                {
+                    description.AppendLine(" - Happening now!");
+                }
+                else
+                {
+                    description.AppendLine($" - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+                }
 
                 if (guildEvent.Creator is not null)
                 {
