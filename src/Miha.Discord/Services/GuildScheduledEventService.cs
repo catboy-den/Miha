@@ -3,23 +3,25 @@ using Discord.WebSocket;
 using FluentResults;
 using Microsoft.Extensions.Logging;
 using Miha.Discord.Services.Interfaces;
-using Miha.Shared;
+using Miha.Shared.ZonedClocks.Interfaces;
 using NodaTime;
 using NodaTime.Calendars;
-using NodaTime.Extensions;
 
 namespace Miha.Discord.Services;
 
 public class GuildScheduledEventService : IGuildScheduledEventService
 {
     private readonly DiscordSocketClient _discordClient;
+    private readonly IEasternStandardZonedClock _easternStandardZonedClock;
     private readonly ILogger<GuildScheduledEventService> _logger;
 
     public GuildScheduledEventService(
         DiscordSocketClient discordClient,
+        IEasternStandardZonedClock easternStandardZonedClock,
         ILogger<GuildScheduledEventService> logger)
     {
         _discordClient = discordClient;
+        _easternStandardZonedClock = easternStandardZonedClock;
         _logger = logger;
     }
     
@@ -38,8 +40,8 @@ public class GuildScheduledEventService : IGuildScheduledEventService
 
         var eventsThisWeek = events.Where(guildEvent =>
         {
-            var estDate = guildEvent.StartTime.ToZonedDateTime()
-                .WithZone(DateTimeZoneProviders.Tzdb[Timezones.IanaEasternTime]).Date;
+            var estDate = _easternStandardZonedClock.ToZonedDateTime(guildEvent.StartTime).Date;
+            
             var weekOfDate = WeekYearRules.Iso.GetWeekOfWeekYear(estDate);
 
             return weekOfDate == weekNumberInYear;

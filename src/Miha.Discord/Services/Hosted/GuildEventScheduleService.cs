@@ -13,6 +13,7 @@ using Miha.Discord.Extensions;
 using Miha.Discord.Services.Interfaces;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Miha.Discord.Services.Hosted;
@@ -117,7 +118,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             _logger.LogWarning("Fetching the guilds weekly schedule channel failed, or is null {Errors}", weeklyScheduleChannelResult.Errors);
             return;
         }
-
+        
         var eventsByDay = new Dictionary<DateTime, IList<IGuildScheduledEvent>>();
         foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
         {
