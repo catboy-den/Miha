@@ -121,7 +121,7 @@ public partial class GuildEventScheduleService : DiscordClientService
         var eventsByDay = new Dictionary<DateTime, IList<IGuildScheduledEvent>>();
         foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
         {
-            var day = guildScheduledEvent.StartTime.Date;
+            var day = guildScheduledEvent.StartTime.Date.AtMidnight();
             
             if (!eventsByDay.ContainsKey(day))
             {
