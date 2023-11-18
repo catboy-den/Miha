@@ -4,6 +4,7 @@ using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Miha.Discord.Extensions;
@@ -63,6 +64,10 @@ public partial class GuildEventScheduleService : DiscordClientService
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
+            
+            var next = nextUtc.Value - utcNow;
+            
+            _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
 
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
@@ -129,7 +134,8 @@ public partial class GuildEventScheduleService : DiscordClientService
         }
 
         _logger.LogInformation("Wiping weekly schedule messages");
-        
+
+        var deletedMessages = 0;
         var messages = await weeklyScheduleChannel
             .GetMessagesAsync(50)
             .FlattenAsync();
@@ -137,8 +143,11 @@ public partial class GuildEventScheduleService : DiscordClientService
         foreach (var message in messages.Where(m => m.Author.Id == _client.CurrentUser.Id))
         {
             await message.DeleteAsync();
+            deletedMessages++;
         }
 
+        _logger.LogInformation("Wiped {DeletedMessages} messages", deletedMessages);
+        
         _logger.LogInformation("Posting weekly schedule");
         
         var postedHeader = false;
