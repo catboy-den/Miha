@@ -1,11 +1,9 @@
-﻿using System.Globalization;
-using System.Text;
+﻿using System.Text;
 using Cronos;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
-using FluentAssertions.Common;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -13,7 +11,6 @@ using Miha.Discord.Extensions;
 using Miha.Discord.Services.Interfaces;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
-using NodaTime;
 using NodaTime.Extensions;
 
 namespace Miha.Discord.Services.Hosted;
@@ -183,6 +180,12 @@ public partial class GuildEventScheduleService : DiscordClientService
             
             break;
         }
+        
+        // TODO - Future me
+        // If the ordering becomes a problem, a potential solution could be to use an index
+        // to update the message at [1] (Tuesday), [6] (Sunday), [0] Monday for example
+        // this would ensure the order of messages align with the days of the week
+        // and to delete all messages from the bot if there's any more than 7 messages total
         
         // Update (or post) a message with an embed of events for that day, for each day of the week
         foreach (var (day, events) in eventsByDay)
