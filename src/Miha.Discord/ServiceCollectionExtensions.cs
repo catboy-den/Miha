@@ -5,8 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Miha.Discord.Consumers;
 using Miha.Discord.Consumers.GuildEvent;
 using Miha.Discord.Services;
+using Miha.Discord.Services.Hosted;
+using Miha.Discord.Services.Interfaces;
 using SlimMessageBus.Host;
 using SlimMessageBus.Host.Memory;
+using GuildEventMonitorService = Miha.Discord.Services.Hosted.GuildEventMonitorService;
 
 namespace Miha.Discord;
 
@@ -19,10 +22,18 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddDiscordClientServices(this IServiceCollection services)
+    public static IServiceCollection AddDiscordServices(this IServiceCollection services)
+    {
+        services.AddSingleton<IGuildScheduledEventService, GuildScheduledEventService>();
+        
+        return services;
+    }
+    
+    public static IServiceCollection AddDiscordHostedServices(this IServiceCollection services)
     {
         services.AddHostedService<InteractionHandler>();
         services.AddHostedService<GuildEventMonitorService>();
+        services.AddHostedService<GuildEventScheduleService>();
         services.AddHostedService<SlimMessageBusService>();
 
         return services;

@@ -7,7 +7,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Miha.Discord.Services;
+namespace Miha.Discord.Services.Hosted;
 
 public class InteractionHandler : DiscordClientService
 {

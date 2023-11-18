@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
 
-namespace Miha.Discord.Services;
+namespace Miha.Discord.Services.Hosted;
 
 public class BirthdayAnnouncementService : DiscordClientService
 {

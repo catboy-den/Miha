@@ -98,6 +98,44 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
         }
     }
 
+    public async Task<Result<ITextChannel>> GetWeeklyScheduleChannel(ulong? guildId)
+    {
+        try
+        {
+            if (guildId is null)
+            {
+                throw new ArgumentNullException(nameof(guildId));
+            }
+
+            var optionsResult = await GetAsync(guildId);
+            if (optionsResult.IsFailed)
+            {
+                _logger.LogWarning("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
+                return optionsResult.ToResult<ITextChannel>();
+            }
+
+            var weeklyScheduleChannel = optionsResult.Value?.WeeklyScheduleChannel;
+            if (!weeklyScheduleChannel.HasValue)
+            {
+                _logger.LogDebug("Guild doesn't have a weekly schedule channel set {GuildId}", guildId);
+                return Result.Fail<ITextChannel>("Weekly schedule channel not set");
+            }
+
+            if (await _client.GetChannelAsync(weeklyScheduleChannel.Value) is ITextChannel channel)
+            {
+                return Result.Ok(channel);
+            }
+
+            _logger.LogWarning("Guild's weekly schedule channel wasn't found, or might not be a Text Channel {GuildId} {WeeklyScheduleChannel}", guildId, weeklyScheduleChannel.Value);
+            return Result.Fail<ITextChannel>("Weekly schedule channel not found");
+        }
+        catch (Exception e)
+        {
+            LogErrorException(e);
+            return Result.Fail<ITextChannel>(e.Message);
+        }
+    }
+
     public async Task<Result<IRole>> GetAnnouncementRoleAsync(ulong? guildId)
     {
         try

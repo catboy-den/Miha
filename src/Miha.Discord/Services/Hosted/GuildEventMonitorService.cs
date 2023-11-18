@@ -3,6 +3,7 @@ using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
+using Humanizer;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -11,7 +12,7 @@ using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
 using Newtonsoft.Json;
 
-namespace Miha.Discord.Services;
+namespace Miha.Discord.Services.Hosted;
 
 public partial class GuildEventMonitorService : DiscordClientService
 {
@@ -49,6 +50,8 @@ public partial class GuildEventMonitorService : DiscordClientService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        _logger.LogInformation("Waiting for client to be ready...");
+        
         await Client.WaitForReadyAsync(stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
@@ -64,6 +67,10 @@ public partial class GuildEventMonitorService : DiscordClientService
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
+
+            var next = nextUtc.Value - utcNow;
+            
+            _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
 
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
