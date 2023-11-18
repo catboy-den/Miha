@@ -192,14 +192,9 @@ public partial class GuildEventScheduleService : DiscordClientService
                 .WithDescription(description.ToString());
             
             await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
-
-            /*### Monday - <t:1699132740:d>
-            - [Discord - Lord of the Rings: Fellowship of the Ring - 20th Anniversary viewing!](https://discord.gg/VqqEgBTe?event=1170558838718603284)
-                - <t:1699132740:T> - <t:1699149720:R>
-                - Hosted by @Hunt*/
+            
+            _logger.LogInformation("Finished posting weekly schedule");
         }
-        
-        // loop through eventsByDay, order the events by day by start time
     }
     
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred")]
