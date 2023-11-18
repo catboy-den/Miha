@@ -177,9 +177,14 @@ public partial class GuildEventScheduleService : DiscordClientService
                     .WithAuthor("Weekly event schedule", _client.CurrentUser.GetAvatarUrl());
                 postedHeader = true;
             }
+
+            var timeStamp = day
+                .ToLocalDate()
+                .AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone())
+                .ToInstant()
+                .ToDiscordTimestamp(TimestampTagStyles.ShortDate);
             
-            _logger.LogInformation("{DateTime}", day.ToLocalDate().AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).ToInstant().ToUnixTimeSeconds());
-            description.AppendLine("### " + day.ToString("dddd") + " - "  + day.ToLocalDate().AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).ToInstant().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            description.AppendLine($"### {day.ToString("dddd")} - {timeStamp}");
 
             if (!events.Any())
             {
@@ -216,12 +221,10 @@ public partial class GuildEventScheduleService : DiscordClientService
                 }
             }
             
-            embed.WithFooter(day.ToString("dddd"));
-            
             if (!postedFooter && day == eventsByDay.Last().Key)
             {
                 embed
-                    //.WithVersionFooter()
+                    .WithVersionFooter()
                     .WithCurrentTimestamp();
 
                 postedFooter = true;
