@@ -11,6 +11,7 @@ using Miha.Discord.Extensions;
 using Miha.Discord.Services.Interfaces;
 using Miha.Logic.Services.Interfaces;
 using Miha.Shared.ZonedClocks.Interfaces;
+using NodaTime;
 using NodaTime.Extensions;
 
 namespace Miha.Discord.Services.Hosted;
@@ -116,14 +117,13 @@ public partial class GuildEventScheduleService : DiscordClientService
             return;
         }
 
-        var eventsByDay = new Dictionary<string, IList<IGuildScheduledEvent>>();
+        var eventsByDay = new Dictionary<LocalDate, IList<IGuildScheduledEvent>>();
         foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
         {
             var day = guildScheduledEvent
                 .StartTime
                 .ToZonedDateTime()
-                .WithZone(_easternStandardZonedClock.GetTzdbTimeZone())
-                .Date.AtMidnight().ToDateTimeUnspecified().ToString("dddd");
+                .Date.AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).Date;
             
             if (!eventsByDay.ContainsKey(day))
             {
@@ -166,7 +166,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                 postedHeader = true;
             }
             
-            description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date, TimestampTagStyles.ShortDate));
+            description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(day.AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).ToDateTimeUtc(), TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
