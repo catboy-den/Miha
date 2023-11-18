@@ -217,7 +217,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                     m.Author.Id == _client.CurrentUser.Id &&
                     m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
             
-            _logger.LogInformation("{Messages}", messages.SelectMany(e => e.Embeds.First().Description));
+            _logger.LogInformation("{Messages}", messages.Select(e => e.Embeds.First().Description));
 
             if (lastPostedMessage is null)
             {
