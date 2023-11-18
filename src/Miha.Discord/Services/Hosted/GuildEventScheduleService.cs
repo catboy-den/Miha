@@ -123,7 +123,8 @@ public partial class GuildEventScheduleService : DiscordClientService
             var day = guildScheduledEvent
                 .StartTime
                 .ToZonedDateTime()
-                .Date.AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone()).Date;
+                .WithZone(_easternStandardZonedClock.GetTzdbTimeZone())
+                .Date.AtMidnight().Date;
             
             if (!eventsByDay.ContainsKey(day))
             {
