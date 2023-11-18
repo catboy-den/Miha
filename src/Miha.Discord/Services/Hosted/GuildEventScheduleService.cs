@@ -178,7 +178,7 @@ public partial class GuildEventScheduleService : DiscordClientService
                 postedHeader = true;
             }
             
-            description.AppendLine("### " + day.ToString("dddd") + " - "  + day.ToLocalDate().AtMidnight().ToDateTimeUnspecified().ToDateTimeOffset().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            description.AppendLine("### " + day.ToString("dddd") + " - "  + day.ToLocalDate().ToDateTimeUnspecified().ToDateTimeOffset().ToDiscordTimestamp(TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
