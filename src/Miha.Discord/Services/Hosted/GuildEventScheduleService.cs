@@ -165,7 +165,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             }
 
             var dayUnspecified = day.ToDateTimeOffset();
-            description.AppendLine($"### <t:{dayUnspecified.ToUnixTimeSeconds()}:d>" + " - "  + dayUnspecified.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
+            description.AppendLine("### " + day.ToString("dddd") + " - "  + dayUnspecified.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
