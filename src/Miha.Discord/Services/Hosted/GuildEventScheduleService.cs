@@ -178,6 +178,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             break;
         }
         
+        // Update (or post) a message with an embed of events for that day, for each day of the week
         foreach (var (day, events) in eventsByDay)
         {
             var embed = new EmbedBuilder();
@@ -252,8 +253,6 @@ public partial class GuildEventScheduleService : DiscordClientService
                     m.Author.Id == _client.CurrentUser.Id &&
                     m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
             
-            _logger.LogInformation("{Messages}", messages.Select(e => e.Embeds.First().Description));
-
             if (lastPostedMessage is null)
             {
                 _logger.LogInformation("Posting new message");
