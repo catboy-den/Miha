@@ -142,6 +142,41 @@ public partial class GuildEventScheduleService : DiscordClientService
             .GetMessagesAsync(50)
             .FlattenAsync())
             .ToList();
+
+        // Wipe any existing messages if a message by day doesn't already exist
+        foreach (var (day, _) in eventsByDay)
+        {
+            var lastPostedMessage = messages
+                .FirstOrDefault(m =>
+                    m.Author.Id == _client.CurrentUser.Id &&
+                    m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
+
+            if (lastPostedMessage is not null)
+            {
+                continue;
+            }
+            
+            var messagesToDelete = messages
+                .Where(m => m.Author.Id == _client.CurrentUser.Id)
+                .ToList();
+            
+            if (messagesToDelete.Any())
+            {
+                var deletedMessages = 0;
+                
+                _logger.LogInformation("Wiping posted messages");
+
+                foreach (var message in messagesToDelete)
+                {
+                    await message.DeleteAsync();
+                    deletedMessages++;
+                }
+
+                _logger.LogInformation("Deleted {DeletedMessages} messages", deletedMessages);
+            }
+            
+            break;
+        }
         
         foreach (var (day, events) in eventsByDay)
         {
