@@ -122,48 +122,26 @@ public partial class GuildEventScheduleService : DiscordClientService
         var daysThisWeek = _easternStandardZonedClock.GetCurrentWeekAsDates();
         
         var eventsByDay = new Dictionary<DateOnly, IList<IGuildScheduledEvent>>();
+        var eventsThisWeekList = eventsThisWeek.ToList();
         foreach (var dayOfWeek in daysThisWeek.OrderBy(d => d))
         {
             eventsByDay.Add(dayOfWeek, new List<IGuildScheduledEvent>());
             
-            foreach (var guildScheduledEvent in eventsThisWeek.Where(e => _easternStandardZonedClock.ToZonedDateTime(e.StartTime).Date.ToDateOnly() == dayOfWeek))
+            foreach (var guildScheduledEvent in eventsThisWeekList.Where(e => _easternStandardZonedClock.ToZonedDateTime(e.StartTime).Date.ToDateOnly() == dayOfWeek))
             {
                 eventsByDay[dayOfWeek].Add(guildScheduledEvent);
             }
         }
         
-        /*var eventsByDay = new Dictionary<DateTime, IList<IGuildScheduledEvent>>();
-        foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
-        {
-            var day = guildScheduledEvent.StartTime.Date.AtMidnight();
-            
-            if (!eventsByDay.ContainsKey(day))
-            {
-                eventsByDay.Add(day, new List<IGuildScheduledEvent>());
-            }
-
-            eventsByDay[day].Add(guildScheduledEvent);
-        }*/
-
-        _logger.LogInformation("Wiping weekly schedule messages");
-
-        var deletedMessages = 0;
-        var messages = await weeklyScheduleChannel
-            .GetMessagesAsync(50)
-            .FlattenAsync();
-
-        foreach (var message in messages.Where(m => m.Author.Id == _client.CurrentUser.Id))
-        {
-            await message.DeleteAsync();
-            deletedMessages++;
-        }
-
-        _logger.LogInformation("Wiped {DeletedMessages} messages", deletedMessages);
-        
         _logger.LogInformation("Posting weekly schedule");
         
         var postedHeader = false;
         var postedFooter = false;
+        
+        var messages = (await weeklyScheduleChannel
+            .GetMessagesAsync(50)
+            .FlattenAsync())
+            .ToList();
         
         foreach (var (day, events) in eventsByDay)
         {
@@ -233,10 +211,27 @@ public partial class GuildEventScheduleService : DiscordClientService
             embed
                 .WithColor(new Color(255, 43, 241))
                 .WithDescription(description.ToString());
+
+            var lastPostedMessage = messages
+                .FirstOrDefault(m =>
+                    m.Author.Id == _client.CurrentUser.Id &&
+                    m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
+
+            if (lastPostedMessage is null)
+            {
+                await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
+            }
+            else
+            {
+                await weeklyScheduleChannel.ModifyMessageAsync(lastPostedMessage.Id, props =>
+                {
+                    props.Embed = embed.Build();
+                });
+            }
             
             await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
             
-            _logger.LogInformation("Finished posting weekly schedule");
+            _logger.LogInformation("Finished posting or updating weekly schedule");
         }
     }
     
