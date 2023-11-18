@@ -116,43 +116,78 @@ public partial class GuildEventScheduleService : DiscordClientService
             return;
         }
 
-        var eventsByDay = new Dictionary<string, IList<IGuildScheduledEvent>>();
-        foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
-        {
-            var day = guildScheduledEvent
-                .StartTime
-                .ToZonedDateTime()
-                .WithZone(_easternStandardZonedClock.GetTzdbTimeZone())
-                .Date.AtMidnight().ToDateTimeUnspecified().ToString("dddd");
-            
-            if (!eventsByDay.ContainsKey(day))
-            {
-                eventsByDay.Add(day, new List<IGuildScheduledEvent>());
-            }
-
-            eventsByDay[day].Add(guildScheduledEvent);
-        }
-
-        _logger.LogInformation("Wiping weekly schedule messages");
-
-        var deletedMessages = 0;
-        var messages = await weeklyScheduleChannel
-            .GetMessagesAsync(50)
-            .FlattenAsync();
-
-        foreach (var message in messages.Where(m => m.Author.Id == _client.CurrentUser.Id))
-        {
-            await message.DeleteAsync();
-            deletedMessages++;
-        }
-
-        _logger.LogInformation("Wiped {DeletedMessages} messages", deletedMessages);
+        var daysThisWeek = _easternStandardZonedClock.GetCurrentWeekAsDates();
         
-        _logger.LogInformation("Posting weekly schedule");
+        var eventsByDay = new Dictionary<DateOnly, IList<IGuildScheduledEvent>>();
+        var eventsThisWeekList = eventsThisWeek.ToList();
+        foreach (var dayOfWeek in daysThisWeek.OrderBy(d => d))
+        {
+            eventsByDay.Add(dayOfWeek, new List<IGuildScheduledEvent>());
+            
+            foreach (var guildScheduledEvent in eventsThisWeekList.Where(e => _easternStandardZonedClock.ToZonedDateTime(e.StartTime).Date.ToDateOnly() == dayOfWeek))
+            {
+                eventsByDay[dayOfWeek].Add(guildScheduledEvent);
+            }
+        }
+        
+        _logger.LogInformation("Updating weekly schedule");
         
         var postedHeader = false;
         var postedFooter = false;
         
+        var messages = (await weeklyScheduleChannel
+            .GetMessagesAsync(50)
+            .FlattenAsync())
+            .ToList();
+
+        // Wipe any existing messages if a message by day doesn't already exist
+        foreach (var (day, _) in eventsByDay)
+        {
+            var lastPostedMessage = messages
+                .FirstOrDefault(m =>
+                    m.Author.Id == _client.CurrentUser.Id &&
+                    m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
+
+            if (lastPostedMessage is not null)
+            {
+                continue;
+            }
+            
+            var messagesToDelete = messages
+                .Where(m => m.Author.Id == _client.CurrentUser.Id)
+                .ToList();
+            
+            if (messagesToDelete.Any())
+            {
+                var deletedMessages = 0;
+                
+                _logger.LogInformation("Wiping posted messages");
+
+                foreach (var message in messagesToDelete)
+                {
+                    await message.DeleteAsync();
+                    deletedMessages++;
+                }
+
+                _logger.LogInformation("Deleted {DeletedMessages} messages", deletedMessages);
+                
+                // Update the messages list
+                messages = (await weeklyScheduleChannel
+                        .GetMessagesAsync(50)
+                        .FlattenAsync())
+                    .ToList();
+            }
+            
+            break;
+        }
+        
+        // TODO - Future me
+        // If the ordering becomes a problem, a potential solution could be to use an index
+        // to update the message at [1] (Tuesday), [6] (Sunday), [0] Monday for example
+        // this would ensure the order of messages align with the days of the week
+        // and to delete all messages from the bot if there's any more than 7 messages total
+        
+        // Update (or post) a message with an embed of events for that day, for each day of the week
         foreach (var (day, events) in eventsByDay)
         {
             var embed = new EmbedBuilder();
@@ -165,28 +200,50 @@ public partial class GuildEventScheduleService : DiscordClientService
                     .WithAuthor("Weekly event schedule", _client.CurrentUser.GetAvatarUrl());
                 postedHeader = true;
             }
+
+            var timeStamp = day
+                .ToLocalDate()
+                .AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone())
+                .ToInstant()
+                .ToDiscordTimestamp(TimestampTagStyles.ShortDate);
             
-            description.AppendLine("### " + day + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(events.First().StartTime.Date, TimestampTagStyles.ShortDate));
-            
-            foreach (var guildEvent in events.OrderBy(e => e.StartTime))
+            description.AppendLine($"### {day.ToString("dddd")} - {timeStamp}");
+
+            if (!events.Any())
             {
-                var location = guildEvent.Location ?? "Unknown";
-                var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
-
-                if (location is "Unknown" && guildEvent.ChannelId is not null)
+                description.AppendLine("*No events scheduled*");
+            }
+            else
+            {
+                foreach (var guildEvent in events.OrderBy(e => e.StartTime))
                 {
-                    location = "Discord";
-                }
+                    var location = guildEvent.Location ?? "Unknown";
+                    var url = $"https://discord.com/events/{guildEvent.Guild.Id}/{guildEvent.Id}";
 
-                description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
-                description.AppendLine($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)} - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+                    if (location is "Unknown" && guildEvent.ChannelId is not null)
+                    {
+                        location = "Discord";
+                    }
 
-                if (guildEvent.Creator is not null)
-                {
-                    description.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
+                    description.AppendLine($"- [{location} - {guildEvent.Name}]({url})");
+
+                    description.Append($"  - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.ShortTime)}");
+                    if (guildEvent.Status is GuildScheduledEventStatus.Active)
+                    {
+                        description.AppendLine(" - Happening now!");
+                    }
+                    else
+                    {
+                        description.AppendLine($" - {guildEvent.StartTime.ToDiscordTimestamp(TimestampTagStyles.Relative)}");
+                    }
+
+                    if (guildEvent.Creator is not null)
+                    {
+                        description.AppendLine($"  - Hosted by {guildEvent.Creator.Mention}");
+                    }
                 }
             }
-
+            
             if (!postedFooter && day == eventsByDay.Last().Key)
             {
                 embed
@@ -199,10 +256,26 @@ public partial class GuildEventScheduleService : DiscordClientService
             embed
                 .WithColor(new Color(255, 43, 241))
                 .WithDescription(description.ToString());
+
+            var lastPostedMessage = messages
+                .FirstOrDefault(m =>
+                    m.Author.Id == _client.CurrentUser.Id &&
+                    m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
             
-            await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
+            if (lastPostedMessage is null)
+            {
+                _logger.LogInformation("Posting new message");
+                await weeklyScheduleChannel.SendMessageAsync(embed: embed.Build());
+            }
+            else
+            {
+                await weeklyScheduleChannel.ModifyMessageAsync(lastPostedMessage.Id, props =>
+                {
+                    props.Embed = embed.Build();
+                });
+            }
             
-            _logger.LogInformation("Finished posting weekly schedule");
+            _logger.LogInformation("Finished updating weekly schedule");
         }
     }
     
