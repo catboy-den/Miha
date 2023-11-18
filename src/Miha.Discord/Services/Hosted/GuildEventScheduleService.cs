@@ -4,6 +4,7 @@ using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
 using Discord.WebSocket;
+using FluentAssertions.Common;
 using Humanizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -117,14 +118,10 @@ public partial class GuildEventScheduleService : DiscordClientService
             return;
         }
 
-        var eventsByDay = new Dictionary<LocalDate, IList<IGuildScheduledEvent>>();
+        var eventsByDay = new Dictionary<DateTime, IList<IGuildScheduledEvent>>();
         foreach (var guildScheduledEvent in eventsThisWeek.OrderBy(e => e.StartTime.Date))
         {
-            var day = guildScheduledEvent
-                .StartTime
-                .ToZonedDateTime()
-                .WithZone(_easternStandardZonedClock.GetTzdbTimeZone())
-                .Date.AtMidnight().Date;
+            var day = guildScheduledEvent.StartTime.Date;
             
             if (!eventsByDay.ContainsKey(day))
             {
@@ -167,8 +164,8 @@ public partial class GuildEventScheduleService : DiscordClientService
                 postedHeader = true;
             }
 
-            var dayUnspecified = day.ToDateTimeUnspecified();
-            description.AppendLine("### " + dayUnspecified.ToString("dddd") + " - "  + DiscordTimestampExtensions.ToDiscordTimestamp(dayUnspecified, TimestampTagStyles.ShortDate));
+            var dayUnspecified = day.ToDateTimeOffset();
+            description.AppendLine($"### <t:{dayUnspecified.ToUnixTimeSeconds()}:d>" + " - "  + dayUnspecified.ToDiscordTimestamp(TimestampTagStyles.ShortDate));
             
             foreach (var guildEvent in events.OrderBy(e => e.StartTime))
             {
