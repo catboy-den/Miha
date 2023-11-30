@@ -140,7 +140,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             .FlattenAsync())
             .ToList();
 
-        // Wipe any existing messages if a message by day doesn't already exist
+        // Wipe any existing messages by the bot user if a message by day doesn't already exist
         foreach (var (day, _) in eventsByDay)
         {
             var lastPostedMessage = messages
@@ -281,9 +281,9 @@ public partial class GuildEventScheduleService : DiscordClientService
                     props.Embed = embed.Build();
                 });
             }
-            
-            _logger.LogInformation("Finished updating weekly schedule");
         }
+        
+        _logger.LogInformation("Finished updating weekly schedule");
     }
     
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred")]
