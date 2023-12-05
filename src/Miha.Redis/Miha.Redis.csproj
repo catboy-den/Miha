@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="FluentResults" Version="3.15.2" />
     <PackageReference Include="FluentResults.Extensions.FluentAssertions" Version="2.1.1" />
-    <PackageReference Include="Redis.OM" Version="0.5.5" />
+    <PackageReference Include="Redis.OM" Version="0.6.0" />
   </ItemGroup>
 
   <ItemGroup>
