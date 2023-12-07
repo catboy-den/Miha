@@ -12,11 +12,11 @@ public class RedisSeedService
     private readonly ILogger<RedisSeedService> _logger;
 
     public RedisSeedService(
-        IOptions<RedisSeedOptions> seedOptions,
+        IOptions<RedisOptions> redisOptions,
         IGuildRepository guildRepository,
         ILogger<RedisSeedService> logger)
     {
-        _seedOptions = seedOptions.Value;
+        _seedOptions = redisOptions.Value.SeedOptions;
         _guildRepository = guildRepository;
         _logger = logger;
     }

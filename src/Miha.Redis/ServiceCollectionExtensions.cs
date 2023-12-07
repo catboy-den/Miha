@@ -16,12 +16,10 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
         var redisOptions = configuration.GetSection(RedisOptions.Section);
-        var redisSeedOptions = configuration.GetSection(RedisSeedOptions.Section);
 
         RedisSerializationSettings.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
         
         services.AddOptions<RedisOptions>().Bind(redisOptions);
-        services.AddOptions<RedisSeedOptions>().Bind(redisSeedOptions);
         
         services.AddSingleton<IRedisConnectionProvider>(provider =>
         {
