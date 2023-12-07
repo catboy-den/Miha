@@ -18,8 +18,9 @@ public static class ServiceCollectionExtensions
         var redisOptions = configuration.GetSection(RedisOptions.Section);
 
         RedisSerializationSettings.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
-
+        
         services.AddOptions<RedisOptions>().Bind(redisOptions);
+        
         services.AddSingleton<IRedisConnectionProvider>(provider =>
         {
             var redisConnectionConfig = provider.GetRequiredService<IOptions<RedisOptions>>().Value;
@@ -32,9 +33,11 @@ public static class ServiceCollectionExtensions
             });
         });
 
-        services.AddHostedService<IndexCreationService>();
+        services.AddHostedService<RedisIndexCreationService>();
+        services.AddSingleton<RedisSeedService>();
+        
         services.AddRedisRepositories();
-
+        
         return services;
     }
 

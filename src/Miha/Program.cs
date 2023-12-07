@@ -2,9 +2,12 @@
 using Discord.Addons.Hosting;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Miha;
 using Miha.Discord;
+using Miha.Redis.Services;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Formatting.Compact;
@@ -53,7 +56,7 @@ try
 
             if (discordOptions.Guild is null)
             {
-                throw new ArgumentNullException(nameof(discordOptions.Guild), "We need a target guild id, we don't quite support multi-guilds yet");
+                throw new ArgumentNullException(nameof(discordOptions.Guild), "Need a target guild id, Miha does not support multi-guilds yet");
             }
 
             config.SocketConfig = new DiscordSocketConfig
@@ -80,8 +83,14 @@ try
             config.LogLevel = LogSeverity.Verbose;
             config.UseCompiledLambda = true;
         })
-        .ConfigureServices(Startup.ConfigureServices).Build();
+        .ConfigureServices(Startup.ConfigureServices)
+        .Build();
 
+    var discordOptions = host.Services.GetRequiredService<IOptions<DiscordOptions>>();
+    var seedService = host.Services.GetRequiredService<RedisSeedService>();
+    
+    await seedService.SeedGuildAsync(discordOptions.Value.Guild);
+    
     await host.RunAsync();
     return 0;
 }
