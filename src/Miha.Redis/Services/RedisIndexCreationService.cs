@@ -7,14 +7,14 @@ using Redis.OM.Modeling;
 
 namespace Miha.Redis.Services;
 
-public partial class IndexCreationService : IHostedService
+public partial class RedisIndexCreationService : IHostedService
 {
     private readonly IRedisConnectionProvider _provider;
-    private readonly ILogger<IndexCreationService> _logger;
+    private readonly ILogger<RedisIndexCreationService> _logger;
 
-    public IndexCreationService(
+    public RedisIndexCreationService(
         IRedisConnectionProvider provider,
-        ILogger<IndexCreationService> logger)
+        ILogger<RedisIndexCreationService> logger)
     {
         _provider = provider;
         _logger = logger;
