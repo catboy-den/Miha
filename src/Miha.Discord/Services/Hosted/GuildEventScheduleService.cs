@@ -3,6 +3,7 @@ using Cronos;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
+using Discord.Net;
 using Discord.WebSocket;
 using Humanizer;
 using Microsoft.Extensions.Logging;
@@ -53,7 +54,18 @@ public partial class GuildEventScheduleService : DiscordClientService
         
         while (!stoppingToken.IsCancellationRequested)
         {
-            await PostWeeklyScheduleAsync();
+            try
+            {
+                await PostWeeklyScheduleAsync();
+            }
+            catch (HttpException e)
+            {
+                _logger.LogWarning(e, "Discord dotnet http exception caught, likely caused by rate-limits, waiting a few minutes before continuing");
+                
+                await Task.Delay(TimeSpan.FromMinutes(3), stoppingToken);
+                
+                continue;
+            }
             
             var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
             var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
