@@ -1,6 +1,6 @@
 # Miha, a discord bot for Midnight Haven
 
-- .NET 7 based, Redis backed
+- .NET 8 based, Redis backed
 - [Discord.NET based](https://github.com/discord-net/Discord.Net)
 - Built & structured around dependency injection
 - Rapidly integrated using GitHub Actions

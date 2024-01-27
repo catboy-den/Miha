@@ -22,6 +22,7 @@ public partial class GuildEventMonitorService(
     ILogger<GuildEventMonitorService> logger) : DiscordClientService(client, logger)
 {
     private readonly DiscordOptions _discordOptions = discordOptions.Value;
+    private readonly ILogger<GuildEventMonitorService> _logger = logger;
 
     private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 ? * * *"; // https://crontab.cronhub.io/
 
@@ -34,7 +35,7 @@ public partial class GuildEventMonitorService(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        logger.LogInformation("Waiting for client to be ready...");
+        _logger.LogInformation("Waiting for client to be ready...");
         
         await Client.WaitForReadyAsync(stoppingToken);
 
@@ -47,14 +48,14 @@ public partial class GuildEventMonitorService(
 
             if (nextUtc is null)
             {
-                logger.LogWarning("Next utc occurence is null");
+                _logger.LogWarning("Next utc occurence is null");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
 
             var next = nextUtc.Value - utcNow;
             
-            logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
+            _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
 
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
@@ -69,7 +70,7 @@ public partial class GuildEventMonitorService(
             guild = Client.GetGuild(_discordOptions.Guild!.Value);
             if (guild is null)
             {
-                logger.LogCritical("Guild is null {GuildId}", _discordOptions.Guild.Value);
+                _logger.LogCritical("Guild is null {GuildId}", _discordOptions.Guild.Value);
                 return;
             }
         }
@@ -88,11 +89,11 @@ public partial class GuildEventMonitorService(
                 {
                     if (announcementChannel.Reasons.Any(m => m.Message == "Announcement channel not set"))
                     {
-                        logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                        _logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
                         return;
                     }
 
-                    logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
+                    _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
                     continue;
                 }
 
@@ -104,17 +105,17 @@ public partial class GuildEventMonitorService(
                     startsIn = new TimeSpan(startsIn.Days, startsIn.Hours, startsIn.Minutes + 1, 0);
                 }
 
-                logger.LogDebug("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
+                _logger.LogDebug("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
 
                 if (startsIn.TotalMinutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
                 {
-                    logger.LogDebug("GuildEvent {EventId} starts too soon or is already notified", guildEvent.Id);
+                    _logger.LogDebug("GuildEvent {EventId} starts too soon or is already notified", guildEvent.Id);
                     continue;
                 }
 
-                if (logger.IsEnabled(LogLevel.Debug))
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    logger.LogDebug("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                    _logger.LogDebug("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
                     {
                         guildEvent.StartTime,
                         guildEvent.Id,
