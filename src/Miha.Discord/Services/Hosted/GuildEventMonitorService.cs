@@ -14,43 +14,27 @@ using Newtonsoft.Json;
 
 namespace Miha.Discord.Services.Hosted;
 
-public partial class GuildEventMonitorService : DiscordClientService
+public partial class GuildEventMonitorService(
+    DiscordSocketClient client,
+    IGuildService guildService,
+    IEasternStandardZonedClock easternStandardZonedClock,
+    IOptions<DiscordOptions> discordOptions,
+    ILogger<GuildEventMonitorService> logger) : DiscordClientService(client, logger)
 {
-    private readonly DiscordOptions _discordOptions;
-    private readonly IGuildService _guildService;
-    private readonly IEasternStandardZonedClock _easternStandardZonedClock;
-    private readonly ILogger<GuildEventMonitorService> _logger;
+    private readonly DiscordOptions _discordOptions = discordOptions.Value;
 
     private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 ? * * *"; // https://crontab.cronhub.io/
 
-    private readonly IMemoryCache _memoryCache;
-    private readonly MemoryCacheEntryOptions _memoryCacheEntryOptions;
-    private readonly CronExpression _cron;
-
-    public GuildEventMonitorService(
-        DiscordSocketClient client,
-        IGuildService guildService,
-        IEasternStandardZonedClock easternStandardZonedClock,
-        IOptions<DiscordOptions> discordOptions,
-        ILogger<GuildEventMonitorService> logger) : base(client, logger)
-    {
-        _discordOptions = discordOptions.Value;
-        _guildService = guildService;
-        _easternStandardZonedClock = easternStandardZonedClock;
-        _logger = logger;
-
-        _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 32 });
-        _memoryCacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetSize(1)
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(25))
-            .SetSlidingExpiration(TimeSpan.FromMinutes(15));
-
-        _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
-    }
+    private readonly IMemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 32 });
+    private readonly MemoryCacheEntryOptions _memoryCacheEntryOptions = new MemoryCacheEntryOptions()
+        .SetSize(1)
+        .SetAbsoluteExpiration(TimeSpan.FromMinutes(25))
+        .SetSlidingExpiration(TimeSpan.FromMinutes(15));
+    private readonly CronExpression _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Waiting for client to be ready...");
+        logger.LogInformation("Waiting for client to be ready...");
         
         await Client.WaitForReadyAsync(stoppingToken);
 
@@ -58,19 +42,19 @@ public partial class GuildEventMonitorService : DiscordClientService
         {
             await CheckScheduledEventsAsync();
 
-            var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
-            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
+            var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
 
             if (nextUtc is null)
             {
-                _logger.LogWarning("Next utc occurence is null");
+                logger.LogWarning("Next utc occurence is null");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
 
             var next = nextUtc.Value - utcNow;
             
-            _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
+            logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
 
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
@@ -85,7 +69,7 @@ public partial class GuildEventMonitorService : DiscordClientService
             guild = Client.GetGuild(_discordOptions.Guild!.Value);
             if (guild is null)
             {
-                _logger.LogCritical("Guild is null {GuildId}", _discordOptions.Guild.Value);
+                logger.LogCritical("Guild is null {GuildId}", _discordOptions.Guild.Value);
                 return;
             }
         }
@@ -99,16 +83,16 @@ public partial class GuildEventMonitorService : DiscordClientService
         {
             try
             {
-                var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
+                var announcementChannel = await guildService.GetAnnouncementChannelAsync(guild.Id);
                 if (announcementChannel.IsFailed)
                 {
                     if (announcementChannel.Reasons.Any(m => m.Message == "Announcement channel not set"))
                     {
-                        _logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                        logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
                         return;
                     }
 
-                    _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
+                    logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guild.Id, guildEvent.Id);
                     continue;
                 }
 
@@ -120,17 +104,17 @@ public partial class GuildEventMonitorService : DiscordClientService
                     startsIn = new TimeSpan(startsIn.Days, startsIn.Hours, startsIn.Minutes + 1, 0);
                 }
 
-                _logger.LogDebug("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
+                logger.LogDebug("GuildEvent {EventId} starts in (rounded) {StartsInTotalMinutes}", guildEvent.Id, startsIn.TotalMinutes);
 
                 if (startsIn.TotalMinutes is < 5 or > 20 || _memoryCache.TryGetValue(guildEvent.Id, out bool notified) && notified)
                 {
-                    _logger.LogDebug("GuildEvent {EventId} starts too soon or is already notified", guildEvent.Id);
+                    logger.LogDebug("GuildEvent {EventId} starts too soon or is already notified", guildEvent.Id);
                     continue;
                 }
 
-                if (_logger.IsEnabled(LogLevel.Debug))
+                if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
+                    logger.LogDebug("GuildEvent {EventId} {GuildEventJson}", guildEvent.Id, JsonConvert.SerializeObject(new
                     {
                         guildEvent.StartTime,
                         guildEvent.Id,

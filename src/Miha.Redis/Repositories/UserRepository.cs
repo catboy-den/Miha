@@ -6,18 +6,13 @@ using Redis.OM.Contracts;
 
 namespace Miha.Redis.Repositories;
 
-public partial class UserRepository : DocumentRepository<UserDocument>, IUserRepository
+public partial class UserRepository(
+    IRedisConnectionProvider provider,
+    ILogger<UserRepository> logger)
+    : DocumentRepository<UserDocument>(provider), IUserRepository
 {
-    private readonly IRedisConnectionProvider _provider;
-    private readonly ILogger<UserRepository> _logger;
-
-    public UserRepository(
-        IRedisConnectionProvider provider,
-        ILogger<UserRepository> logger) : base(provider)
-    {
-        _provider = provider;
-        _logger = logger;
-    }
+    private readonly IRedisConnectionProvider _provider = provider;
+    private readonly ILogger<UserRepository> _logger = logger;
 
     public async Task<IEnumerable<UserDocument>> GetAllUsersWithBirthdayEnabledAsync()
     {

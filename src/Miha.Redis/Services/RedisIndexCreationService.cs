@@ -7,18 +7,11 @@ using Redis.OM.Modeling;
 
 namespace Miha.Redis.Services;
 
-public partial class RedisIndexCreationService : IHostedService
+public partial class RedisIndexCreationService(
+    IRedisConnectionProvider provider,
+    ILogger<RedisIndexCreationService> logger) : IHostedService
 {
-    private readonly IRedisConnectionProvider _provider;
-    private readonly ILogger<RedisIndexCreationService> _logger;
-
-    public RedisIndexCreationService(
-        IRedisConnectionProvider provider,
-        ILogger<RedisIndexCreationService> logger)
-    {
-        _provider = provider;
-        _logger = logger;
-    }
+    private readonly ILogger<RedisIndexCreationService> _logger = logger;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -30,7 +23,7 @@ public partial class RedisIndexCreationService : IHostedService
         {
             LogInfoIndexingType(model.Name);
 
-            await _provider.Connection.CreateIndexAsync(model);
+            await provider.Connection.CreateIndexAsync(model);
         }
 
         LogInfoIndexedModels();

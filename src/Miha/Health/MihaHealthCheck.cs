@@ -9,25 +9,14 @@ using TinyHealthCheck.Models;
 
 namespace Miha.Health;
 
-public class MihaHealthCheck : IHealthCheck
+public class MihaHealthCheck(DiscordSocketClient client, IRedisConnectionProvider provider) : IHealthCheck
 {
-    private readonly DiscordSocketClient _client;
-    private readonly IRedisConnectionProvider _provider;
-
-    public MihaHealthCheck(
-        DiscordSocketClient client,
-        IRedisConnectionProvider provider)
-    {
-        _client = client;
-        _provider = provider;
-    }
-
     public async Task<IHealthCheckResult> ExecuteAsync(CancellationToken cancellationToken)
     {
         try
         {
-            var redisPing = await _provider.Connection.ExecuteAsync("PING");
-            var discordState = _client.ConnectionState;
+            var redisPing = await provider.Connection.ExecuteAsync("PING");
+            var discordState = client.ConnectionState;
 
             var discord = discordState.ToString();
             var redis = redisPing.ToString(CultureInfo.InvariantCulture);

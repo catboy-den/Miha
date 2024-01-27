@@ -9,25 +9,15 @@ using Microsoft.Extensions.Options;
 
 namespace Miha.Discord.Services.Hosted;
 
-public class InteractionHandler : DiscordClientService
+public class InteractionHandler(
+    DiscordSocketClient client,
+    IServiceProvider provider,
+    InteractionService interactionService,
+    IOptions<DiscordOptions> discordOptions,
+    ILogger<InteractionHandler> logger) : DiscordClientService(client, logger)
 {
-    private readonly IServiceProvider _provider;
-    private readonly InteractionService _interactionService;
-    private readonly ILogger<DiscordClientService> _logger;
-    private readonly DiscordOptions _discordOptions;
-
-    public InteractionHandler(
-        DiscordSocketClient client,
-        IServiceProvider provider,
-        InteractionService interactionService,
-        IOptions<DiscordOptions> discordOptions,
-        ILogger<InteractionHandler> logger) : base(client, logger)
-    {
-        _provider = provider;
-        _interactionService = interactionService;
-        _logger = logger;
-        _discordOptions = discordOptions.Value;
-    }
+    private readonly ILogger<DiscordClientService> _logger = logger;
+    private readonly DiscordOptions _discordOptions = discordOptions.Value;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -38,11 +28,11 @@ public class InteractionHandler : DiscordClientService
 
         Client.InteractionCreated += HandleInteraction;
 
-        await _interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), _provider);
+        await interactionService.AddModulesAsync(Assembly.GetExecutingAssembly(), provider);
 
         await Client.WaitForReadyAsync(stoppingToken);
 
-        await _interactionService.RegisterCommandsToGuildAsync(_discordOptions.Guild.Value);
+        await interactionService.RegisterCommandsToGuildAsync(_discordOptions.Guild.Value);
     }
 
     private async Task HandleInteraction(SocketInteraction arg)
@@ -51,7 +41,7 @@ public class InteractionHandler : DiscordClientService
         {
             // Create an execution context that matches the generic type parameter of your InteractionModuleBase<T> modules
             var ctx = new SocketInteractionContext(Client, arg);
-            await _interactionService.ExecuteCommandAsync(ctx, _provider);
+            await interactionService.ExecuteCommandAsync(ctx, provider);
         }
         catch (Exception ex)
         {

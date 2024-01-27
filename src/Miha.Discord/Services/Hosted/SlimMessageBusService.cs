@@ -9,25 +9,18 @@ using SlimMessageBus;
 
 namespace Miha.Discord.Services.Hosted;
 
-public class SlimMessageBusService : DiscordClientService
+public class SlimMessageBusService(
+    DiscordSocketClient client,
+    IPublishBus bus,
+    ILogger<SlimMessageBusService> logger) : DiscordClientService(client, logger)
 {
-    private readonly IMessageBus _bus;
-
-    public SlimMessageBusService(
-        DiscordSocketClient client,
-        IMessageBus bus,
-        ILogger<SlimMessageBusService> logger) : base(client, logger)
-    {
-        _bus = bus;
-    }
-
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Publish events to our Slim Message Bus consumers
-        Client.GuildScheduledEventCreated += @event => _bus.Publish(@event, Topics.GuildEvent.Created, cancellationToken: stoppingToken);
-        Client.GuildScheduledEventStarted += @event => _bus.Publish(@event, Topics.GuildEvent.Started, cancellationToken: stoppingToken);
-        Client.GuildScheduledEventCancelled += @event => _bus.Publish(@event, Topics.GuildEvent.Cancelled, cancellationToken: stoppingToken);
-        Client.GuildScheduledEventUpdated += (_, @event) => _bus.Publish(@event, Topics.GuildEvent.Updated, cancellationToken: stoppingToken);
+        Client.GuildScheduledEventCreated += @event => bus.Publish(@event, Topics.GuildEvent.Created, cancellationToken: stoppingToken);
+        Client.GuildScheduledEventStarted += @event => bus.Publish(@event, Topics.GuildEvent.Started, cancellationToken: stoppingToken);
+        Client.GuildScheduledEventCancelled += @event => bus.Publish(@event, Topics.GuildEvent.Cancelled, cancellationToken: stoppingToken);
+        Client.GuildScheduledEventUpdated += (_, @event) => bus.Publish(@event, Topics.GuildEvent.Updated, cancellationToken: stoppingToken);
 
         await Client.WaitForReadyAsync(stoppingToken);
         await Client.SetActivityAsync(new Game("on " + Versioning.GetVersion()));

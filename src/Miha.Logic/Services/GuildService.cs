@@ -8,20 +8,11 @@ using Miha.Redis.Repositories.Interfaces;
 
 namespace Miha.Logic.Services;
 
-public partial class GuildService : DocumentService<GuildDocument>, IGuildService
+public class GuildService(
+    DiscordSocketClient client,
+    IGuildRepository repository,
+    ILogger<GuildService> logger) : DocumentService<GuildDocument>(repository, logger), IGuildService
 {
-    private readonly DiscordSocketClient _client;
-    private readonly ILogger<GuildService> _logger;
-
-    public GuildService(
-        DiscordSocketClient client,
-        IGuildRepository repository,
-        ILogger<GuildService> logger) : base(repository, logger)
-    {
-        _client = client;
-        _logger = logger;
-    }
-
     public async Task<Result<ITextChannel>> GetLoggingChannelAsync(ulong? guildId)
     {
         try
@@ -34,23 +25,23 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogWarning("Guild doesn't have any document when trying to get logging channel {GuildId}", guildId);
+                logger.LogWarning("Guild doesn't have any document when trying to get logging channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
             var logChannel = optionsResult.Value?.LogChannel;
             if (!logChannel.HasValue)
             {
-                _logger.LogDebug("Guild doesn't have a logging channel set {GuildId}", guildId);
+                logger.LogDebug("Guild doesn't have a logging channel set {GuildId}", guildId);
                 return Result.Fail<ITextChannel>("Logging channel not set");
             }
 
-            if (await _client.GetChannelAsync(logChannel.Value) is ITextChannel loggingChannel)
+            if (await client.GetChannelAsync(logChannel.Value) is ITextChannel loggingChannel)
             {
                 return Result.Ok(loggingChannel);
             }
 
-            _logger.LogWarning("Guild's logging channel wasn't found, or might not be a Text Channel {GuildId} {LoggingChannelId}", guildId, logChannel.Value);
+            logger.LogWarning("Guild's logging channel wasn't found, or might not be a Text Channel {GuildId} {LoggingChannelId}", guildId, logChannel.Value);
             return Result.Fail<ITextChannel>("Logging channel not found");
         }
         catch (Exception e)
@@ -72,23 +63,23 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogWarning("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
+                logger.LogWarning("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
             var announcementChannel = optionsResult.Value?.AnnouncementChannel;
             if (!announcementChannel.HasValue)
             {
-                _logger.LogDebug("Guild doesn't have a announcement channel set {GuildId}", guildId);
+                logger.LogDebug("Guild doesn't have a announcement channel set {GuildId}", guildId);
                 return Result.Fail<ITextChannel>("Announcement channel not set");
             }
 
-            if (await _client.GetChannelAsync(announcementChannel.Value) is ITextChannel loggingChannel)
+            if (await client.GetChannelAsync(announcementChannel.Value) is ITextChannel loggingChannel)
             {
                 return Result.Ok(loggingChannel);
             }
 
-            _logger.LogWarning("Guild's announcement channel wasn't found, or might not be a Text Channel {GuildId} {AnnouncementChannelId}", guildId, announcementChannel.Value);
+            logger.LogWarning("Guild's announcement channel wasn't found, or might not be a Text Channel {GuildId} {AnnouncementChannelId}", guildId, announcementChannel.Value);
             return Result.Fail<ITextChannel>("Announcement channel not found");
         }
         catch (Exception e)
@@ -110,23 +101,23 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogWarning("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
+                logger.LogWarning("Guild doesn't have any document when trying to get announcement channel {GuildId}", guildId);
                 return optionsResult.ToResult<ITextChannel>();
             }
 
             var weeklyScheduleChannel = optionsResult.Value?.WeeklyScheduleChannel;
             if (!weeklyScheduleChannel.HasValue)
             {
-                _logger.LogDebug("Guild doesn't have a weekly schedule channel set {GuildId}", guildId);
+                logger.LogDebug("Guild doesn't have a weekly schedule channel set {GuildId}", guildId);
                 return Result.Fail<ITextChannel>("Weekly schedule channel not set");
             }
 
-            if (await _client.GetChannelAsync(weeklyScheduleChannel.Value) is ITextChannel channel)
+            if (await client.GetChannelAsync(weeklyScheduleChannel.Value) is ITextChannel channel)
             {
                 return Result.Ok(channel);
             }
 
-            _logger.LogWarning("Guild's weekly schedule channel wasn't found, or might not be a Text Channel {GuildId} {WeeklyScheduleChannel}", guildId, weeklyScheduleChannel.Value);
+            logger.LogWarning("Guild's weekly schedule channel wasn't found, or might not be a Text Channel {GuildId} {WeeklyScheduleChannel}", guildId, weeklyScheduleChannel.Value);
             return Result.Fail<ITextChannel>("Weekly schedule channel not found");
         }
         catch (Exception e)
@@ -148,23 +139,23 @@ public partial class GuildService : DocumentService<GuildDocument>, IGuildServic
             var optionsResult = await GetAsync(guildId);
             if (optionsResult.IsFailed)
             {
-                _logger.LogWarning("Guild doesn't have any document when trying to get announcement role {GuildId}", guildId);
+                logger.LogWarning("Guild doesn't have any document when trying to get announcement role {GuildId}", guildId);
                 return optionsResult.ToResult<IRole>();
             }
 
             var announcementRoleId = optionsResult.Value?.AnnouncementRoleId;
             if (!announcementRoleId.HasValue)
             {
-                _logger.LogDebug("Guild doesn't have a announcement role set {GuildId}", guildId);
+                logger.LogDebug("Guild doesn't have a announcement role set {GuildId}", guildId);
                 return Result.Fail<IRole>("Announcement role not set");
             }
 
-            if (_client.GetGuild(guildId.Value).GetRole(announcementRoleId.Value) is IRole announcementRole)
+            if (client.GetGuild(guildId.Value).GetRole(announcementRoleId.Value) is IRole announcementRole)
             {
                 return Result.Ok(announcementRole);
             }
 
-            _logger.LogWarning("Guild's announcement role wasn't found {GuildId} {AnnouncementRoleId}", guildId, announcementRoleId);
+            logger.LogWarning("Guild's announcement role wasn't found {GuildId} {AnnouncementRoleId}", guildId, announcementRoleId);
             return Result.Fail<IRole>("Announcement role not found");
         }
         catch (Exception e)

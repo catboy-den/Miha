@@ -9,20 +9,13 @@ namespace Miha.Discord.Modules.User;
 /// VRChat related interactions
 /// </summary>
 [Group("vrchat", "Manage your VRChat user profile in relation to your Discord profile")]
-public class VrchatModule : BaseInteractionModule
+public class VrchatModule(IUserService userService) : BaseInteractionModule
 {
-    private readonly IUserService _userService;
-
-    public VrchatModule(IUserService userService)
-    {
-        _userService = userService;
-    }
-
     [SlashCommand("get", "Gets your, or another users, VRChat profile information")]
     public async Task GetAsync(IUser? user = null)
     {
         var targetUser = user ?? Context.User;
-        var result = await _userService.GetAsync(targetUser.Id);
+        var result = await userService.GetAsync(targetUser.Id);
         var userDoc = result.Value;
 
         if (result.IsFailed)
@@ -56,7 +49,7 @@ public class VrchatModule : BaseInteractionModule
     public async Task SetAsync(
         [Summary("vrchatProfileUrl", "VRChat user link, ex https://vrchat.com/home/user/usr_666ca92f-ca50-4c25-994c-03d72842c92b")] string vrchatProfileUrl)
     {
-        var result = await _userService.UpsertVrchatUserIdAsync(Context.User.Id, vrchatProfileUrl);
+        var result = await userService.UpsertVrchatUserIdAsync(Context.User.Id, vrchatProfileUrl);
 
         if (result.IsFailed)
         {
@@ -70,7 +63,7 @@ public class VrchatModule : BaseInteractionModule
     [SlashCommand("clear", "Clears your VRChat profile")]
     public async Task ClearAsync()
     {
-        var result = await _userService.UpsertAsync(Context.User.Id, doc => doc.VrcUserId = null);
+        var result = await userService.UpsertAsync(Context.User.Id, doc => doc.VrcUserId = null);
 
         if (result.IsFailed)
         {
