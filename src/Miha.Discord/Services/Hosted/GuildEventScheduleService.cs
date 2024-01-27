@@ -16,35 +16,21 @@ using NodaTime.Extensions;
 
 namespace Miha.Discord.Services.Hosted;
 
-public partial class GuildEventScheduleService : DiscordClientService
+public partial class GuildEventScheduleService(
+    DiscordSocketClient client,
+    IEasternStandardZonedClock easternStandardZonedClock,
+    IGuildService guildService,
+    IGuildScheduledEventService scheduledEventService,
+    IOptions<DiscordOptions> discordOptions,
+    ILogger<GuildEventScheduleService> logger) : DiscordClientService(client, logger)
 {
-    private readonly DiscordSocketClient _client;
-    private readonly IEasternStandardZonedClock _easternStandardZonedClock;
-    private readonly IGuildService _guildService;
-    private readonly IGuildScheduledEventService _scheduledEventService;
-    private readonly DiscordOptions _discordOptions;
-    private readonly ILogger<GuildEventScheduleService> _logger;
+    private readonly DiscordSocketClient _client = client;
+    private readonly DiscordOptions _discordOptions = discordOptions.Value;
+    private readonly ILogger<GuildEventScheduleService> _logger = logger;
+    
     private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 * * * *"; // https://crontab.cronhub.io/
-
-    private readonly CronExpression _cron;
-
-    public GuildEventScheduleService(
-        DiscordSocketClient client,
-        IEasternStandardZonedClock easternStandardZonedClock,
-        IGuildService guildService,
-        IGuildScheduledEventService scheduledEventService,
-        IOptions<DiscordOptions> discordOptions,
-        ILogger<GuildEventScheduleService> logger) : base(client, logger)
-    {
-        _client = client;
-        _easternStandardZonedClock = easternStandardZonedClock;
-        _guildService = guildService;
-        _scheduledEventService = scheduledEventService;
-        _discordOptions = discordOptions.Value;
-        _logger = logger;
-
-        _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
-    }
+    
+    private readonly CronExpression _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -67,8 +53,8 @@ public partial class GuildEventScheduleService : DiscordClientService
                 continue;
             }
             
-            var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
-            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
+            var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
 
             if (nextUtc is null)
             {
@@ -95,7 +81,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             return;
         }
 
-        var guildResult = await _guildService.GetAsync(_discordOptions.Guild);
+        var guildResult = await guildService.GetAsync(_discordOptions.Guild);
         var guild = guildResult.Value;
 
         if (guildResult.IsFailed || guild is null)
@@ -110,7 +96,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             return;
         }
 
-        var eventsThisWeekResult = await _scheduledEventService.GetScheduledWeeklyEventsAsync(guild.Id, _easternStandardZonedClock.GetCurrentDate());
+        var eventsThisWeekResult = await scheduledEventService.GetScheduledWeeklyEventsAsync(guild.Id, easternStandardZonedClock.GetCurrentDate());
         var eventsThisWeek = eventsThisWeekResult.Value;
         
         if (eventsThisWeekResult.IsFailed || eventsThisWeek is null)
@@ -119,7 +105,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             return;
         }
         
-        var weeklyScheduleChannelResult = await _guildService.GetWeeklyScheduleChannel(guild.Id);
+        var weeklyScheduleChannelResult = await guildService.GetWeeklyScheduleChannel(guild.Id);
         var weeklyScheduleChannel = weeklyScheduleChannelResult.Value;
         
         if (weeklyScheduleChannelResult.IsFailed || weeklyScheduleChannel is null)
@@ -128,7 +114,7 @@ public partial class GuildEventScheduleService : DiscordClientService
             return;
         }
 
-        var daysThisWeek = _easternStandardZonedClock.GetCurrentWeekAsDates();
+        var daysThisWeek = easternStandardZonedClock.GetCurrentWeekAsDates();
         
         var eventsByDay = new Dictionary<DateOnly, IList<IGuildScheduledEvent>>();
         var eventsThisWeekList = eventsThisWeek.ToList();
@@ -136,7 +122,7 @@ public partial class GuildEventScheduleService : DiscordClientService
         {
             eventsByDay.Add(dayOfWeek, new List<IGuildScheduledEvent>());
             
-            foreach (var guildScheduledEvent in eventsThisWeekList.Where(e => _easternStandardZonedClock.ToZonedDateTime(e.StartTime).Date.ToDateOnly() == dayOfWeek))
+            foreach (var guildScheduledEvent in eventsThisWeekList.Where(e => easternStandardZonedClock.ToZonedDateTime(e.StartTime).Date.ToDateOnly() == dayOfWeek))
             {
                 eventsByDay[dayOfWeek].Add(guildScheduledEvent);
             }
@@ -215,12 +201,12 @@ public partial class GuildEventScheduleService : DiscordClientService
 
             var timeStamp = day
                 .ToLocalDate()
-                .AtStartOfDayInZone(_easternStandardZonedClock.GetTzdbTimeZone())
+                .AtStartOfDayInZone(easternStandardZonedClock.GetTzdbTimeZone())
                 .ToInstant()
                 .ToDiscordTimestamp(TimestampTagStyles.ShortDate);
             
             // The day has passed
-            if (_easternStandardZonedClock.GetCurrentDate().ToDateOnly() > day)
+            if (easternStandardZonedClock.GetCurrentDate().ToDateOnly() > day)
             {
                 description.AppendLine($"~~### {day.ToString("dddd")} - {timeStamp}~~");
             } else

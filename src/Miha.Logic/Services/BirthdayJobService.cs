@@ -5,12 +5,6 @@ using Miha.Redis.Repositories.Interfaces;
 
 namespace Miha.Logic.Services;
 
-public class BirthdayJobService : DocumentService<BirthdayJobDocument>, IBirthdayJobService
-{
-    public BirthdayJobService(
-        IBirthdayJobRepository repository,
-        ILogger<BirthdayJobService> logger) : base(repository, logger)
-    {
-
-    }
-}
+public class BirthdayJobService(
+    IBirthdayJobRepository repository,
+    ILogger<BirthdayJobService> logger) : DocumentService<BirthdayJobDocument>(repository, logger), IBirthdayJobService;

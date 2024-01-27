@@ -10,30 +10,15 @@ namespace Miha.Services;
 /// <summary>
 /// Scans birthdays, and creates BirthdayJobDocuments
 /// </summary>
-public class BirthdayScannerService : BackgroundService
+public class BirthdayScannerService(
+    IEasternStandardZonedClock easternStandardZonedClock,
+    IUserService userService,
+    IBirthdayJobService birthdayJobService,
+    ILogger<BirthdayScannerService> logger) : BackgroundService
 {
     private const string Schedule = "*/5 8-19 * * *"; // https://crontab.cronhub.io/
 
-    private readonly IEasternStandardZonedClock _easternStandardZonedClock;
-    private readonly IUserService _userService;
-    private readonly IBirthdayJobService _birthdayJobService;
-    private readonly ILogger<BirthdayScannerService> _logger;
-
-    private readonly CronExpression _cron;
-
-    public BirthdayScannerService(
-        IEasternStandardZonedClock easternStandardZonedClock,
-        IUserService userService,
-        IBirthdayJobService birthdayJobService,
-        ILogger<BirthdayScannerService> logger)
-    {
-        _easternStandardZonedClock = easternStandardZonedClock;
-        _userService = userService;
-        _birthdayJobService = birthdayJobService;
-        _logger = logger;
-
-        _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
-    }
+    private readonly CronExpression _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -41,45 +26,45 @@ public class BirthdayScannerService : BackgroundService
         {
             await ScanBirthdaysAsync();
 
-            var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
-            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
+            var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
 
             if (nextUtc is null)
             {
-                _logger.LogWarning("Next utc occurence is null");
+                logger.LogWarning("Next utc occurence is null");
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 continue;
             }
 
-            _logger.LogDebug("Waiting {Time}", nextUtc.Value - utcNow);
+            logger.LogDebug("Waiting {Time}", nextUtc.Value - utcNow);
             await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
     }
 
     private async Task ScanBirthdaysAsync()
     {
-        _logger.LogInformation("Scanning for birthdays");
+        logger.LogInformation("Scanning for birthdays");
 
-        var today = _easternStandardZonedClock.GetCurrentDate();
-        var unannouncedBirthdaysThisWeek = await _userService.GetAllUsersWithBirthdayForWeekAsync(today, false);
+        var today = easternStandardZonedClock.GetCurrentDate();
+        var unannouncedBirthdaysThisWeek = await userService.GetAllUsersWithBirthdayForWeekAsync(today, false);
 
         if (unannouncedBirthdaysThisWeek.IsFailed)
         {
-            _logger.LogError("Failed getting un-announced birthdays");
+            logger.LogError("Failed getting un-announced birthdays");
             return;
         }
 
         if (!unannouncedBirthdaysThisWeek.Value.Any())
         {
-            _logger.LogInformation("Found no un-announced birthdays this week");
+            logger.LogInformation("Found no un-announced birthdays this week");
             return;
         }
 
-        var birthdayJobs = await _birthdayJobService.GetAllAsync();
+        var birthdayJobs = await birthdayJobService.GetAllAsync();
 
         if (birthdayJobs.IsFailed)
         {
-            _logger.LogError("Failed getting birthday jobs");
+            logger.LogError("Failed getting birthday jobs");
             return;
         }
 
@@ -87,12 +72,12 @@ public class BirthdayScannerService : BackgroundService
 
         if (!unscheduledBirthdays.Any())
         {
-            _logger.LogInformation("All birthdays for this week are already scheduled");
+            logger.LogInformation("All birthdays for this week are already scheduled");
         }
 
         foreach (var unscheduledBirthday in unscheduledBirthdays)
         {
-            var result = await _birthdayJobService.UpsertAsync(new BirthdayJobDocument
+            var result = await birthdayJobService.UpsertAsync(new BirthdayJobDocument
             {
                 Id = unscheduledBirthday.Id,
                 UserDocumentId = unscheduledBirthday.Id,
@@ -101,7 +86,7 @@ public class BirthdayScannerService : BackgroundService
 
            if (result.IsFailed)
            {
-               _logger.LogWarning("Birthday job creation failed for an unscheduled birthday {Id}", unscheduledBirthday.Id);
+               logger.LogWarning("Birthday job creation failed for an unscheduled birthday {Id}", unscheduledBirthday.Id);
            }
         }
     }

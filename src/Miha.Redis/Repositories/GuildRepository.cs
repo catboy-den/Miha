@@ -4,10 +4,4 @@ using Redis.OM.Contracts;
 
 namespace Miha.Redis.Repositories;
 
-public class GuildRepository : DocumentRepository<GuildDocument>, IGuildRepository
-{
-    public GuildRepository(IRedisConnectionProvider provider) : base(provider)
-    {
-
-    }
-}
+public class GuildRepository(IRedisConnectionProvider provider) : DocumentRepository<GuildDocument>(provider), IGuildRepository;

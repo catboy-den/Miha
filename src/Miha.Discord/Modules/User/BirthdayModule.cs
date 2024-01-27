@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using Discord;
 using Discord.Interactions;
-using Microsoft.Extensions.Logging;
 using Miha.Discord.Extensions;
 using Miha.Logic.Services.Interfaces;
 using NodaTime;
@@ -15,32 +14,18 @@ namespace Miha.Discord.Modules.User;
 /// Birthday related interactions
 /// </summary>
 [Group("birthday", "Birthday related commands")]
-public class BirthdayModule : BaseInteractionModule
+public class BirthdayModule(
+    IClock clock,
+    IUserService userService,
+    IBirthdayJobService birthdayJobService) : BaseInteractionModule
 {
     private static readonly AnnualDatePattern BirthdatePattern = AnnualDatePattern.CreateWithInvariantCulture("MM/dd");
-
-    private readonly IClock _clock;
-    private readonly IUserService _userService;
-    private readonly IBirthdayJobService _birthdayJobService;
-    private readonly ILogger<BirthdayModule> _logger;
-
-    public BirthdayModule(
-        IClock clock,
-        IUserService userService,
-        IBirthdayJobService birthdayJobService,
-        ILogger<BirthdayModule> logger)
-    {
-        _clock = clock;
-        _userService = userService;
-        _birthdayJobService = birthdayJobService;
-        _logger = logger;
-    }
 
     [SlashCommand("get", "Gets your, or another users, birthday")]
     public async Task GetAsync(IUser? user = null)
     {
         var targetUser = user ?? Context.User;
-        var result = await _userService.GetAsync(targetUser.Id);
+        var result = await userService.GetAsync(targetUser.Id);
         var userDoc = result.Value;
         var userTimezone = userDoc?.Timezone;
 
@@ -65,13 +50,13 @@ public class BirthdayModule : BaseInteractionModule
         }
 
         var userBirthdate = userDoc.AnnualBirthdate.Value;
-        var currentDateInTimezone = _clock.InZone(userTimezone).GetCurrentDate();
+        var currentDateInTimezone = clock.InZone(userTimezone).GetCurrentDate();
 
         var localBirthdate = new LocalDate(currentDateInTimezone.Year, userBirthdate.Month, userBirthdate.Day);
         var birthDateTime = localBirthdate.AtStartOfDayInZone(userTimezone).ToInstant();
         var birthDateTimeOffset = birthDateTime.ToDateTimeOffset();
 
-        var birthdayAlreadyHappened = _clock.InZone(userTimezone).GetCurrentInstant() > birthDateTime;
+        var birthdayAlreadyHappened = clock.InZone(userTimezone).GetCurrentInstant() > birthDateTime;
 
         var description = new StringBuilder()
             .Append(targetUser.Mention)
@@ -123,7 +108,7 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        var result = await userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.AnnualBirthdate = birthDate;
             doc.Timezone = birthDateTimezone;
@@ -142,13 +127,13 @@ public class BirthdayModule : BaseInteractionModule
             .WithButton(new ButtonBuilder().WithLabel("No").WithCustomId("tz:n").WithStyle(ButtonStyle.Secondary))
             .Build();
 
-        var currentDateInTimezone = _clock.InZone(birthDateTimezone).GetCurrentDate();
+        var currentDateInTimezone = clock.InZone(birthDateTimezone).GetCurrentDate();
 
         var localBirthdate = new LocalDate(currentDateInTimezone.Year, birthDate.Month, birthDate.Day);
         var birthDateTime = localBirthdate.AtStartOfDayInZone(birthDateTimezone).ToInstant();
         var birthDateTimeOffset = birthDateTime.ToDateTimeOffset();
 
-        var birthdayAlreadyHappened = _clock.InZone(birthDateTimezone).GetCurrentInstant() > birthDateTime;
+        var birthdayAlreadyHappened = clock.InZone(birthDateTimezone).GetCurrentInstant() > birthDateTime;
 
         var description = new StringBuilder()
             .Append("You're birthday ").Append(birthdayAlreadyHappened ? " was " : " is ").Append(birthDateTimeOffset.ToDiscordTimestamp(TimestampTagStyles.Relative))
@@ -171,7 +156,7 @@ public class BirthdayModule : BaseInteractionModule
     [SlashCommand("clear", "Clears your birthday")]
     public async Task ClearAsync()
     {
-        var deleteJobResult = await _birthdayJobService.DeleteAsync(Context.User.Id, true);
+        var deleteJobResult = await birthdayJobService.DeleteAsync(Context.User.Id, true);
 
         if (deleteJobResult.IsFailed)
         {
@@ -179,7 +164,7 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        var result = await userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.EnableBirthday = false;
             doc.Timezone = null;
@@ -199,7 +184,7 @@ public class BirthdayModule : BaseInteractionModule
     [SlashCommand("enable", "Enables your birthday if previously disabled, when enabled it'll be announced the day-of")]
     public async Task EnableAsync()
     {
-        var userDoc = await _userService.GetAsync(Context.User.Id);
+        var userDoc = await userService.GetAsync(Context.User.Id);
 
         if (userDoc.IsFailed)
         {
@@ -213,7 +198,7 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        var deleteJobResult = await _birthdayJobService.DeleteAsync(Context.User.Id, true);
+        var deleteJobResult = await birthdayJobService.DeleteAsync(Context.User.Id, true);
 
         if (deleteJobResult.IsFailed)
         {
@@ -221,7 +206,7 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        var result = await userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.EnableBirthday = true;
         });
@@ -238,7 +223,7 @@ public class BirthdayModule : BaseInteractionModule
     [SlashCommand("disable", "Disables your birthday if previously enabled, when disabled your birthday won't be announced")]
     public async Task DisableAsync()
     {
-        var userDoc = await _userService.GetAsync(Context.User.Id);
+        var userDoc = await userService.GetAsync(Context.User.Id);
 
         if (userDoc.IsFailed)
         {
@@ -252,7 +237,7 @@ public class BirthdayModule : BaseInteractionModule
             return;
         }
 
-        var result = await _userService.UpsertAsync(Context.User.Id, doc =>
+        var result = await userService.UpsertAsync(Context.User.Id, doc =>
         {
             doc.EnableBirthday = false;
         });
@@ -275,7 +260,7 @@ public class BirthdayModule : BaseInteractionModule
 
         if (confirmed)
         {
-            var deleteJobResult = await _birthdayJobService.DeleteAsync(Context.User.Id, true);
+            var deleteJobResult = await birthdayJobService.DeleteAsync(Context.User.Id, true);
 
             if (deleteJobResult.IsFailed)
             {
@@ -283,7 +268,7 @@ public class BirthdayModule : BaseInteractionModule
                 return;
             }
 
-            var result = await _userService.UpsertAsync(Context.User.Id, doc => doc.EnableBirthday = true);
+            var result = await userService.UpsertAsync(Context.User.Id, doc => doc.EnableBirthday = true);
             if (result.IsFailed)
             {
                 await ModifyOriginalResponseToErrorAsync(result.Errors);

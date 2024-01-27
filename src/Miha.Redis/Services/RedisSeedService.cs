@@ -5,27 +5,18 @@ using Miha.Redis.Repositories.Interfaces;
 
 namespace Miha.Redis.Services;
 
-public class RedisSeedService
+public class RedisSeedService(
+    IOptions<RedisOptions> redisOptions,
+    IGuildRepository guildRepository,
+    ILogger<RedisSeedService> logger)
 {
-    private readonly RedisSeedOptions _seedOptions;
-    private readonly IGuildRepository _guildRepository;
-    private readonly ILogger<RedisSeedService> _logger;
-
-    public RedisSeedService(
-        IOptions<RedisOptions> redisOptions,
-        IGuildRepository guildRepository,
-        ILogger<RedisSeedService> logger)
-    {
-        _seedOptions = redisOptions.Value.SeedOptions;
-        _guildRepository = guildRepository;
-        _logger = logger;
-    }
+    private readonly RedisSeedOptions _seedOptions = redisOptions.Value.SeedOptions;
 
     public async Task SeedGuildAsync(ulong? guildId)
     {
         if (_seedOptions.GuildOptions is null)
         {
-            _logger.LogDebug("Seed options are null, skipping seeding");
+            logger.LogDebug("Seed options are null, skipping seeding");
             return;
         }
         
@@ -34,15 +25,15 @@ public class RedisSeedService
             throw new ArgumentNullException(nameof(guildId), "A guildId is required for guild document seeding");
         }
         
-        var existingGuildDoc = await _guildRepository.GetAsync(guildId.Value);
+        var existingGuildDoc = await guildRepository.GetAsync(guildId.Value);
 
         if (existingGuildDoc is not null)
         {
-            _logger.LogInformation("Guild document already exists, no guild document seeding is required");
+            logger.LogInformation("Guild document already exists, no guild document seeding is required");
             return;
         }
 
-        _logger.LogInformation("Seeding guild document with configured seed guild options {@GuildOptions}", _seedOptions.GuildOptions);
+        logger.LogInformation("Seeding guild document with configured seed guild options {@GuildOptions}", _seedOptions.GuildOptions);
         
         var guildDoc = new GuildDocument
         {
@@ -54,8 +45,8 @@ public class RedisSeedService
             LogChannel = _seedOptions.GuildOptions.LogChannel
         };
 
-        var newGuildDoc = await _guildRepository.UpsertAsync(guildDoc);
+        var newGuildDoc = await guildRepository.UpsertAsync(guildDoc);
         
-        _logger.LogInformation("Guild document seeded {@GuildDocument}", newGuildDoc);
+        logger.LogInformation("Guild document seeded {@GuildDocument}", newGuildDoc);
     }
 }

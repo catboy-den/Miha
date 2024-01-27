@@ -7,35 +7,24 @@ using SlimMessageBus;
 
 namespace Miha.Discord.Consumers.GuildEvent;
 
-public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
+public class GuildEventStartedConsumer(
+    DiscordSocketClient client,
+    IGuildService guildService,
+    ILogger<GuildEventStartedConsumer> logger) : IConsumer<IGuildScheduledEvent>
 {
-    private readonly DiscordSocketClient _client;
-    private readonly IGuildService _guildService;
-    private readonly ILogger<GuildEventStartedConsumer> _logger;
-
-    public GuildEventStartedConsumer(
-        DiscordSocketClient client,
-        IGuildService guildService,
-        ILogger<GuildEventStartedConsumer> logger)
-    {
-        _client = client;
-        _guildService = guildService;
-        _logger = logger;
-    }
-
     public async Task OnHandle(IGuildScheduledEvent guildEvent)
     {
-        var announcementRole = await _guildService.GetAnnouncementRoleAsync(guildEvent.Guild.Id);
-        var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guildEvent.Guild.Id);
+        var announcementRole = await guildService.GetAnnouncementRoleAsync(guildEvent.Guild.Id);
+        var announcementChannel = await guildService.GetAnnouncementChannelAsync(guildEvent.Guild.Id);
         if (announcementChannel.IsFailed)
         {
             if (announcementChannel.Reasons.Any(m => m.Message == "Announcement channel not set"))
             {
-                _logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+                logger.LogDebug("Guild announcement channel not set {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
                 return;
             }
 
-            _logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
+            logger.LogInformation("Failed getting announcement channel for guild {GuildId} {EventId}", guildEvent.Guild.Id, guildEvent.Id);
             return;
         }
 
@@ -76,7 +65,7 @@ public class GuildEventStartedConsumer : IConsumer<IGuildScheduledEvent>
             eventDescription: guildEvent.Description,
             eventImageUrl: coverImageUrl,
             color: Color.Green,
-            authorAvatarUrl: guildEvent.Creator is null ? _client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
+            authorAvatarUrl: guildEvent.Creator is null ? client.CurrentUser.GetAvatarUrl() : guildEvent.Creator.GetAvatarUrl(),
             authorUsername: guildEvent.Creator?.Username,
             fields: fields);
 

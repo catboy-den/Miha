@@ -9,23 +9,14 @@ using NodaTime.Calendars;
 
 namespace Miha.Logic.Services;
 
-public partial class UserService : DocumentService<UserDocument>, IUserService
+public partial class UserService(
+    IUserRepository repository,
+    ILogger<UserService> logger) : DocumentService<UserDocument>(repository, logger), IUserService
 {
-    private readonly IUserRepository _repository;
-    private readonly ILogger<UserService> _logger;
-
-    public UserService(
-        IUserRepository repository,
-        ILogger<UserService> logger) : base(repository, logger)
-    {
-        _repository = repository;
-        _logger = logger;
-    }
-
     public async Task<Result<IEnumerable<UserDocument>>> GetAllUsersWithBirthdayForWeekAsync(LocalDate weekDate, bool includeAlreadyAnnounced)
     {
         var weekNumberInYear = WeekYearRules.Iso.GetWeekOfWeekYear(weekDate);
-        var usersWithBirthday = await _repository.GetAllUsersWithBirthdayEnabledAsync();
+        var usersWithBirthday = await repository.GetAllUsersWithBirthdayEnabledAsync();
 
         // Add a method to User document which will return the localDate or AnnualDate in EST of their birthday
 
@@ -56,7 +47,7 @@ public partial class UserService : DocumentService<UserDocument>, IUserService
                 return Result.Fail<UserDocument?>("Couldn't find the usr_Id in the passed link");
             }
 
-            return await _repository.UpsertAsync(userId, doc => doc.VrcUserId = usrId.Value);
+            return await repository.UpsertAsync(userId, doc => doc.VrcUserId = usrId.Value);
         }
         catch (Exception e)
         {

@@ -14,39 +14,24 @@ using Newtonsoft.Json;
 
 namespace Miha.Discord.Services.Hosted;
 
-public partial class GuildEventMonitorService : DiscordClientService
+public partial class GuildEventMonitorService(
+    DiscordSocketClient client,
+    IGuildService guildService,
+    IEasternStandardZonedClock easternStandardZonedClock,
+    IOptions<DiscordOptions> discordOptions,
+    ILogger<GuildEventMonitorService> logger) : DiscordClientService(client, logger)
 {
-    private readonly DiscordOptions _discordOptions;
-    private readonly IGuildService _guildService;
-    private readonly IEasternStandardZonedClock _easternStandardZonedClock;
-    private readonly ILogger<GuildEventMonitorService> _logger;
+    private readonly DiscordOptions _discordOptions = discordOptions.Value;
+    private readonly ILogger<GuildEventMonitorService> _logger = logger;
 
     private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 ? * * *"; // https://crontab.cronhub.io/
 
-    private readonly IMemoryCache _memoryCache;
-    private readonly MemoryCacheEntryOptions _memoryCacheEntryOptions;
-    private readonly CronExpression _cron;
-
-    public GuildEventMonitorService(
-        DiscordSocketClient client,
-        IGuildService guildService,
-        IEasternStandardZonedClock easternStandardZonedClock,
-        IOptions<DiscordOptions> discordOptions,
-        ILogger<GuildEventMonitorService> logger) : base(client, logger)
-    {
-        _discordOptions = discordOptions.Value;
-        _guildService = guildService;
-        _easternStandardZonedClock = easternStandardZonedClock;
-        _logger = logger;
-
-        _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 32 });
-        _memoryCacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetSize(1)
-            .SetAbsoluteExpiration(TimeSpan.FromMinutes(25))
-            .SetSlidingExpiration(TimeSpan.FromMinutes(15));
-
-        _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
-    }
+    private readonly IMemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions { SizeLimit = 32 });
+    private readonly MemoryCacheEntryOptions _memoryCacheEntryOptions = new MemoryCacheEntryOptions()
+        .SetSize(1)
+        .SetAbsoluteExpiration(TimeSpan.FromMinutes(25))
+        .SetSlidingExpiration(TimeSpan.FromMinutes(15));
+    private readonly CronExpression _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -58,8 +43,8 @@ public partial class GuildEventMonitorService : DiscordClientService
         {
             await CheckScheduledEventsAsync();
 
-            var utcNow = _easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
-            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, _easternStandardZonedClock.GetTimeZoneInfo());
+            var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
 
             if (nextUtc is null)
             {
@@ -99,7 +84,7 @@ public partial class GuildEventMonitorService : DiscordClientService
         {
             try
             {
-                var announcementChannel = await _guildService.GetAnnouncementChannelAsync(guild.Id);
+                var announcementChannel = await guildService.GetAnnouncementChannelAsync(guild.Id);
                 if (announcementChannel.IsFailed)
                 {
                     if (announcementChannel.Reasons.Any(m => m.Message == "Announcement channel not set"))

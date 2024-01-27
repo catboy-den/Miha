@@ -11,21 +11,14 @@ namespace Miha.Discord.Modules.Guild;
 /// </summary>
 [Group("configure", "Set or update various bot settings and options")]
 [DefaultMemberPermissions(GuildPermission.Administrator)]
-public class ConfigureModule : BaseInteractionModule
+public class ConfigureModule(IGuildService guildService) : BaseInteractionModule
 {
-    private readonly IGuildService _guildService;
-
-    public ConfigureModule(IGuildService guildService)
-    {
-        _guildService = guildService;
-    }
-
     [SlashCommand("logging", "Sets or updates the event logging channel, where any event modifications are logged")]
     public async Task LoggingAsync(
         [Summary(description: "The channel newly Created, Modified, or Cancelled events will be posted")] ITextChannel channel,
         [Summary(description: "Setting this to true will disable event logging")] bool disable = false)
     {
-        var result = await _guildService.UpsertAsync(channel.GuildId, options => options.LogChannel = disable ? null : channel.Id);
+        var result = await guildService.UpsertAsync(channel.GuildId, options => options.LogChannel = disable ? null : channel.Id);
 
         if (result.IsFailed)
         {
@@ -207,7 +200,7 @@ public class ConfigureModule : BaseInteractionModule
         [Summary(description: "The channel a weekly schedule of events will be posted")] ITextChannel channel,
         [Summary(description: "Setting this to true will disable the weekly event schedule")] bool disable = false)
     {
-        var result = await _guildService.UpsertAsync(channel.GuildId, options => options.WeeklyScheduleChannel = disable ? null : channel.Id);
+        var result = await guildService.UpsertAsync(channel.GuildId, options => options.WeeklyScheduleChannel = disable ? null : channel.Id);
 
         if (result.IsFailed)
         {

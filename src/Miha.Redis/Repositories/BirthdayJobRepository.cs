@@ -4,10 +4,4 @@ using Redis.OM.Contracts;
 
 namespace Miha.Redis.Repositories;
 
-public class BirthdayJobRepository : DocumentRepository<BirthdayJobDocument>, IBirthdayJobRepository
-{
-    public BirthdayJobRepository(IRedisConnectionProvider provider) : base(provider)
-    {
-
-    }
-}
+public class BirthdayJobRepository(IRedisConnectionProvider provider) : DocumentRepository<BirthdayJobDocument>(provider), IBirthdayJobRepository;
