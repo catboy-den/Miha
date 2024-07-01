@@ -1,6 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Discord;
+using Discord.Addons.Hosting;
+using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Miha.Logic;
 using Miha.Redis;
 using Miha.Discord;
@@ -30,6 +34,50 @@ public static class Startup
             .AddDiscordServices()
             .AddDiscordHostedServices()
             .AddDiscordMessageBus();
+
+        services
+            .AddDiscordHost((config, provider) =>
+            {
+                var discordOptions = provider.GetRequiredService<IOptions<DiscordOptions>>().Value;
+
+                if (string.IsNullOrEmpty(discordOptions.Token))
+                {
+                    throw new ArgumentNullException(nameof(discordOptions.Token),
+                        "Discord token cannot be empty or null");
+                }
+
+                if (discordOptions.Guild is null)
+                {
+                    throw new ArgumentNullException(nameof(discordOptions.Guild),
+                        "Need a target guild id, Miha does not support multi-guilds yet");
+                }
+
+                config.SocketConfig = new DiscordSocketConfig
+                {
+                    LogLevel = LogSeverity.Verbose,
+                    LogGatewayIntentWarnings = true,
+                    AlwaysDownloadUsers = true,
+                    GatewayIntents = GatewayIntents.GuildScheduledEvents
+                                     | GatewayIntents.DirectMessageTyping
+                                     | GatewayIntents.DirectMessageReactions
+                                     | GatewayIntents.DirectMessages
+                                     | GatewayIntents.GuildMessageTyping
+                                     | GatewayIntents.GuildMessageReactions
+                                     | GatewayIntents.GuildMessages
+                                     | GatewayIntents.GuildVoiceStates
+                                     | GatewayIntents.Guilds
+                                     | GatewayIntents.GuildMembers
+                };
+
+                config.Token = discordOptions.Token;
+            });
+
+        services
+            .AddInteractionService((config, _) =>
+            {
+                config.LogLevel = LogSeverity.Verbose;
+                config.UseCompiledLambda = true;
+            });
 
         services
             .AddLogicServices()

@@ -1,7 +1,4 @@
-﻿using Discord;
-using Discord.Addons.Hosting;
-using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -30,7 +27,7 @@ try
                 builder.AddJsonFile("appsettings.edge.json", optional: true, reloadOnChange: false);
             }
 
-            // Disable ReloadOnChange for all sources, we don't intend to support this
+            // Disable ReloadOnChange for all sources, we don't intend to support this,
             // and it creates a lot of inotify issues on docker hosts running on linux
             foreach (var s in builder.Sources)
             {
@@ -45,53 +42,16 @@ try
             .Enrich.FromLogContext()
             .Enrich.WithExceptionDetails()
             .WriteTo.Console(new CompactJsonFormatter()))
-        .ConfigureDiscordHost((context, config) =>
-        {
-            var discordOptions = context.Configuration.GetSection(DiscordOptions.Section).Get<DiscordOptions>();
-
-            if (string.IsNullOrEmpty(discordOptions?.Token))
-            {
-                throw new ArgumentNullException(nameof(discordOptions.Token), "Discord token cannot be empty or null");
-            }
-
-            if (discordOptions.Guild is null)
-            {
-                throw new ArgumentNullException(nameof(discordOptions.Guild), "Need a target guild id, Miha does not support multi-guilds yet");
-            }
-
-            config.SocketConfig = new DiscordSocketConfig
-            {
-                LogLevel = LogSeverity.Verbose,
-                LogGatewayIntentWarnings = true,
-                AlwaysDownloadUsers = true,
-                GatewayIntents = GatewayIntents.GuildScheduledEvents
-                                 | GatewayIntents.DirectMessageTyping
-                                 | GatewayIntents.DirectMessageReactions
-                                 | GatewayIntents.DirectMessages
-                                 | GatewayIntents.GuildMessageTyping
-                                 | GatewayIntents.GuildMessageReactions
-                                 | GatewayIntents.GuildMessages
-                                 | GatewayIntents.GuildVoiceStates
-                                 | GatewayIntents.Guilds
-                                 | GatewayIntents.GuildMembers
-            };
-
-            config.Token = discordOptions.Token;
-        })
-        .UseInteractionService((_, config) =>
-        {
-            config.LogLevel = LogSeverity.Verbose;
-            config.UseCompiledLambda = true;
-        })
         .ConfigureServices(Startup.ConfigureServices)
         .Build();
 
     var discordOptions = host.Services.GetRequiredService<IOptions<DiscordOptions>>();
     var seedService = host.Services.GetRequiredService<RedisSeedService>();
-    
+
     await seedService.SeedGuildAsync(discordOptions.Value.Guild);
-    
+
     await host.RunAsync();
+
     return 0;
 }
 catch (Exception ex)
