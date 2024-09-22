@@ -36,28 +36,37 @@ public partial class GuildEventMonitorService(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Waiting for client to be ready...");
-        
+
         await Client.WaitForReadyAsync(stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            await CheckScheduledEventsAsync();
-
-            var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
-            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
-
-            if (nextUtc is null)
+            try
             {
-                _logger.LogWarning("Next utc occurence is null");
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-                continue;
+                await CheckScheduledEventsAsync();
+
+                var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+                var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
+
+                if (nextUtc is null)
+                {
+                    _logger.LogWarning("Next utc occurence is null");
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    continue;
+                }
+
+                var next = nextUtc.Value - utcNow;
+
+                _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
+
+                await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
             }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Exception encountered in GuildEventMonitorService");
 
-            var next = nextUtc.Value - utcNow;
-            
-            _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
-
-            await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
+                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+            }
         }
     }
 
