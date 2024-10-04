@@ -3,7 +3,6 @@ using Cronos;
 using Discord;
 using Discord.Addons.Hosting;
 using Discord.Addons.Hosting.Util;
-using Discord.Net;
 using Discord.WebSocket;
 using Humanizer;
 using Microsoft.Extensions.Logging;
@@ -27,49 +26,48 @@ public partial class GuildEventScheduleService(
     private readonly DiscordSocketClient _client = client;
     private readonly DiscordOptions _discordOptions = discordOptions.Value;
     private readonly ILogger<GuildEventScheduleService> _logger = logger;
-    
+
     private const string Schedule = "0,5,10,15,20,25,30,35,40,45,50,55 * * * *"; // https://crontab.cronhub.io/
-    
+
     private readonly CronExpression _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Waiting for client to be ready...");
-        
+
         await Client.WaitForReadyAsync(stoppingToken);
-        
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
                 await PostWeeklyScheduleAsync();
+
+                var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
+                var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
+
+                if (nextUtc is null)
+                {
+                    _logger.LogWarning("Next utc occurence is null");
+                    await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    continue;
+                }
+
+                var next = nextUtc.Value - utcNow;
+
+                _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
+
+                await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
+
             }
-            catch (HttpException e)
+            catch (Exception e)
             {
-                _logger.LogWarning(e, "Discord dotnet http exception caught, likely caused by rate-limits, waiting a few minutes before continuing");
-                
+                LogExceptionInBackgroundServiceLoop(e);
+
                 await Task.Delay(TimeSpan.FromMinutes(3), stoppingToken);
-                
-                continue;
             }
-            
-            var utcNow = easternStandardZonedClock.GetCurrentInstant().ToDateTimeUtc();
-            var nextUtc = _cron.GetNextOccurrence(DateTimeOffset.UtcNow, easternStandardZonedClock.GetTimeZoneInfo());
-
-            if (nextUtc is null)
-            {
-                _logger.LogWarning("Next utc occurence is null");
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
-                continue;
-            }
-            
-            var next = nextUtc.Value - utcNow;
-            
-            _logger.LogDebug("Waiting {Time} until next operation", next.Humanize(3));
-
-            await Task.Delay(nextUtc.Value - utcNow, stoppingToken);
         }
-        
+
         _logger.LogInformation("Hosted service ended");
     }
 
@@ -98,16 +96,16 @@ public partial class GuildEventScheduleService(
 
         var eventsThisWeekResult = await scheduledEventService.GetScheduledWeeklyEventsAsync(guild.Id, easternStandardZonedClock.GetCurrentDate());
         var eventsThisWeek = eventsThisWeekResult.Value;
-        
+
         if (eventsThisWeekResult.IsFailed || eventsThisWeek is null)
         {
             _logger.LogWarning("Fetching this weeks events failed, or is null {Errors}", eventsThisWeekResult.Errors);
             return;
         }
-        
+
         var weeklyScheduleChannelResult = await guildService.GetWeeklyScheduleChannel(guild.Id);
         var weeklyScheduleChannel = weeklyScheduleChannelResult.Value;
-        
+
         if (weeklyScheduleChannelResult.IsFailed || weeklyScheduleChannel is null)
         {
             _logger.LogWarning("Fetching the guilds weekly schedule channel failed, or is null {Errors}", weeklyScheduleChannelResult.Errors);
@@ -115,24 +113,24 @@ public partial class GuildEventScheduleService(
         }
 
         var daysThisWeek = easternStandardZonedClock.GetCurrentWeekAsDates();
-        
+
         var eventsByDay = new Dictionary<DateOnly, IList<IGuildScheduledEvent>>();
         var eventsThisWeekList = eventsThisWeek.ToList();
         foreach (var dayOfWeek in daysThisWeek.OrderBy(d => d))
         {
             eventsByDay.Add(dayOfWeek, new List<IGuildScheduledEvent>());
-            
+
             foreach (var guildScheduledEvent in eventsThisWeekList.Where(e => easternStandardZonedClock.ToZonedDateTime(e.StartTime).Date.ToDateOnly() == dayOfWeek))
             {
                 eventsByDay[dayOfWeek].Add(guildScheduledEvent);
             }
         }
-        
+
         _logger.LogInformation("Updating weekly schedule");
-        
+
         var postedHeader = false;
         var postedFooter = false;
-        
+
         var messages = (await weeklyScheduleChannel
             .GetMessagesAsync(50)
             .FlattenAsync())
@@ -150,15 +148,15 @@ public partial class GuildEventScheduleService(
             {
                 continue;
             }
-            
+
             var messagesToDelete = messages
                 .Where(m => m.Author.Id == _client.CurrentUser.Id)
                 .ToList();
-            
+
             if (messagesToDelete.Any())
             {
                 var deletedMessages = 0;
-                
+
                 _logger.LogInformation("Wiping posted messages");
 
                 foreach (var message in messagesToDelete)
@@ -168,23 +166,23 @@ public partial class GuildEventScheduleService(
                 }
 
                 _logger.LogInformation("Deleted {DeletedMessages} messages", deletedMessages);
-                
+
                 // Update the messages list
                 messages = (await weeklyScheduleChannel
                         .GetMessagesAsync(50)
                         .FlattenAsync())
                     .ToList();
             }
-            
+
             break;
         }
-        
+
         // TODO - Future me
         // If the ordering becomes a problem, a potential solution could be to use an index
         // to update the message at [1] (Tuesday), [6] (Sunday), [0] Monday for example
         // this would ensure the order of messages align with the days of the week
         // and to delete all messages from the bot if there's any more than 7 messages total
-        
+
         // Update (or post) a message with an embed of events for that day, for each day of the week
         foreach (var (day, events) in eventsByDay)
         {
@@ -204,7 +202,7 @@ public partial class GuildEventScheduleService(
                 .AtStartOfDayInZone(easternStandardZonedClock.GetTzdbTimeZone())
                 .ToInstant()
                 .ToDiscordTimestamp(TimestampTagStyles.ShortDate);
-            
+
             // The day has passed
             if (easternStandardZonedClock.GetCurrentDate().ToDateOnly() > day)
             {
@@ -212,7 +210,7 @@ public partial class GuildEventScheduleService(
             } else
             {
                 description.AppendLine($"### {day.ToString("dddd")} - {timeStamp}");
-                
+
                 if (!events.Any())
                 {
                     description.AppendLine("*No events scheduled*");
@@ -248,7 +246,7 @@ public partial class GuildEventScheduleService(
                     }
                 }
             }
-            
+
             if (!postedFooter && day == eventsByDay.Last().Key)
             {
                 embed
@@ -257,7 +255,7 @@ public partial class GuildEventScheduleService(
 
                 postedFooter = true;
             }
-            
+
             embed
                 .WithColor(new Color(255, 43, 241))
                 .WithDescription(description.ToString());
@@ -266,7 +264,7 @@ public partial class GuildEventScheduleService(
                 .FirstOrDefault(m =>
                     m.Author.Id == _client.CurrentUser.Id &&
                     m.Embeds.Any(e => e.Description.Contains(day.ToString("dddd"))));
-            
+
             if (lastPostedMessage is null)
             {
                 _logger.LogInformation("Posting new message");
@@ -280,10 +278,13 @@ public partial class GuildEventScheduleService(
                 });
             }
         }
-        
+
         _logger.LogInformation("Finished updating weekly schedule");
     }
-    
+
     [LoggerMessage(EventId = 1, Level = LogLevel.Error, Message = "Exception occurred")]
     public partial void LogError(Exception e);
+
+    [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Exception occurred in background service loop")]
+    public partial void LogExceptionInBackgroundServiceLoop(Exception e);
 }

@@ -105,7 +105,8 @@ public static class Startup
 
     private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
     {
-        services.AddHostedService<BirthdayScannerService>();
+        // TODO - Disabled until Birthdays are actually implemented
+        //services.AddHostedService<BirthdayScannerService>();
 
         return services;
     }

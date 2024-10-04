@@ -31,6 +31,7 @@ public partial class GuildEventMonitorService(
         .SetSize(1)
         .SetAbsoluteExpiration(TimeSpan.FromMinutes(25))
         .SetSlidingExpiration(TimeSpan.FromMinutes(15));
+
     private readonly CronExpression _cron = CronExpression.Parse(Schedule, CronFormat.Standard);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -63,7 +64,7 @@ public partial class GuildEventMonitorService(
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Exception encountered in GuildEventMonitorService");
+                LogExceptionInBackgroundServiceLoop(e);
 
                 await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
             }
@@ -197,4 +198,7 @@ public partial class GuildEventMonitorService(
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Error, Message = "Exception occurred in GuildEventMonitorService during guildEvent {guildEventId}")]
     public partial void LogError(Exception e, ulong guildEventId);
+
+    [LoggerMessage(EventId = 3, Level = LogLevel.Error, Message = "Exception occurred in background service loop")]
+    public partial void LogExceptionInBackgroundServiceLoop(Exception e);
 }
